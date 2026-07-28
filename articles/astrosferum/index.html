@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Как «Астросферум» превращает открытые данные DWD ICON в почасовой прогноз условий для астрономических наблюдений.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/astrosferum/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/astrosferum/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/astrosferum/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/astrosferum/">
+  <meta property="og:title" content="От полей ICON к прогнозу для телескопа — Астросферум">
+  <meta property="og:description" content="Коротко о выборе погодной модели, расчёте облачной преграды и состояния атмосферы, воспроизводимости и границах точности.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/astrosferum/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/night-sky.png">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/night-sky.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1051">
+  <meta property="og:image:height" content="793">
+  <meta property="og:image:alt" content="Ночное небо и наблюдение в телескоп">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="От полей ICON к прогнозу для телескопа">
+  <meta name="twitter:description" content="Как устроена расчётная цепочка «Астросферума» и где заканчиваются возможности модели.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/night-sky.png">
+  <meta name="twitter:image:alt" content="Ночное небо и наблюдение в телескоп">
+  <title>От полей ICON к прогнозу для телескопа — Астросферум</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.min.css?v=20260728ah">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "От полей ICON к прогнозу для телескопа",
+    "description": "Как «Астросферум» превращает открытые данные DWD ICON в почасовой прогноз условий для астрономических наблюдений.",
+    "inLanguage": "ru",
+    "datePublished": "2026-07-27",
+    "dateModified": "2026-07-27",
+    "mainEntityOfPage": "https://haeniken.com/articles/astrosferum/",
+    "image": "https://haeniken.com/assets/night-sky.png",
+    "keywords": ["Астросферум", "DWD ICON", "GRIB2", "астрономические наблюдения", "оптическая турбулентность", "облачность"],
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": {
+      "@type": "SoftwareSourceCode",
+      "name": "Астросферум",
+      "alternateName": "Astrosferum",
+      "codeRepository": "https://github.com/Haeniken/bot_astrosferum",
+      "sameAs": [
+        "https://github.com/Haeniken/bot_astrosferum",
+        "https://t.me/astrosferum_bot"
+      ],
+      "programmingLanguage": "Go"
+    }
+  }
+  </script>
+</head>
+<body class="article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand" href="/">
+      <span class="brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a>
+      <a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a>
+      <a class="lang lang-en" href="/en/articles/">Publications</a>
+      <a href="https://github.com/Haeniken/bot_astrosferum" target="_blank" rel="noreferrer">GitHub</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label">
+        <span class="lang lang-ru">Меню</span>
+        <span class="lang lang-en">Menu</span>
+      </span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/astrosferum/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/astrosferum/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal">
+          <span class="status-light"></span>
+          <span class="lang lang-ru">Техническая заметка · Астросферум</span>
+          <span class="lang lang-en">Technical note · Astrosferum</span>
+        </p>
+        <h1 class="reveal">
+          <span class="lang lang-ru">От полей ICON<br>к прогнозу для <em>телескопа.</em></span>
+          <span class="lang lang-en">From ICON fields<br>to a forecast for a <em>telescope.</em></span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Как численный прогноз погоды превращается в почасовую оценку облаков, состояния атмосферы и пригодности ночи для наблюдений.</span>
+          <span class="lang lang-en">How numerical weather prediction becomes an hourly view of clouds, atmospheric stability and observing conditions.</span>
+        </p>
+        <div class="article-meta reveal">
+          <span>Sergey Haeniken</span>
+          <a href="https://orcid.org/0009-0005-5804-5011" target="_blank" rel="me noreferrer">ORCID 0009-0005-5804-5011 ↗</a>
+          <a href="https://t.me/astrosferum_bot" target="_blank" rel="me noreferrer">Telegram / @astrosferum_bot ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <article class="technical-article">
+      <div class="article-language lang lang-ru">
+        <p class="article-lead">В обычном прогнозе погоды часто хватает одной строки: облачность, осадки, ветер у земли. Для телескопа этого мало. Тонкие верхние облака и плотная облачность у горизонта мешают по-разному, а спокойный воздух рядом с наблюдателем ничего не говорит о сильном потоке на высоте десяти километров.</p>
+
+        <p>Я начал «Астросферум» именно с этой проблемы. Хотелось не угадывать качество ночи по одному признаку, а сохранить всю цепочку причин: от исходного цикла погодной модели до графика, на котором видно, что именно ограничивает наблюдение в конкретный час.</p>
+
+        <ul class="article-flow" aria-label="Цепочка расчёта">
+          <li><span>01</span><strong>Модель</strong><small>ICON-EU или ICON Global</small></li>
+          <li><span>02</span><strong>Поля</strong><small>GRIB2, уровни атмосферы</small></li>
+          <li><span>03</span><strong>Расчёт</strong><small>облака, ветер, турбулентность</small></li>
+          <li><span>04</span><strong>Результат</strong><small>почасовые графики</small></li>
+        </ul>
+
+        <h2>Сначала — подходящая модель</h2>
+
+        <p>Внутри европейской области служба использует ICON-EU с шагом сетки около семи километров. За её пределами берётся всемирная ICON Global с более крупной сеткой. Все величины для одного прогноза приходят из одной модели: приземная погода, облака и высотный профиль не смешиваются между разными источниками.</p>
+
+        <p>Новый цикл становится рабочим только после проверки полноты. Если загрузка оборвалась, предыдущий завершённый цикл остаётся на месте. Это простое правило важнее попытки любой ценой показать самые свежие данные.</p>
+
+        <h2>Что извлекается из GRIB2</h2>
+
+        <p>Для заданных координат выбирается ближайший узел сетки. Из приземных полей берутся температура, влажность, осадки, видимость и ветер. Из слоёв атмосферы — давление, температура, составляющие ветра, облачная вода и лёд, высота слоёв и модельная энергия турбулентности.</p>
+
+        <p>Эти данные не складываются в одну непрозрачную формулу. Облачная преграда, туман, осадки, ветер и оптическая турбулентность рассчитываются отдельно. Поэтому плохой час можно объяснить: например, плотными нижними облаками, сильным сдвигом ветра на высоте или осадками, которые сразу запрещают практическое наблюдение.</p>
+
+        <h2>Одна оценка — не весь прогноз</h2>
+
+        <p>Общий индекс пригодности от 1 до 10 удобен для первого взгляда, но рядом всегда остаются исходные причины. Потеря качества распределяется между ними, а не прячется внутри итогового числа. Отдельно строятся облачность по высоте, скорость и сдвиг ветра, оценка качества изображения, события Солнца, Луны, Юпитера и Сатурна.</p>
+
+        <blockquote>«Астросферум» не измеряет небо над площадкой. Он рассчитывает, что следует из конкретного цикла модели и явно показывает границы этой оценки.</blockquote>
+
+        <p>Число, связанное с размыванием изображения атмосферой, остаётся модельной оценкой. Локальный рельеф, нагретая крыша, купол телескопа и облако меньше шага сетки могут изменить реальную картину. Для абсолютной калибровки нужны наблюдения и специализированные приборы, а не ещё один коэффициент в программе.</p>
+
+        <h2>Как сохраняется воспроизводимость</h2>
+
+        <p>На каждом графике указаны источник, модель, время исходного цикла, сетка, часовой пояс и версии расчёта. Цикл, конфигурация без секретов и ревизия кода позволяют повторить результат. Промежуточные данные привязаны к циклу модели, координатам и версии алгоритма, поэтому старый расчёт нельзя случайно выдать за новый.</p>
+
+        <p>Вся служба собрана в одном исполняемом файле на Go. Он обновляет модели, обслуживает Telegram и VK, выполняет расчёты и строит изображения. PostgreSQL хранит только пользовательские точки и сводную статистику. Публичный сетевой порт, отдельная очередь сообщений и самостоятельная служба отрисовки здесь не нужны.</p>
+
+        <div class="article-sources">
+          <span>Подробнее:</span>
+          <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/scientific-method.ru.md" target="_blank" rel="noreferrer">научная методика ↗</a>
+          <a href="https://opendata.dwd.de/weather/nwp/icon-eu/grib/" target="_blank" rel="noreferrer">открытые данные DWD ↗</a>
+          <a href="https://github.com/Haeniken/bot_astrosferum" target="_blank" rel="noreferrer">исходный код ↗</a>
+        </div>
+      </div>
+
+      <div class="article-language lang lang-en">
+        <p class="article-lead">A conventional weather forecast can often be reduced to cloud cover, precipitation and surface wind. A telescope needs more context. Thin high cloud and dense cloud near the horizon cause different problems, while calm air at the observing site says little about a strong flow ten kilometres above it.</p>
+
+        <p>That was the starting point for Astrosferum. Instead of guessing the quality of a night from one value, the system keeps the full chain of evidence: from a specific numerical-model run to a chart that shows what limits observing at a particular hour.</p>
+
+        <ul class="article-flow" aria-label="Calculation flow">
+          <li><span>01</span><strong>Model</strong><small>ICON-EU or ICON Global</small></li>
+          <li><span>02</span><strong>Fields</strong><small>GRIB2, atmospheric levels</small></li>
+          <li><span>03</span><strong>Calculation</strong><small>cloud, wind, turbulence</small></li>
+          <li><span>04</span><strong>Result</strong><small>hourly charts</small></li>
+        </ul>
+
+        <h2>Choosing one coherent model</h2>
+
+        <p>Within the European domain, the service uses ICON-EU at roughly seven-kilometre grid spacing. Outside that domain it uses the coarser global ICON model. Every value in one forecast comes from the same model, so surface weather, cloud fields and the vertical profile are not mixed across unrelated sources.</p>
+
+        <p>A new model run becomes active only after a completeness check. If a download is interrupted, the previous complete run remains in use. This simple rule matters more than showing the newest timestamp at any cost.</p>
+
+        <h2>What is extracted from GRIB2</h2>
+
+        <p>The nearest model grid point is selected for the requested coordinates. Surface fields provide temperature, humidity, precipitation, visibility and wind. Atmospheric layers provide pressure, temperature, wind components, cloud water and ice, layer heights and model turbulent kinetic energy.</p>
+
+        <p>These inputs are not collapsed into one opaque formula. Cloud obstruction, fog, precipitation, wind and optical turbulence are calculated separately. A poor hour can therefore be explained by dense low cloud, strong shear aloft or precipitation that makes practical observing impossible.</p>
+
+        <h2>One score is not the whole forecast</h2>
+
+        <p>The overall 1–10 suitability score is useful for a quick scan, but the underlying reasons remain visible. Losses are attributed to individual factors instead of being hidden inside the final number. Separate charts cover cloud by height, wind speed and shear, image-quality estimates, and events for the Sun, Moon, Jupiter and Saturn.</p>
+
+        <blockquote>Astrosferum does not measure the sky above an observing site. It calculates what follows from a named model run and makes the limits of that estimate explicit.</blockquote>
+
+        <p>The atmospheric image-blur value remains a model-derived estimate. Local terrain, a warm roof, a telescope dome or cloud smaller than the model grid can change real conditions. Absolute calibration requires observations and dedicated instruments, not another tuning constant.</p>
+
+        <h2>Keeping results reproducible</h2>
+
+        <p>Every chart records the source, model, base time, grid, time zone, calculation version and drawing version. The model run, non-secret configuration and source revision are enough to repeat a result. Intermediate data is keyed by model run, coordinates and algorithm version, preventing an older calculation from being presented as current.</p>
+
+        <p>The service is built as one Go executable. It updates model data, serves Telegram and VK, performs calculations and draws the images. PostgreSQL stores saved user locations and aggregate statistics. The system does not need a public listening port, an external message broker or a separate drawing service.</p>
+
+        <div class="article-sources">
+          <span>Read more:</span>
+          <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/scientific-method.en.md" target="_blank" rel="noreferrer">scientific method ↗</a>
+          <a href="https://opendata.dwd.de/weather/nwp/icon-eu/grib/" target="_blank" rel="noreferrer">DWD open data ↗</a>
+          <a href="https://github.com/Haeniken/bot_astrosferum" target="_blank" rel="noreferrer">source code ↗</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К профилю<br>и другим проектам.</span><span class="lang lang-en">Back to the profile<br>and other work.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/">Вернуться на главную <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/">Back to home <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург · удалённо</span><span class="lang lang-en">Saint Petersburg · remote</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i>
+      <i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i>
+      <i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i>
+      <i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i>
+      <i class="energia-plume energia-plume-outer"></i>
+      <i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260728za" defer></script>
+</body>
+</html>

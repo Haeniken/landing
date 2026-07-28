@@ -1,0 +1,7 @@
+node_modules/
+leaderboard-api/leaderboard-api
+*.log
+lighthouse-*.html
+lighthouse-*.json
+.lighthouseci/
+C:*lighthouse.*/

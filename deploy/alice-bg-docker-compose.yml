@@ -1,0 +1,50 @@
+services:
+  nginx:
+    image: nginx:1.27.4-alpine
+    container_name: landing-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./site:/usr/share/nginx/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/snippets:/etc/nginx/snippets:ro
+      - ./certs:/etc/nginx/certs:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./logs:/var/log/nginx
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O- http://127.0.0.1/healthz || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  leaderboard:
+    build: ./leaderboard
+    container_name: haeniken-leaderboard
+    restart: unless-stopped
+    user: "1000:1000"
+    environment:
+      LISTEN_ADDR: ":8080"
+      DATA_PATH: "/data/scores.json"
+      SITE_ORIGIN: "https://haeniken.com"
+    expose:
+      - "8080"
+    volumes:
+      - ./leaderboard/data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "/leaderboard-api", "-healthcheck", "http://127.0.0.1:8080/healthz"]
+      interval: 20s
+      timeout: 3s
+      retries: 5
+      start_period: 5s

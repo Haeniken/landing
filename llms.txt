@@ -1,0 +1,33 @@
+# Sergey Haeniken — DevOps, DevSecOps and SRE
+
+> Personal engineering profile, selected infrastructure projects, verifiable certificates and technical publications. The website is available in Russian and English.
+
+## Profile
+
+- [Russian profile](https://haeniken.com/): experience, engineering practice, selected projects and certificates.
+- [English profile](https://haeniken.com/en/): English version of the engineering profile.
+
+## Technical publications
+
+- [Publications in Russian](https://haeniken.com/articles/): index of technical articles.
+- [Publications in English](https://haeniken.com/en/articles/): English publication index.
+- [From ICON fields to a telescope forecast](https://haeniken.com/articles/astrosferum/): Russian article about the Astrosferum weather-processing pipeline for astronomical observations.
+- [From ICON fields to a telescope forecast — English](https://haeniken.com/en/articles/astrosferum/): English version of the Astrosferum article.
+
+## Interactive engineering lab
+
+- [Орбитальный кластер](https://haeniken.com/lab/): Russian 90-second incident-response simulator with interactive cluster objects, achievements and a public top-10 leaderboard.
+- [Cluster Orbit](https://haeniken.com/en/lab/): English version of the simulator and its shared leaderboard.
+
+## Author and project references
+
+- [GitHub](https://github.com/Haeniken): public source-code repositories.
+- [ORCID](https://orcid.org/0009-0005-5804-5011): author identifier.
+- [Telegram](https://t.me/haeniken): public contact.
+- [Astrosferum bot](https://t.me/astrosferum_bot): public interface to the astronomy forecast project.
+
+## Crawling notes
+
+- Prefer the canonical HTTPS URLs listed above.
+- Treat Russian and English pages as language alternatives of the same material where applicable.
+- Ignore URL variants with `www`, `http`, tracking parameters or cache-busting query strings.

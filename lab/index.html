@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#050b14">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="«Орбитальный кластер» — интерактивный тренажёр инцидентов: управляйте подами, реагируйте на сигналы мониторинга и сохраняйте доступность системы.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/lab/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/lab/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/lab/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/lab/">
+  <meta property="og:title" content="Орбитальный кластер — инженерная лаборатория">
+  <meta property="og:description" content="Тренажёр DevOps/SRE: инциденты, орбитальные поды, доступность и запас ошибок.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://haeniken.com/lab/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/lab-sky.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/lab-sky.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1658">
+  <meta property="og:image:height" content="949">
+  <meta property="og:image:alt" content="Звёздное поле для лаборатории «Орбитальный кластер»">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Орбитальный кластер — инженерная лаборатория">
+  <meta name="twitter:description" content="Интерактивный тренажёр реагирования на инциденты DevOps/SRE.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/lab-sky.jpg">
+  <meta name="twitter:image:alt" content="Звёздное поле для лаборатории «Орбитальный кластер»">
+  <title>Орбитальный кластер — инженерная лаборатория</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/lab/lab.min.css?v=20260728ac">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Орбитальный кластер",
+    "url": "https://haeniken.com/lab/",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "JavaScript",
+    "isAccessibleForFree": true,
+    "inLanguage": ["ru", "en"],
+    "description": "Интерактивный тренажёр реагирования на инциденты в контейнерном кластере.",
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#simulator"><span class="lang lang-ru">К тренажёру</span><span class="lang lang-en">Skip to simulator</span></a>
+
+  <header class="lab-header">
+    <a class="lab-brand lang lang-ru" href="/" aria-label="H HAENIKEN. — вернуться к профилю Sergey Haeniken">
+      <span class="lab-brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <a class="lab-brand lang lang-en" href="/en/" aria-label="H HAENIKEN. — return to Sergey Haeniken profile">
+      <span class="lab-brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <nav class="lab-nav" aria-label="Навигация лаборатории">
+      <a class="profile-link" href="/"><span aria-hidden="true">←</span> Профиль</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="lab-hero">
+      <div class="lab-hero-grid" aria-hidden="true"></div>
+      <div class="lab-hero-copy">
+        <p class="lab-kicker"><span>01</span><span class="lang lang-ru">Инженерная лаборатория</span><span class="lang lang-en">Engineering lab</span></p>
+        <h1>
+          <span class="lang lang-ru">Орбитальный</span><span class="lang lang-en">Cluster</span>
+          <em><span class="lang lang-ru">кластер</span><span class="lang lang-en">Orbit</span></em>
+        </h1>
+        <p class="lab-hero-lead">
+          <span class="lang lang-ru">Короткая смена дежурного инженера. Следите за сигналами мониторинга, выбирайте действие и удерживайте систему в пределах запаса ошибок.</span>
+          <span class="lang lang-en">A short on-call shift. Watch monitoring signals, choose the right response and keep the system within its error budget.</span>
+        </p>
+        <ul class="lab-tags" aria-label="Темы тренажёра">
+          <li>KUBERNETES</li><li>SRE</li><li><span class="lang lang-ru">НАБЛЮДАЕМОСТЬ</span><span class="lang lang-en">OBSERVABILITY</span></li><li><span class="lang lang-ru">РЕАГИРОВАНИЕ</span><span class="lang lang-en">INCIDENT RESPONSE</span></li>
+        </ul>
+        <a class="lab-primary-link" href="#simulator">
+          <span class="lang lang-ru">Принять смену</span><span class="lang lang-en">Start the shift</span>
+          <span aria-hidden="true">↓</span>
+        </a>
+      </div>
+      <div class="hero-cluster" aria-hidden="true">
+        <div class="hero-ring hero-ring-one"><i></i><i></i><i></i></div>
+        <div class="hero-ring hero-ring-two"><i></i><i></i></div>
+        <div class="hero-core"><span>K8S</span><small>CONTROL PLANE</small></div>
+      </div>
+    </section>
+
+    <section class="simulator" id="simulator" aria-labelledby="simulator-title">
+      <div class="simulator-heading">
+        <div>
+          <p class="lab-kicker"><span>02</span><span class="lang lang-ru">Тренажёр инцидента</span><span class="lang lang-en">Incident simulator</span></p>
+          <h2 id="simulator-title"><span class="lang lang-ru">Смена длится<br>90 секунд.</span><span class="lang lang-en">A 90-second<br>on-call shift.</span></h2>
+        </div>
+        <div class="shift-controls">
+          <button class="control-button control-button-primary" type="button" data-start>
+            <span class="lang lang-ru">Запустить</span><span class="lang lang-en">Start</span>
+          </button>
+          <button class="control-button" type="button" data-reset>
+            <span class="lang lang-ru">Сбросить</span><span class="lang lang-en">Reset</span>
+          </button>
+          <button class="control-button sound-control" type="button" data-sound-toggle aria-pressed="true" aria-label="Звук: Вкл. Отключить звук">
+            <span class="sound-icon" aria-hidden="true"><i></i><i></i><b></b></span>
+            <span class="lang lang-ru">Звук</span><span class="lang lang-en">Sound</span>
+            <small data-sound-state>Вкл.</small>
+          </button>
+          <a class="control-button control-link" href="#leaderboard">
+            <span class="lang lang-ru">Топ-10</span><span class="lang lang-en">Top 10</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="simulator-shell">
+        <div class="space-panel" data-space>
+          <picture class="space-photo">
+            <source type="image/webp" srcset="/assets/lab-sky-720.webp 720w, /assets/lab-sky-1200-v2.webp 1200w, /assets/lab-sky.webp 1658w" sizes="(max-width: 900px) 100vw, 66vw">
+            <img src="/assets/lab-sky.jpg" alt="Звёздное поле с галактиками" width="1658" height="949" loading="lazy" decoding="async">
+          </picture>
+          <div class="space-overlay" aria-hidden="true"></div>
+          <div class="feedback-field" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="space-coordinate coordinate-top" aria-hidden="true">54°17′24″ N / 37°33′48″ E</div>
+          <div class="space-coordinate coordinate-bottom" aria-hidden="true">CLUSTER / PROD-01 / UTC+3</div>
+
+          <div class="cluster" role="group" aria-label="Интерактивная схема контейнерного кластера">
+            <div class="cluster-ring cluster-ring-outer"></div>
+            <div class="cluster-ring cluster-ring-inner"></div>
+            <div class="node-stream-layer" aria-hidden="true">
+              <span class="node-stream node-stream-one" data-node-stream="0"><i></i><i></i></span>
+              <span class="node-stream node-stream-two" data-node-stream="1"><i></i><i></i></span>
+              <span class="node-stream node-stream-three" data-node-stream="2"><i></i><i></i></span>
+            </div>
+            <div class="pod-stream-layer" data-streams aria-hidden="true"></div>
+            <button class="cluster-core" type="button" data-core tabindex="-1">
+              <span>K8S</span>
+              <small>API / OK</small>
+            </button>
+            <button class="node node-one" type="button" data-node="0" tabindex="-1"><span>N1</span><small>READY</small></button>
+            <button class="node node-two" type="button" data-node="1" tabindex="-1"><span>N2</span><small>READY</small></button>
+            <button class="node node-three" type="button" data-node="2" tabindex="-1"><span>N3</span><small>READY</small></button>
+            <div class="pod-layer" data-pods role="group" aria-label="Поды кластера"></div>
+            <output class="cluster-event" data-cluster-event aria-live="polite"></output>
+          </div>
+
+          <div class="rollback-visual" aria-hidden="true"><span class="version-stable">api-2.14.6</span><i>←</i><span class="version-current">api-2.14.7</span></div>
+          <div class="attack-link" data-attack-link aria-hidden="true"><i></i><i></i><i></i></div>
+          <button class="incident-beacon" type="button" data-beacon tabindex="-1" aria-label="Компьютер — источник подбора паролей">
+            <span class="terminal-screen" aria-hidden="true"><i></i><b>••••••</b></span>
+            <span class="terminal-base" aria-hidden="true"></span>
+            <small data-terminal-status>BRUTE / EXT</small>
+          </button>
+          <p class="space-status" data-space-status aria-live="polite">
+            <span class="lang lang-ru">Кластер ожидает начала смены</span>
+            <span class="lang lang-en">Cluster is waiting for the shift</span>
+          </p>
+          <p class="problem-hint" data-problem-hint hidden>
+            <span class="lang lang-ru">Нажмите на выделенную цель и выберите действие</span>
+            <span class="lang lang-en">Tap the highlighted target and choose a response</span>
+          </p>
+          <div class="radial-menu" data-radial-menu role="menu" aria-label="Выбор реакции на инцидент" hidden>
+            <div class="radial-orbit" aria-hidden="true"></div>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="scale"><strong>1</strong><span class="lang lang-ru">Масштаб</span><span class="lang lang-en">Scale</span></button>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="drain"><strong>2</strong><span class="lang lang-ru">Изоляция</span><span class="lang lang-en">Drain</span></button>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="rollback"><strong>3</strong><span class="lang lang-ru">Откат</span><span class="lang lang-en">Rollback</span></button>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="cleanup"><strong>4</strong><span class="lang lang-ru">Диск</span><span class="lang lang-en">Disk</span></button>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="restart"><strong>5</strong><span class="lang lang-ru">Перезапуск</span><span class="lang lang-en">Restart</span></button>
+            <button class="radial-action" type="button" role="menuitem" data-radial-action="block"><strong>6</strong><span class="lang lang-ru">Блок</span><span class="lang lang-en">Block</span></button>
+            <button class="radial-close" type="button" data-radial-close aria-label="Закрыть меню"><span>×</span><small class="lang lang-ru">Действие</small><small class="lang lang-en">Response</small></button>
+          </div>
+        </div>
+
+        <aside class="operations-panel" aria-label="Панель управления инцидентами">
+          <div class="telemetry-grid">
+            <div class="telemetry-card">
+              <span class="lang lang-ru">Время</span><span class="lang lang-en">Time</span>
+              <strong data-time>90</strong><small>SEC</small>
+            </div>
+            <div class="telemetry-card">
+              <span class="lang lang-ru">Счёт</span><span class="lang lang-en">Score</span>
+              <strong data-score>0000</strong><small>PTS</small>
+            </div>
+            <div class="telemetry-card telemetry-wide">
+              <span class="lang lang-ru">Доступность</span><span class="lang lang-en">Availability</span>
+              <strong data-availability>99.990%</strong>
+              <i><b data-availability-bar></b></i>
+            </div>
+            <div class="telemetry-card telemetry-wide">
+              <span class="lang lang-ru">Запас ошибок</span><span class="lang lang-en">Error budget</span>
+              <strong data-budget>100%</strong>
+              <i><b data-budget-bar></b></i>
+            </div>
+            <div class="telemetry-card">
+              <span class="lang lang-ru">Нагрузка</span><span class="lang lang-en">Load</span>
+              <strong data-load>36%</strong><small>CPU</small>
+            </div>
+            <div class="telemetry-card">
+              <span class="lang lang-ru">Ресурсы</span><span class="lang lang-en">Resources</span>
+              <strong data-resources>72%</strong><small>FREE</small>
+            </div>
+          </div>
+
+          <section class="incident-card" data-incident aria-live="polite">
+            <p><span class="incident-light"></span><span class="lang lang-ru">Мониторинг</span><span class="lang lang-en">Monitoring</span></p>
+            <h3 data-incident-title><span class="lang lang-ru">Сигналов нет</span><span class="lang lang-en">No active alerts</span></h3>
+            <span data-incident-detail><span class="lang lang-ru">Запустите смену, чтобы начать тренировку.</span><span class="lang lang-en">Start the shift to begin the exercise.</span></span>
+          </section>
+
+          <div class="action-grid">
+            <button class="action-button" type="button" data-action="scale">
+              <span class="action-key">1</span><strong><span class="lang lang-ru">Масштабировать</span><span class="lang lang-en">Scale</span></strong>
+              <small><span class="lang lang-ru">Добавить реплику</span><span class="lang lang-en">Add a replica</span></small>
+            </button>
+            <button class="action-button" type="button" data-action="drain">
+              <span class="action-key">2</span><strong><span class="lang lang-ru">Изолировать сервер</span><span class="lang lang-en">Drain node</span></strong>
+              <small><span class="lang lang-ru">Изолировать отказ</span><span class="lang lang-en">Isolate failure</span></small>
+            </button>
+            <button class="action-button" type="button" data-action="rollback">
+              <span class="action-key">3</span><strong><span class="lang lang-ru">Откатить</span><span class="lang lang-en">Rollback</span></strong>
+              <small><span class="lang lang-ru">Вернуть релиз</span><span class="lang lang-en">Revert release</span></small>
+            </button>
+            <button class="action-button" type="button" data-action="cleanup">
+              <span class="action-key">4</span><strong><span class="lang lang-ru">Освободить место</span><span class="lang lang-en">Free disk space</span></strong>
+              <small><span class="lang lang-ru">Очистить журналы</span><span class="lang lang-en">Rotate old logs</span></small>
+            </button>
+            <button class="action-button" type="button" data-action="restart">
+              <span class="action-key">5</span><strong><span class="lang lang-ru">Перезапустить</span><span class="lang lang-en">Restart</span></strong>
+              <small><span class="lang lang-ru">Вернуть контейнер</span><span class="lang lang-en">Recover container</span></small>
+            </button>
+            <button class="action-button" type="button" data-action="block">
+              <span class="action-key">6</span><strong><span class="lang lang-ru">Заблокировать</span><span class="lang lang-en">Block source</span></strong>
+              <small><span class="lang lang-ru">Остановить подбор</span><span class="lang lang-en">Stop brute force</span></small>
+            </button>
+          </div>
+
+          <div class="event-log">
+            <div class="event-log-heading"><span class="lang lang-ru">Журнал смены</span><span class="lang lang-en">Shift log</span><span>LIVE</span></div>
+            <ol data-log></ol>
+          </div>
+          <p class="keyboard-hint"><span class="lang lang-ru">Клавиши 1–6 также запускают действия.</span><span class="lang lang-en">Keys 1–6 trigger the same actions.</span></p>
+        </aside>
+
+        <div class="result-overlay" data-results hidden>
+          <section class="result-dialog" role="dialog" aria-modal="true" aria-labelledby="result-title" tabindex="-1">
+            <button class="result-close" type="button" data-result-close aria-label="Закрыть результат">×</button>
+            <p class="lab-kicker"><span>FINISH</span><span class="lang lang-ru">Итоги смены</span><span class="lang lang-en">Shift summary</span></p>
+            <h3 id="result-title" data-result-title><span class="lang lang-ru">Смена завершена</span><span class="lang lang-en">Shift complete</span></h3>
+            <div class="result-score"><strong data-result-score>0000</strong><span>PTS</span></div>
+            <div class="result-achievements">
+              <h4><span class="lang lang-ru">Полученные ачивки</span><span class="lang lang-en">Achievements unlocked</span></h4>
+              <ul data-achievements></ul>
+            </div>
+            <form class="score-form" data-score-form>
+              <label for="player-nick"><span class="lang lang-ru">Ник для таблицы игроков</span><span class="lang lang-en">Nickname for the leaderboard</span></label>
+              <div class="score-form-row">
+                <input id="player-nick" name="nick" type="text" minlength="2" maxlength="15" autocomplete="nickname" required placeholder="haEniken">
+                <button type="submit"><span class="lang lang-ru">Сохранить</span><span class="lang lang-en">Save score</span></button>
+              </div>
+              <input name="website" type="hidden" value="">
+              <p><span class="lang lang-ru">Сохранение необязательно. Если продолжить, сохранятся только ник, результат и ачивки; учётная запись не нужна.</span><span class="lang lang-en">Saving is optional. If you continue, only your nickname, score and achievements are stored; no account is required.</span></p>
+              <output class="save-status" data-save-status aria-live="polite"></output>
+            </form>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="leaderboard-section" id="leaderboard" aria-labelledby="leaderboard-title">
+      <div class="leaderboard-heading">
+        <p class="lab-kicker"><span>03</span><span class="lang lang-ru">Общая таблица</span><span class="lang lang-en">Global leaderboard</span></p>
+        <h2 id="leaderboard-title"><span class="lang lang-ru">Топ-10<br>дежурных.</span><span class="lang lang-en">Top 10<br>on-call engineers.</span></h2>
+        <p><span class="lang lang-ru">Лучший результат каждого ника. Таблица общая для всех посетителей сайта.</span><span class="lang lang-en">The best score for each nickname. The board is shared by all visitors.</span></p>
+      </div>
+      <div class="leaderboard-board">
+        <table>
+          <thead><tr><th scope="col"><span class="lang lang-ru">Планета</span><span class="lang lang-en">Planet</span></th><th scope="col"><span class="lang lang-ru">Игрок</span><span class="lang lang-en">Player</span></th><th scope="col"><span class="lang lang-ru">Счёт</span><span class="lang lang-en">Score</span></th><th scope="col"><span class="lang lang-ru">Ачивки</span><span class="lang lang-en">Badges</span></th></tr></thead>
+          <tbody data-leaderboard><tr><td colspan="4"><span class="lang lang-ru">Загрузка результатов…</span><span class="lang lang-en">Loading scores…</span></td></tr></tbody>
+        </table>
+        <p class="leaderboard-status" data-leaderboard-status aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="lab-manual">
+      <div class="manual-heading">
+        <p class="lab-kicker"><span>04</span><span class="lang lang-ru">Сценарии</span><span class="lang lang-en">Scenarios</span></p>
+        <h2><span class="lang lang-ru">Сигнал → решение<br>→ результат.</span><span class="lang lang-en">Signal → decision<br>→ outcome.</span></h2>
+      </div>
+      <div class="manual-grid">
+        <article><span>01</span><h3><span class="lang lang-ru">Рост нагрузки</span><span class="lang lang-en">Load spike</span></h3><p><span class="lang lang-ru">Добавьте реплику до исчерпания ресурсов и роста задержки.</span><span class="lang lang-en">Add a replica before resources and latency cross the limit.</span></p></article>
+        <article><span>02</span><h3><span class="lang lang-ru">Отказ сервера</span><span class="lang lang-en">Node failure</span></h3><p><span class="lang lang-ru">Изолируйте рабочий сервер и перенесите нагрузку на оставшийся контур.</span><span class="lang lang-en">Drain the node and move workloads to the healthy pool.</span></p></article>
+        <article><span>03</span><h3><span class="lang lang-ru">Неудачный релиз</span><span class="lang lang-en">Failed release</span></h3><p><span class="lang lang-ru">Откатите изменение, пока ошибки не съели запас надёжности.</span><span class="lang lang-en">Rollback before errors consume the reliability budget.</span></p></article>
+        <article><span>04</span><h3><span class="lang lang-ru">Заканчивается место</span><span class="lang lang-en">Low disk space</span></h3><p><span class="lang lang-ru">Журналы заняли почти весь диск. Удалите старые файлы и запустите их ротацию.</span><span class="lang lang-en">Logs have filled most of the disk. Remove old files and rotate the logs.</span></p></article>
+        <article><span>05</span><h3><span class="lang lang-ru">Контейнер не отвечает</span><span class="lang lang-en">Container unavailable</span></h3><p><span class="lang lang-ru">Проверка готовности несколько раз завершилась ошибкой. Перезапустите зависший контейнер.</span><span class="lang lang-en">The readiness check failed several times. Restart the unresponsive container.</span></p></article>
+        <article><span>06</span><h3><span class="lang lang-ru">Подбор паролей</span><span class="lang lang-en">Brute-force attempt</span></h3><p><span class="lang lang-ru">С одного адреса идут сотни неудачных входов. Заблокируйте источник атаки.</span><span class="lang lang-en">Hundreds of failed logins arrive from one address. Block the attack source.</span></p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="lab-footer">
+    <span>© <span data-year>2026</span> Sergey Haeniken</span>
+    <a class="lang lang-ru" href="/">Вернуться к инженерному профилю →</a>
+    <a class="lang lang-en" href="/en/">Return to engineering profile →</a>
+  </footer>
+
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i>
+      <i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i>
+      <i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i>
+      <i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i>
+      <i class="energia-plume energia-plume-outer"></i>
+      <i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+
+  <script src="/lab/lab.min.js?v=20260728ac" defer></script>
+</body>
+</html>

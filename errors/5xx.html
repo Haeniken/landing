@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#07111f">
+  <title>Контур восстанавливается — haeniken.com</title>
+  <style>
+    :root{color-scheme:dark;--ink:#f7faf7;--muted:#8b98a4;--cyan:#73d5da;--red:#ff7657}*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#06101c,#0b1c2c 55%,#07111f);color:var(--ink);font-family:Inter,Arial,sans-serif}body::before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(90deg,transparent 0 79px,rgba(115,213,218,.035) 80px),repeating-linear-gradient(0deg,transparent 0 79px,rgba(115,213,218,.035) 80px)}main{position:relative;z-index:1;width:min(980px,100%);padding:clamp(30px,8vw,110px)}.status{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:22px;max-width:700px}.pulse{width:76px;height:76px;display:grid;place-items:center;border:1px solid rgba(255,118,87,.55);border-radius:50%;color:var(--red);font:800 18px/1 ui-monospace,monospace;box-shadow:0 0 35px rgba(255,118,87,.15);animation:pulse 1.4s ease-in-out infinite}.kicker{color:var(--cyan);font:700 10px/1.3 ui-monospace,monospace;letter-spacing:.18em;text-transform:uppercase}h1{margin:28px 0 22px;font-size:clamp(54px,9vw,118px);line-height:.82;letter-spacing:-.07em;text-transform:uppercase}h1 em{display:block;color:transparent;font-style:normal;-webkit-text-stroke:1px rgba(247,250,247,.4)}p{max-width:650px;margin:0;color:var(--muted);font-size:clamp(16px,2vw,20px);line-height:1.6}.rail{position:relative;height:2px;margin:42px 0 34px;background:rgba(115,213,218,.15);overflow:hidden}.rail::after{content:"";position:absolute;top:0;left:-30%;width:30%;height:100%;background:linear-gradient(90deg,transparent,var(--cyan),transparent);animation:flow 2.2s linear infinite}a{min-height:50px;display:inline-flex;align-items:center;padding:0 24px;border:1px solid rgba(115,213,218,.34);color:var(--ink);font:800 11px/1 ui-monospace,monospace;letter-spacing:.11em;text-decoration:none;text-transform:uppercase;transition:.2s ease}a:hover,a:focus-visible{border-color:var(--cyan);box-shadow:0 0 25px rgba(115,213,218,.18);outline:none}@keyframes flow{to{left:100%}}@keyframes pulse{50%{transform:scale(.92);opacity:.55}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+  <style>
+    main { min-height:100svh; display:grid; grid-template-columns:minmax(0,1fr) minmax(280px,420px); align-items:center; gap:clamp(36px,7vw,92px); }
+    .copy { min-width:0; }
+    h1 em { font-size:clamp(38px,5.4vw,72px); letter-spacing:-.055em; }
+    .recovery-orbit { position:relative; width:min(38vw,420px); aspect-ratio:1; border:1px solid rgba(115,213,218,.22); border-radius:50%; animation:turn 24s linear infinite; }
+    .recovery-orbit::before,.recovery-orbit::after { content:""; position:absolute; border:1px solid rgba(115,213,218,.18); border-radius:50%; }
+    .recovery-orbit::before { inset:18%; border-style:dashed; }.recovery-orbit::after { inset:36%; background:#07111f; box-shadow:0 0 45px rgba(115,213,218,.14); }
+    .recovery-orbit strong { position:absolute; z-index:3; inset:50% auto auto 50%; transform:translate(-50%,-50%); color:var(--red); font:800 clamp(34px,6vw,64px)/1 ui-monospace,monospace; letter-spacing:-.08em; animation:counterturn 24s linear infinite; }
+    .recovery-orbit .node { position:absolute; z-index:2; width:15px; height:15px; border:3px solid #06101c; border-radius:50%; background:var(--cyan); box-shadow:0 0 16px var(--cyan); }
+    .recovery-orbit .node.one { left:8%; top:25% }.recovery-orbit .node.two { right:2%; top:51% }.recovery-orbit .node.three { left:30%; bottom:-1%; background:var(--red); box-shadow:0 0 16px var(--red) }
+    .recovery-orbit .beam { position:absolute; top:50%; left:50%; width:52%; height:1px; transform-origin:0 50%; background:linear-gradient(90deg,rgba(115,213,218,.04),rgba(115,213,218,.38)); }
+    .recovery-orbit .beam.one { transform:rotate(194deg) }.recovery-orbit .beam.two { transform:rotate(-28deg) }.recovery-orbit .beam.three { transform:rotate(108deg) }
+    .recovery-orbit .beam::after { content:""; position:absolute; right:12%; top:-2px; width:5px; height:5px; border-radius:50%; background:#d9feff; box-shadow:0 0 11px var(--cyan); animation:packet 2.6s ease-in-out infinite; }
+    .recovery-orbit .beam.two::after { animation-delay:-.8s }.recovery-orbit .beam.three::after { animation-delay:-1.6s }
+    @keyframes turn { to { transform:rotate(360deg) } } @keyframes counterturn { to { transform:translate(-50%,-50%) rotate(-360deg) } } @keyframes packet { from { right:92%; opacity:0 } 20%,80% { opacity:1 } to { right:8%; opacity:0 } }
+    @media(max-width:760px){ main{grid-template-columns:1fr;align-content:center}.recovery-orbit{order:-1;width:min(66vw,290px);justify-self:center}.copy{text-align:center}.status{display:flex;justify-content:center}.rail{margin-inline:auto} }
+  </style>
+</head>
+<body><main><section class="copy"><div class="status"><div class="pulse" aria-hidden="true">5××</div><div><div class="kicker">SERVER / RECOVERY MODE</div><p>Автоматическое восстановление активно</p></div></div><h1>Контур<em>восстанавливается</em></h1><p>Сервис временно не может завершить операцию. Повторите запрос через несколько минут — состояние отслеживается.</p><div class="rail" aria-hidden="true"></div><a href="/">Вернуться в профиль →</a></section><div class="recovery-orbit" aria-hidden="true"><i class="beam one"></i><i class="beam two"></i><i class="beam three"></i><i class="node one"></i><i class="node two"></i><i class="node three"></i><strong>5××</strong></div></main></body>
+</html>

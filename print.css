@@ -1,0 +1,159 @@
+@page { size: A4; margin: 10mm; }
+
+* {
+  box-shadow: none !important; text-shadow: none !important;
+  animation: none !important; transition: none !important;
+}
+html {
+  scroll-behavior: auto; background: #fff !important; color-scheme: light;
+}
+body {
+  box-sizing: border-box; margin: 0 !important; padding: 2mm !important;
+  background: #fff !important; background-image: none !important;
+  color: #111; font-size: 9pt; line-height: 1.35;
+  overflow: visible; -webkit-print-color-adjust: economy; print-color-adjust: economy;
+}
+main, .hero, .metrics, .expertise, .experience, .projects, .certificates, .contact {
+  background: #fff !important; background-image: none !important;
+}
+a { color: inherit; }
+.site-header, .noise, .skip-link, .hero-visual, .scroll-hint,
+.stack-ticker, .hero-actions, .lab-orbit-track, .return-to-top, .observation-break, .contact-glow, .contact-actions, footer {
+  display: none !important;
+}
+.reveal { opacity: 1 !important; transform: none !important; }
+
+.hero {
+  display: block; min-height: 0; height: auto; max-height: none; padding: 0 0 7mm;
+  overflow: visible; background: #fff; color: #111; border-bottom: 1px solid #b9b9b9;
+}
+.hero::before { display: none; }
+.hero-copy { max-width: none; min-height: 0; padding: 0; display: block; }
+.hero .eyebrow { margin: 0 0 3mm; color: #555; font-size: 7.5pt; }
+.status-light { width: 6px; height: 6px; box-shadow: none !important; }
+.hero h1 {
+  margin: 0 0 3mm; color: #111; font-size: 31pt; line-height: .9; letter-spacing: -.055em;
+}
+.hero h1 > span { display: inline; }
+.hero h1 .outline { margin-left: .22em; color: #111; -webkit-text-stroke: 0; }
+.hero-role { margin-bottom: 2.5mm; color: #b7432c; font-size: 8pt; letter-spacing: .1em; }
+.hero-lead { max-width: 175mm; margin: 0 0 2.5mm; color: #333; font-size: 10pt; }
+.orcid-profile { margin-top: 2mm; color: #333; font-size: 7.5pt; }
+.orcid-mark { width: 18px; height: 18px; font-size: 7pt; }
+.print-header-contact {
+  display: block; margin: 0 0 2mm; color: #111; font-size: 8pt; font-weight: 700;
+}
+
+.section {
+  padding: 7mm 0; background: #fff !important; color: #111 !important;
+  content-visibility: visible; contain-intrinsic-size: none;
+}
+.section-heading { margin: 0 0 4mm; grid-template-columns: 8mm 1fr; }
+.section-heading .kicker, .projects-heading .kicker {
+  margin-bottom: 1.5mm; color: #666 !important; font-size: 7pt;
+}
+.section-heading h2, .projects-heading h2 {
+  color: #111; font-size: 21pt; line-height: .95; letter-spacing: -.04em;
+}
+.section-number { font-size: 8pt; }
+
+.metrics-grid { grid-template-columns: repeat(4, 1fr); border-color: #bbb; }
+.metric-card { min-height: 0; padding: 3mm; gap: 3mm; border-color: #bbb; }
+.metric-value { font-size: 24pt; }
+.metric-card p { color: #444; font-size: 7.2pt; }
+.impact-strip {
+  margin-top: 3mm; grid-template-columns: repeat(4, 1fr); gap: 3mm;
+  color: #444; font-size: 6.7pt; letter-spacing: .03em;
+}
+.impact-strip > span { display: block; }
+.impact-strip b { display: block; margin-bottom: 1mm; font-size: 10pt; }
+
+.expertise-list { border-color: #bbb; }
+.expertise-row {
+  min-height: 0; grid-template-columns: 8mm .75fr 1.25fr; gap: 3mm;
+  padding: 2.5mm 0; border-color: #bbb; break-inside: avoid;
+}
+.expertise-row h3 { color: #111; font-size: 11pt; }
+.expertise-row p { color: #444; font-size: 7.5pt; }
+.row-arrow { display: none; }
+
+.experience { padding-top: 7mm; }
+.timeline { padding-left: 0; }
+.timeline-item {
+  padding: 3mm 0 3mm 5mm; grid-template-columns: .7fr 1.3fr; gap: 6mm;
+  border-color: #bbb; break-inside: avoid;
+}
+.timeline-item::before { top: 4mm; width: 5px; height: 5px; }
+.timeline-meta { gap: 1mm; font-size: 8pt; }
+.timeline-meta span:last-child, .timeline-meta time { font-size: 6.8pt; }
+.timeline-detail { gap: 1.5mm; }
+.timeline-item p { color: #444; font-size: 7.5pt; }
+
+.projects-heading { margin: 0 0 4mm; }
+.project-grid { grid-template-columns: 1fr 1fr; gap: 3mm; }
+.project-card, .project-card:hover {
+  min-height: 0; padding: 4mm; gap: 4mm; transform: none;
+  border-color: #aaa; background: #fff !important; color: #111 !important;
+  break-inside: avoid;
+}
+.project-featured, .project-private { grid-column: 1 / -1; }
+.project-featured {
+  display: grid; grid-template-columns: .85fr 1.15fr; grid-template-rows: auto 1fr;
+  column-gap: 8mm;
+}
+.project-top { color: #b7432c; font-size: 6.8pt; }
+.project-card h3 { margin-bottom: 2mm; color: #111; font-size: 14pt; }
+.project-card p, .project-card:hover p, .project-featured p {
+  color: #444; font-size: 7.5pt;
+}
+.project-code, .project-card:not(.project-featured) .project-code,
+.project-card:not(.project-featured):hover .project-code {
+  color: #333; font-size: 7.2pt; line-height: 1.55;
+}
+.code-muted, .project-card:not(.project-featured) .code-muted,
+.project-card:not(.project-featured):hover .code-muted { color: #777; }
+.code-accent, .project-card:not(.project-featured) .code-accent,
+.project-card:not(.project-featured):hover .code-accent { color: #126b72; }
+.project-links { margin-top: 2mm; gap: 2mm 4mm; }
+.project-links a { color: #111; font-size: 6.5pt; }
+
+.certificates-intro {
+  max-width: none; margin: -1mm 0 4mm; color: #444; font-size: 8pt;
+}
+.certificate-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); border-color: #bbb; }
+.certificate-card, .certificate-card-featured {
+  grid-column: auto; min-height: 0; padding: 2mm; grid-template-columns: minmax(0, 1fr) 4mm;
+  gap: 1.2mm; border-color: #bbb; background: #fff !important; break-inside: avoid;
+}
+.certificate-card:hover { transform: none; background: #fff; }
+.certificate-icon { display: none; }
+.certificate-meta { color: #666; font-size: 5.6pt; }
+.certificate-type { display: none; }
+.certificate-body strong { color: #111; font-size: 6.7pt; line-height: 1.15; overflow-wrap: anywhere; }
+.certificate-arrow { color: #b7432c; font-size: 7pt; }
+
+.contact {
+  min-height: 0; padding: 7mm 0 0; align-items: flex-start; text-align: left;
+  border-top: 1px solid #aaa;
+}
+.contact .kicker { margin-bottom: 2mm; color: #b7432c; }
+.contact h2 { color: #111; font-size: 20pt; line-height: .95; letter-spacing: -.04em; }
+.contact-copy {
+  max-width: 170mm; margin: 3mm 0 2mm; color: #444; font-size: 8.5pt;
+}
+.print-contact { display: block; margin: 0; color: #111; font-size: 8pt; font-weight: 700; }
+
+@media (max-width: 700px) {
+  @page { margin: 7mm; }
+  body { padding: 6mm !important; }
+  .section-heading h2, .projects-heading h2 {
+    font-size: 16pt !important; line-height: 1 !important;
+    letter-spacing: -.03em; overflow-wrap: anywhere;
+  }
+  .certificate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .certificate-card, .certificate-card-featured { padding: 2.5mm; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  body { padding: 7mm !important; }
+}
