@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Практический разбор отказоустойчивой сети: WireGuard как основной транспорт, IPsec как резерв, выбор маршрута через BGP, контроль BFD и эксплуатационный ранбук.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/network-ha/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/network-ha/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/network-ha/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/network-ha/">
+  <meta property="og:title" content="BGP и BFD в небольшом производственном контуре">
+  <meta property="og:description" content="Как связать несколько площадок двумя шифрованными транспортами и сделать переключение маршрутов проверяемой эксплуатационной процедурой.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/network-ha/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/social/network-ha-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/network-ha-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="BGP, BFD и отказоустойчивость производственной сети">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="BGP и BFD в небольшом производственном контуре">
+  <meta name="twitter:description" content="WireGuard, IPsec, BGP и BFD: архитектура, контролируемое переключение и эксплуатационный ранбук.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/network-ha-preview.jpg">
+  <meta name="twitter:image:alt" content="BGP, BFD и отказоустойчивость производственной сети">
+  <title>BGP и BFD в небольшом производственном контуре — Sergey Haeniken</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/articles.min.css?v=20260728b">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "BGP и BFD в небольшом производственном контуре",
+    "description": "Практический разбор отказоустойчивой сети с WireGuard, IPsec, BGP, BFD, мониторингом и эксплуатационным ранбуком.",
+    "inLanguage": "ru",
+    "datePublished": "2026-07-28",
+    "dateModified": "2026-07-28",
+    "mainEntityOfPage": "https://haeniken.com/articles/network-ha/",
+    "image": "https://haeniken.com/assets/social-preview.jpg",
+    "keywords": ["BGP", "BFD", "WireGuard", "IPsec", "FRR", "StrongSwan", "отказоустойчивая сеть", "ранбук"],
+    "articleSection": "Сетевая инфраструктура",
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": [
+      {"@type": "Thing", "name": "Border Gateway Protocol"},
+      {"@type": "Thing", "name": "Bidirectional Forwarding Detection"},
+      {"@type": "Thing", "name": "WireGuard"},
+      {"@type": "Thing", "name": "IPsec"}
+    ]
+  }
+  </script>
+</head>
+<body class="article-page network-article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand lang lang-ru" href="/">
+      <span class="brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <a class="brand lang lang-en" href="/en/">
+      <span class="brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a>
+      <a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a>
+      <a class="lang lang-en" href="/en/articles/">Publications</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label"><span class="lang lang-ru">Меню</span><span class="lang lang-en">Menu</span></span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/network-ha/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/network-ha/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero network-article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal">
+          <span class="status-light"></span>
+          <span class="lang lang-ru">Техническая заметка · сеть и отказоустойчивость</span>
+          <span class="lang lang-en">Technical note · networking and resilience</span>
+        </p>
+        <h1 class="reveal">
+          <span class="lang lang-ru">BGP и BFD<br>в небольшом <em>контуре.</em></span>
+          <span class="lang lang-en">BGP and BFD<br>in a small <em>production network.</em></span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Как я связал несколько площадок двумя шифрованными транспортами, передал выбор пути FRR и оформил переключение в проверяемую процедуру.</span>
+          <span class="lang lang-en">How I connected several sites over two encrypted transports, delegated path selection to FRR and turned failover into a verifiable operating procedure.</span>
+        </p>
+        <div class="article-meta reveal">
+          <span>Sergey Haeniken</span>
+          <span>WireGuard · IPsec · FRR · BGP · BFD</span>
+        </div>
+      </div>
+    </header>
+
+    <article class="technical-article network-technical-article">
+      <div class="article-language lang lang-ru">
+        <p class="article-lead">Нужно было связать несколько серверов на разных площадках и дать им постоянные внутренние адреса. При отказе одного туннеля связь должна сохраняться без изменения DNS и ручной замены маршрута.</p>
+
+        <p>Ниже показана обезличенная версия решения, которое я внедрил и описал в эксплуатационном ранбуке. Адреса, имена узлов и параметры конкретного контура заменены документационными примерами; устройство сети и порядок переключения сохранены.</p>
+      </div>
+
+      <div class="article-language lang lang-en">
+        <p class="article-lead">Several servers in different locations needed stable internal addresses. If one tunnel failed, connectivity had to continue without a DNS change or a manual route replacement.</p>
+
+        <p>The diagram below is an anonymised version of the design I implemented and documented in an operational runbook. Host names, addresses and environment-specific values use documentation examples; the network design and failover sequence remain unchanged.</p>
+      </div>
+
+      <figure class="network-figure">
+        <div class="network-figure-hud" aria-hidden="true">
+          <span><i></i><span class="lang lang-ru">Демонстрация</span><span class="lang lang-en">Demo</span></span>
+          <b>WIREGUARD ⇄ IPSEC</b>
+        </div>
+        <div class="network-diagram-scroll">
+        <span class="network-scroll-hint"><span class="lang lang-ru">Проведите по схеме</span><span class="lang lang-en">Swipe the diagram</span> →</span>
+        <svg class="network-diagram" data-network-failover viewBox="0 0 1000 650" role="img" aria-label="Схема отказоустойчивой сети с основным WireGuard и резервным IPsec транспортом">
+          <defs>
+            <pattern id="network-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+              <path d="M32 0H0V32" class="network-grid-line"></path>
+            </pattern>
+            <radialGradient id="network-core-gradient" cx="50%" cy="42%" r="62%">
+              <stop offset="0" stop-color="#173a4b"></stop>
+              <stop offset=".62" stop-color="#0a1b2b"></stop>
+              <stop offset="1" stop-color="#050d17"></stop>
+            </radialGradient>
+            <linearGradient id="network-node-gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#16394b"></stop>
+              <stop offset=".48" stop-color="#0a1d2c"></stop>
+              <stop offset="1" stop-color="#050b14"></stop>
+            </linearGradient>
+            <linearGradient id="network-rack-gradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#173447"></stop>
+              <stop offset="1" stop-color="#08131f"></stop>
+            </linearGradient>
+            <filter id="network-glow" x="-100%" y="-100%" width="300%" height="300%">
+              <feGaussianBlur stdDeviation="5" result="blur"></feGaussianBlur>
+              <feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
+            </filter>
+          </defs>
+
+          <rect width="1000" height="650" rx="24" class="network-canvas"></rect>
+          <rect width="1000" height="650" rx="24" fill="url(#network-grid)"></rect>
+          <rect x="-130" y="0" width="110" height="650" class="network-scan"></rect>
+
+          <g class="network-orbits" aria-hidden="true">
+            <ellipse cx="500" cy="325" rx="430" ry="260"></ellipse>
+            <ellipse cx="500" cy="325" rx="315" ry="190"></ellipse>
+            <circle cx="500" cy="325" r="126"></circle>
+          </g>
+
+          <g class="network-links network-links-primary" aria-hidden="true">
+            <path id="wg-ab" data-network-primary="ab" d="M190 180 C360 70 640 70 810 180"></path>
+            <path id="wg-ac" data-network-primary="ac" d="M160 220 C85 320 90 415 190 470"></path>
+            <path id="wg-bd" data-network-primary="bd" d="M840 220 C915 320 910 415 810 470"></path>
+            <path id="wg-cd" data-network-primary="cd" d="M190 470 C360 580 640 580 810 470"></path>
+            <path id="wg-ad" data-network-primary="ad" d="M190 190 C370 240 630 410 810 460"></path>
+            <path id="wg-bc" data-network-primary="bc" d="M810 190 C630 240 370 410 190 460"></path>
+          </g>
+
+          <g class="network-link-codes" aria-hidden="true">
+            <path d="M160 220 C85 320 90 415 190 470"></path>
+            <path d="M840 220 C915 320 910 415 810 470"></path>
+            <path d="M190 470 C360 580 640 580 810 470"></path>
+            <path d="M190 190 C370 240 630 410 810 460"></path>
+            <path d="M810 190 C630 240 370 410 190 460"></path>
+          </g>
+
+          <g class="network-links network-links-backup" aria-hidden="true">
+            <path id="ipsec-ab" data-network-backup="ab" d="M190 206 C360 122 640 122 810 206"></path>
+            <path id="ipsec-ac" data-network-backup="ac" d="M188 224 C125 320 130 404 202 438"></path>
+            <path id="ipsec-bd" data-network-backup="bd" d="M812 224 C875 320 870 404 798 438"></path>
+            <path id="ipsec-cd" data-network-backup="cd" d="M190 444 C360 528 640 528 810 444"></path>
+            <path id="ipsec-ad" data-network-backup="ad" d="M210 214 C400 275 600 375 790 436"></path>
+            <path id="ipsec-bc" data-network-backup="bc" d="M790 214 C600 275 400 375 210 436"></path>
+          </g>
+
+          <g class="network-failover-channels" aria-hidden="true">
+            <path class="network-failure-overlay" data-network-failure="ab" d="M190 180 C360 70 640 70 810 180"></path><path class="network-backup-active" data-network-backup-active="ab" d="M190 206 C360 122 640 122 810 206"></path><path class="network-recovery-wave" data-network-recovery="ab" d="M190 180 C360 70 640 70 810 180"></path>
+            <path class="network-failure-overlay" data-network-failure="ac" d="M160 220 C85 320 90 415 190 470"></path><path class="network-backup-active" data-network-backup-active="ac" d="M188 224 C125 320 130 404 202 438"></path><path class="network-recovery-wave" data-network-recovery="ac" d="M160 220 C85 320 90 415 190 470"></path>
+            <path class="network-failure-overlay" data-network-failure="bd" d="M840 220 C915 320 910 415 810 470"></path><path class="network-backup-active" data-network-backup-active="bd" d="M812 224 C875 320 870 404 798 438"></path><path class="network-recovery-wave" data-network-recovery="bd" d="M840 220 C915 320 910 415 810 470"></path>
+            <path class="network-failure-overlay" data-network-failure="cd" d="M190 470 C360 580 640 580 810 470"></path><path class="network-backup-active" data-network-backup-active="cd" d="M190 444 C360 528 640 528 810 444"></path><path class="network-recovery-wave" data-network-recovery="cd" d="M190 470 C360 580 640 580 810 470"></path>
+            <path class="network-failure-overlay" data-network-failure="ad" d="M190 190 C370 240 630 410 810 460"></path><path class="network-backup-active" data-network-backup-active="ad" d="M210 214 C400 275 600 375 790 436"></path><path class="network-recovery-wave" data-network-recovery="ad" d="M190 190 C370 240 630 410 810 460"></path>
+            <path class="network-failure-overlay" data-network-failure="bc" d="M810 190 C630 240 370 410 190 460"></path><path class="network-backup-active" data-network-backup-active="bc" d="M790 214 C600 275 400 375 210 436"></path><path class="network-recovery-wave" data-network-recovery="bc" d="M810 190 C630 240 370 410 190 460"></path>
+          </g>
+
+          <g class="network-core-links" aria-hidden="true">
+            <path d="M218 188L407 286"></path><path d="M782 188L593 286"></path>
+            <path d="M218 462L407 364"></path><path d="M782 462L593 364"></path>
+          </g>
+
+          <g class="network-packets" aria-hidden="true">
+            <g data-network-primary-flow="ab"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="3.8s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M190 180 C360 70 640 70 810 180"></animateMotion><animate attributeName="opacity" dur="3.8s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="ab" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="4.7s" begin="-2.2s" repeatCount="indefinite" rotate="auto" path="M810 180 C640 70 360 70 190 180"></animateMotion></rect>
+            <g data-network-primary-flow="ac"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="4.6s" begin="-1.2s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M160 220 C85 320 90 415 190 470"></animateMotion><animate attributeName="opacity" dur="4.6s" begin="-1.2s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="ac" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="5.2s" begin="-3.1s" repeatCount="indefinite" rotate="auto" path="M190 470 C90 415 85 320 160 220"></animateMotion></rect>
+            <g data-network-primary-flow="bd"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="4.9s" begin="-2.4s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M840 220 C915 320 910 415 810 470"></animateMotion><animate attributeName="opacity" dur="4.9s" begin="-2.4s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="bd" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="5.5s" begin="-1.8s" repeatCount="indefinite" rotate="auto" path="M810 470 C910 415 915 320 840 220"></animateMotion></rect>
+            <g data-network-primary-flow="cd"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="5.1s" begin="-2.1s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M190 470 C360 580 640 580 810 470"></animateMotion><animate attributeName="opacity" dur="5.1s" begin="-2.1s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="cd" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="5.8s" begin="-3.6s" repeatCount="indefinite" rotate="auto" path="M810 470 C640 580 360 580 190 470"></animateMotion></rect>
+            <g data-network-primary-flow="ad"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="4.7s" begin="-1.3s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M190 190 C370 240 630 410 810 460"></animateMotion><animate attributeName="opacity" dur="4.7s" begin="-1.3s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="ad" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="5.4s" begin="-2.7s" repeatCount="indefinite" rotate="auto" path="M810 460 C630 410 370 240 190 190"></animateMotion></rect>
+            <g data-network-primary-flow="bc"><circle r="4" class="network-packet network-packet-primary network-packet-ping"><animateMotion dur="5.4s" begin="-3.4s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M810 190 C630 240 370 410 190 460"></animateMotion><animate attributeName="opacity" dur="5.4s" begin="-3.4s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-primary-flow="bc" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-primary network-packet-data"><animateMotion dur="5.9s" begin="-1.9s" repeatCount="indefinite" rotate="auto" path="M190 460 C370 410 630 240 810 190"></animateMotion></rect>
+
+            <g data-network-backup-flow="ab"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="2.8s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M190 206 C360 122 640 122 810 206"></animateMotion><animate attributeName="opacity" dur="2.8s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="ab" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="3.4s" begin="-1.7s" repeatCount="indefinite" rotate="auto" path="M810 206 C640 122 360 122 190 206"></animateMotion></rect>
+            <g data-network-backup-flow="ac"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="3.3s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M188 224 C125 320 130 404 202 438"></animateMotion><animate attributeName="opacity" dur="3.3s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="ac" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="3.8s" begin="-1.9s" repeatCount="indefinite" rotate="auto" path="M202 438 C130 404 125 320 188 224"></animateMotion></rect>
+            <g data-network-backup-flow="bd"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="3.5s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M812 224 C875 320 870 404 798 438"></animateMotion><animate attributeName="opacity" dur="3.5s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="bd" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="4s" begin="-2s" repeatCount="indefinite" rotate="auto" path="M798 438 C870 404 875 320 812 224"></animateMotion></rect>
+            <g data-network-backup-flow="cd"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="3.7s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M190 444 C360 528 640 528 810 444"></animateMotion><animate attributeName="opacity" dur="3.7s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="cd" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="4.3s" begin="-2.1s" repeatCount="indefinite" rotate="auto" path="M810 444 C640 528 360 528 190 444"></animateMotion></rect>
+            <g data-network-backup-flow="ad"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="3.4s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M210 214 C400 275 600 375 790 436"></animateMotion><animate attributeName="opacity" dur="3.4s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="ad" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="4.1s" begin="-2.4s" repeatCount="indefinite" rotate="auto" path="M790 436 C600 375 400 275 210 214"></animateMotion></rect>
+            <g data-network-backup-flow="bc"><circle r="4" class="network-packet network-packet-backup network-packet-ping"><animateMotion dur="3.6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;1;1" keyTimes="0;.333;1" path="M790 214 C600 275 400 375 210 436"></animateMotion><animate attributeName="opacity" dur="3.6s" repeatCount="indefinite" values="0;1;1;0;0" keyTimes="0;.02;.30;.333;1"></animate></circle></g><rect data-network-backup-flow="bc" x="-11" y="-3.5" width="22" height="7" rx="2" class="network-packet network-packet-backup network-packet-data"><animateMotion dur="4.2s" begin="-2.2s" repeatCount="indefinite" rotate="auto" path="M210 436 C400 375 600 275 790 214"></animateMotion></rect>
+          </g>
+
+          <g class="network-alert-channel" aria-hidden="true">
+            <path d="M430 292 C365 220 330 125 290 70"></path>
+            <rect x="-7" y="-2" width="14" height="4" rx="2" class="network-alert-packet"><animateMotion dur="1.35s" repeatCount="indefinite" rotate="auto" path="M430 292 C365 220 330 125 290 70"></animateMotion></rect>
+          </g>
+
+          <g class="network-failure-marker" data-network-marker="ab" transform="translate(500 106)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+          <g class="network-failure-marker" data-network-marker="ac" transform="translate(118 337)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+          <g class="network-failure-marker" data-network-marker="bd" transform="translate(882 337)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+          <g class="network-failure-marker" data-network-marker="cd" transform="translate(500 544)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+          <g class="network-failure-marker" data-network-marker="ad" transform="translate(340 250)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+          <g class="network-failure-marker" data-network-marker="bc" transform="translate(660 250)" aria-hidden="true"><circle r="24"></circle><path d="M-9 -11L0 -2 8 -14 4 2 14 9 1 8-5 19-5 6-17 1-5-1Z"></path></g>
+
+          <g class="network-core" transform="translate(500 325)">
+            <circle r="116" class="network-core-ring network-core-ring-outer"></circle>
+            <circle r="94" class="network-core-ring network-core-ring-inner"></circle>
+            <circle r="74" fill="url(#network-core-gradient)" class="network-core-body"></circle>
+            <path d="M-25 -8L0 -33 25 -8 0 17Z" class="network-core-mark"></path>
+            <circle cy="-8" r="8" class="network-core-eye"></circle>
+            <text y="38" text-anchor="middle" class="network-core-title">FRR</text>
+            <text y="55" text-anchor="middle" class="network-core-subtitle">BGP · BFD</text>
+          </g>
+
+          <g class="network-node" data-network-node="a" transform="translate(160 190)">
+            <circle r="64" class="network-node-halo"></circle>
+            <path d="M-50-38H35L50-23V38H-35L-50 23Z" fill="url(#network-node-gradient)" class="network-node-body"></path>
+            <path d="M-38-25H29L38-16V24H-38Z" fill="url(#network-rack-gradient)" class="network-node-rack"></path>
+            <path d="M-29-15H28M-29-4H28M-29 7H28" class="network-node-slots"></path>
+            <circle cx="23" cy="-15" r="2" class="network-node-led"></circle><circle cx="23" cy="-4" r="2" class="network-node-led"></circle><circle cx="23" cy="7" r="2" class="network-node-led"></circle>
+            <text y="48" text-anchor="middle" class="network-node-name lang lang-ru">УЗЕЛ A</text><text y="48" text-anchor="middle" class="network-node-name lang lang-en">NODE A</text><text y="62" text-anchor="middle" class="network-node-address">192.0.2.10/32</text>
+            <circle cx="43" cy="-32" r="6" class="network-node-status"></circle><circle cx="43" cy="-32" r="7" class="network-node-status-alert"></circle>
+          </g>
+          <g class="network-node" data-network-node="b" transform="translate(840 190)">
+            <circle r="64" class="network-node-halo"></circle>
+            <path d="M-50-38H35L50-23V38H-35L-50 23Z" fill="url(#network-node-gradient)" class="network-node-body"></path>
+            <path d="M-38-25H29L38-16V24H-38Z" fill="url(#network-rack-gradient)" class="network-node-rack"></path>
+            <path d="M-29-15H28M-29-4H28M-29 7H28" class="network-node-slots"></path>
+            <circle cx="23" cy="-15" r="2" class="network-node-led"></circle><circle cx="23" cy="-4" r="2" class="network-node-led"></circle><circle cx="23" cy="7" r="2" class="network-node-led"></circle>
+            <text y="48" text-anchor="middle" class="network-node-name lang lang-ru">УЗЕЛ B</text><text y="48" text-anchor="middle" class="network-node-name lang lang-en">NODE B</text><text y="62" text-anchor="middle" class="network-node-address">192.0.2.20/32</text>
+            <circle cx="43" cy="-32" r="6" class="network-node-status"></circle><circle cx="43" cy="-32" r="7" class="network-node-status-alert"></circle>
+          </g>
+          <g class="network-node" data-network-node="c" transform="translate(160 460)">
+            <circle r="64" class="network-node-halo"></circle>
+            <path d="M-50-38H35L50-23V38H-35L-50 23Z" fill="url(#network-node-gradient)" class="network-node-body"></path>
+            <path d="M-38-25H29L38-16V24H-38Z" fill="url(#network-rack-gradient)" class="network-node-rack"></path>
+            <path d="M-29-15H28M-29-4H28M-29 7H28" class="network-node-slots"></path>
+            <circle cx="23" cy="-15" r="2" class="network-node-led"></circle><circle cx="23" cy="-4" r="2" class="network-node-led"></circle><circle cx="23" cy="7" r="2" class="network-node-led"></circle>
+            <text y="48" text-anchor="middle" class="network-node-name lang lang-ru">УЗЕЛ C</text><text y="48" text-anchor="middle" class="network-node-name lang lang-en">NODE C</text><text y="62" text-anchor="middle" class="network-node-address">192.0.2.30/32</text>
+            <circle cx="43" cy="-32" r="6" class="network-node-status"></circle><circle cx="43" cy="-32" r="7" class="network-node-status-alert"></circle>
+          </g>
+          <g class="network-node" data-network-node="d" transform="translate(840 460)">
+            <circle r="64" class="network-node-halo"></circle>
+            <path d="M-50-38H35L50-23V38H-35L-50 23Z" fill="url(#network-node-gradient)" class="network-node-body"></path>
+            <path d="M-38-25H29L38-16V24H-38Z" fill="url(#network-rack-gradient)" class="network-node-rack"></path>
+            <path d="M-29-15H28M-29-4H28M-29 7H28" class="network-node-slots"></path>
+            <circle cx="23" cy="-15" r="2" class="network-node-led"></circle><circle cx="23" cy="-4" r="2" class="network-node-led"></circle><circle cx="23" cy="7" r="2" class="network-node-led"></circle>
+            <text y="48" text-anchor="middle" class="network-node-name lang lang-ru">УЗЕЛ D</text><text y="48" text-anchor="middle" class="network-node-name lang lang-en">NODE D</text><text y="62" text-anchor="middle" class="network-node-address">192.0.2.40/32</text>
+            <circle cx="43" cy="-32" r="6" class="network-node-status"></circle><circle cx="43" cy="-32" r="7" class="network-node-status-alert"></circle>
+          </g>
+
+          <g class="network-legend" transform="translate(62 574)">
+            <line x1="0" y1="0" x2="48" y2="0" class="network-legend-primary"></line>
+            <text x="62" y="4" class="network-legend-text lang lang-ru">WireGuard · основной · localpref 200</text>
+            <text x="62" y="4" class="network-legend-text lang lang-en">WireGuard · primary · localpref 200</text>
+          </g>
+          <g class="network-legend" transform="translate(548 574)">
+            <line x1="0" y1="0" x2="48" y2="0" class="network-legend-backup"></line>
+            <text x="62" y="4" class="network-legend-text lang lang-ru">IPsec / XFRM · резерв · localpref 100</text>
+            <text x="62" y="4" class="network-legend-text lang lang-en">IPsec / XFRM · backup · localpref 100</text>
+          </g>
+
+          <g class="network-zabbix" transform="translate(42 30)" aria-hidden="true">
+            <rect width="292" height="58" rx="7"></rect>
+            <path d="M17 18H37L17 40H38" class="network-zabbix-mark"></path>
+            <text x="50" y="25" class="network-zabbix-title lang lang-ru">ZABBIX · НАБЛЮДЕНИЕ</text><text x="50" y="25" class="network-zabbix-title lang lang-en">ZABBIX · WATCHING</text>
+            <text x="50" y="42" class="network-zabbix-normal lang lang-ru">АКТИВНЫХ ТРИГГЕРОВ НЕТ</text><text x="50" y="42" class="network-zabbix-normal lang lang-en">NO ACTIVE TRIGGERS</text>
+            <text x="50" y="42" class="network-zabbix-trigger" data-network-trigger-text>TRIGGER · WG A↔B DOWN</text>
+            <text x="50" y="42" class="network-zabbix-resolved lang lang-ru">ТРИГГЕР ЗАКРЫТ</text><text x="50" y="42" class="network-zabbix-resolved lang lang-en">TRIGGER RESOLVED</text>
+          </g>
+
+          <g class="network-telemetry" transform="translate(372 32)" aria-hidden="true">
+            <rect width="256" height="42" rx="6"></rect>
+            <g class="network-telemetry-normal"><circle cx="22" cy="21" r="5"></circle><text x="39" y="25" class="lang lang-ru">BFD ПОДНЯТ · ВЫБРАН WG</text><text x="39" y="25" class="lang lang-en">BFD UP · WG SELECTED</text></g>
+            <g class="network-telemetry-alert"><circle cx="22" cy="21" r="5"></circle><text x="39" y="25" class="lang lang-ru">BFD НЕДОСТУПЕН · ОТЗЫВ</text><text x="39" y="25" class="lang lang-en">BFD DOWN · WITHDRAW</text></g>
+            <g class="network-telemetry-failover"><circle cx="22" cy="21" r="5"></circle><text x="39" y="25" class="lang lang-ru">МАРШРУТ → XFRM / IPSEC</text><text x="39" y="25" class="lang lang-en">ROUTE → XFRM / IPSEC</text></g>
+            <g class="network-telemetry-recovery"><circle cx="22" cy="21" r="5"></circle><text x="39" y="25" class="lang lang-ru">BFD ПОДНЯТ · WG ВОССТАНОВЛЕН</text><text x="39" y="25" class="lang lang-en">BFD UP · WG RESTORED</text></g>
+          </g>
+        </svg>
+        </div>
+        <figcaption>
+          <span class="lang lang-ru">Схема демонстрирует отключение связи WireGuard, взаимодействие с Zabbix, переход на IPsec/XFRM и возврат основных путей. Прикладной адрес принадлежит узлу, поэтому DNS менять не требуется.</span>
+          <span class="lang lang-en">The diagram demonstrates a WireGuard link failure, interaction with Zabbix, the move to IPsec/XFRM and restoration of the primary paths. The service address belongs to the node, so DNS does not change.</span>
+        </figcaption>
+      </figure>
+
+      <div class="article-language lang lang-ru">
+        <h2>Адрес узла отдельно от транспорта</h2>
+
+        <p>Ключевое решение — не считать адрес WireGuard адресом сервера. Каждый узел получил собственный постоянный <code>/32</code> на локальном интерфейсе <code>mesh0</code>. Именно этот адрес публикуется во внутреннем DNS и используется приложениями.</p>
+
+        <p>У WireGuard и IPsec отдельные транзитные сети. WireGuard работает с <code>Table = off</code>, StrongSwan не устанавливает прикладные маршруты самостоятельно. Единственным источником решения о пути становится FRR: к одному удалённому <code>/32</code> он видит два BGP-маршрута.</p>
+
+        <ul class="article-flow network-flow">
+          <li><span>01</span><strong>Адрес узла</strong><small>постоянный /32 на mesh0</small></li>
+          <li><span>02</span><strong>Основной путь</strong><small>полносвязный WireGuard</small></li>
+          <li><span>03</span><strong>Резервный путь</strong><small>IKEv2/IPsec через XFRM</small></li>
+          <li><span>04</span><strong>Выбор пути</strong><small>FRR, BGP и BFD</small></li>
+        </ul>
+
+        <h2>Почему здесь BGP, а не два статических маршрута</h2>
+
+        <p>Статические маршруты просты, пока отказ можно определить состоянием интерфейса. Для туннеля этого недостаточно: интерфейс способен оставаться поднятым, когда удалённый конец или промежуточный путь уже недоступен. BGP даёт явное состояние соседства и политику, а BFD связывает выбор маршрута с доступностью конкретного транспорта.</p>
+
+        <p>Соседство строится дважды для каждой пары: через WireGuard и через XFRM. Маршрут, полученный по WireGuard, получает <code>local-preference 200</code>; резервный IPsec остаётся со значением 100. Входные списки разрешают от соседа только его служебный <code>/32</code>, исходный список — только собственный. Ошибка в конфигурации одного узла не должна превратить небольшой контур в транзитную сеть.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>FRR · обезличенный пример</span><div class="article-code-actions"><b>frr.conf</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="frr">ip prefix-list PEER-A-IN seq 10 permit 192.0.2.20/32
+ip prefix-list SELF-OUT seq 10 permit 192.0.2.10/32
+
+route-map WG-PREFER permit 10
+ set local-preference 200
+
+router bgp 64512
+ bgp router-id 192.0.2.10
+ neighbor 198.51.100.2 remote-as 64513
+ neighbor 198.51.100.2 bfd
+ neighbor 203.0.113.2 remote-as 64513
+ neighbor 203.0.113.2 bfd
+ address-family ipv4 unicast
+  network 192.0.2.10/32
+  neighbor 198.51.100.2 route-map WG-PREFER in
+  neighbor 198.51.100.2 prefix-list PEER-A-IN in
+  neighbor 203.0.113.2 prefix-list PEER-A-IN in
+  neighbor 198.51.100.2 prefix-list SELF-OUT out
+  neighbor 203.0.113.2 prefix-list SELF-OUT out</code></pre>
+        </div>
+
+        <h2>BFD без гонки за миллисекундами</h2>
+
+        <p>В этом контуре не требовалось переключение уровня магистрального маршрутизатора. Важнее было не получить ложный отказ из-за короткой потери пакетов или нагрузки на виртуальную машину. Поэтому контроль выполняется раз в 60 секунд с множителем 3. В зависимости от фазы таймера обнаружение занимает примерно две-три минуты, но остаётся предсказуемым.</p>
+
+        <blockquote>Интервалы BFD выбраны под характер контура: лучше подтвердить устойчивый отказ за две-три минуты, чем менять маршрут после краткой потери пакетов.</blockquote>
+
+        <p>В штатном состоянии оба транспорта подняты заранее. Переключение не ждёт нового согласования IKE: BGP удаляет основной маршрут и сразу использует уже существующий путь через XFRM. После восстановления соседства более высокий <code>local-preference</code> возвращает трафик в WireGuard.</p>
+
+        <h2>Как проверялось реальное переключение</h2>
+
+        <p>Остановка всего WireGuard-интерфейса — плохой тест: она одновременно задевает все связи узла. В ранбуке тест ограничен одной парой. Временные правила блокируют BFD и BGP только от выбранного соседа, после чего скрипт ждёт маршрут через XFRM, проверяет ICMP и прикладной запрос, снимает блокировку и подтверждает возврат основного пути.</p>
+
+        <p>Контролируемая проверка вошла в обслуживание действующего контура, а не осталась разовой приёмкой. Я периодически запускаю её для выбранной пары: фиксирую маршрут до переключения, работу через резерв и возврат в WireGuard, после чего сверяю состояние соседств, туннелей и прикладного запроса.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Контролируемый отказ одной пары</span><div class="article-code-actions"><b>test-failover.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="bash">#!/bin/bash
+set -euo pipefail
+
+peer=198.51.100.2
+target=192.0.2.20
+bfd=(-i wg-mesh -s "$peer" -p udp --dport 3784 -j DROP)
+bgp=(-i wg-mesh -s "$peer" -p tcp --dport 179 -j DROP)
+blocked=0
+
+cleanup() {
+  if test "$blocked" -eq 1; then
+    iptables -D INPUT "${bfd[@]}" 2&gt;/dev/null || true
+    iptables -D INPUT "${bgp[@]}" 2&gt;/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+iptables -I INPUT 1 "${bfd[@]}"
+iptables -I INPUT 1 "${bgp[@]}"
+blocked=1
+
+fallback=0
+for attempt in $(seq 1 12); do
+  route=$(ip route get "$target" | head -n 1)
+  case "$route" in
+    *" dev xfrm"*) fallback=1; break ;;
+  esac
+  sleep 15
+done
+test "$fallback" -eq 1
+
+ping -c 3 -W 2 "$target"
+curl --resolve "service.example:443:$target" \
+  --fail --max-time 10 https://service.example/health
+
+cleanup
+blocked=0
+
+recovered=0
+for attempt in $(seq 1 12); do
+  route=$(ip route get "$target" | head -n 1)
+  case "$route" in
+    *" dev wg-mesh "*) recovered=1; break ;;
+  esac
+  sleep 15
+done
+test "$recovered" -eq 1</code></pre>
+        </div>
+
+        <p><code>trap</code> здесь — только страховка. Ранбук отдельно требует убедиться, что временных правил не осталось, маршрут снова проходит через WireGuard, оба BGP-соседства установлены, BFD поднят, а прикладной запрос проходит в обоих направлениях.</p>
+
+        <h2>Наблюдаемость без лавины одинаковых событий</h2>
+
+        <p>Zabbix получает состояние выбранного транспорта, свежесть рукопожатий WireGuard и наличие IPsec SA. Для каждого удалённого узла формируется один снимок: основной путь, резерв и фактически выбранный маршрут. Зависимые показатели строятся из этого снимка без повторного запуска системных команд.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Сводное состояние маршрута</span><div class="article-code-actions"><b>mesh-status.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="bash">route=$(ip -4 route get "$target" 2&gt;/dev/null | head -n 1 || true)
+
+case "$route" in
+  *" dev wg-mesh "*) transport=1 ;; # основной
+  *" dev xfrm"*)    transport=2 ;; # резервный
+  *)                transport=0 ;; # маршрута нет
+esac
+
+printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
+  "$peer" "$transport" "$wg_available" "$ipsec_available"</code></pre>
+        </div>
+
+        <p>Состояния собираются на всех узлах, но события о сетевой связности создаёт один наблюдатель. Иначе отказ одной машины породил бы зеркальные уведомления со всех остальных. Общая авария также сворачивается в одно событие, а не в набор одинаковых проблем по каждому соседу.</p>
+
+        <h2>Новый узел меняет всю матрицу связей</h2>
+
+        <p>Полносвязная схема удобна на небольшом числе площадок, но у неё есть понятная цена: новый сервер образует по одной паре WireGuard и IPsec с каждым действующим узлом. Поэтому добавление начинается не с копирования готового конфига, а с выделения постоянного адреса <code>/32</code>, транзитного адреса WireGuard, номера автономной системы, публичного и локального адресов для IKE и проверки пересечений на всех серверах.</p>
+
+        <p>Оба закрытых ключа создаются на новом узле. Наружу выходят только открытый ключ WireGuard и публичная часть ключа IPsec. После выпуска узлового сертификата новый сервер сначала подключается ко всем действующим, затем обновлённые открытые конфигурации раскладываются по остальным узлам последовательно. Такой порядок оставляет рабочую сеть наблюдаемой и не превращает одну ошибку в одновременный перезапуск всего контура.</p>
+
+        <ol class="article-steps">
+          <li><strong>Инвентарь.</strong> Зафиксировать идентификатор, имя, постоянный и транзитный адреса, ASN, NAT и конечные точки.</li>
+          <li><strong>Ключи.</strong> Создать закрытые ключи локально; в рабочий каталог передать только открытые части.</li>
+          <li><strong>Генерация.</strong> Получить XFRM-интерфейсы, StrongSwan и FRR для каждого узла и проверить изменения.</li>
+          <li><strong>Развёртывание.</strong> Сначала новый сервер, затем по одному действующему узлу с проверкой между шагами.</li>
+          <li><strong>Завершение.</strong> Обновить фильтры сети, внутренний DNS, мониторинг и полные матрицы тестов.</li>
+        </ol>
+
+        <h2>Что делает генератор конфигурации</h2>
+
+        <p>В генераторе хранится только открытый инвентарь. Для каждой пары он назначает отдельный <code>if_id</code> XFRM и пару транзитных адресов, определяет инициатора IKE с учётом NAT, создаёт два BGP-соседства и ограничивающие списки префиксов. На выходе для каждого узла получаются скрипт создания <code>mesh0</code> и XFRM, unit systemd, конфигурации StrongSwan и FRR, а также два сценария перехода от старой адресации к маршрутам BGP.</p>
+
+        <p>Порядок уже работающих пар считается частью совместимости. Новый узел добавляет пары в конец, поэтому прежние <code>if_id</code> не меняются. После генерации проверяется не только синтаксис Python, но и разница файлов: внезапная перенумерация XFRM была бы поводом остановить развёртывание.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Стабильная нумерация новых пар</span><div class="article-code-actions"><b>generate.py</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="python">from itertools import combinations
+
+node_ids = [1, 2, 3, 4, 5]  # узел 5 добавлен последним
+legacy_ids = [node_id for node_id in node_ids if node_id &lt;= 4]
+
+pair_order = list(combinations(legacy_ids, 2))
+pair_order += [
+    pair for pair in combinations(node_ids, 2)
+    if pair not in pair_order
+]
+
+for pair_no, (left, right) in enumerate(pair_order, start=1):
+    pairs[(left, right)] = {
+        "if_id": 1000 + pair_no,
+        "ifname": f"xfrm{left}{right}",
+    }</code></pre>
+        </div>
+
+        <h2>Выпуск, перевыпуск и отзыв доступа</h2>
+
+        <p>Узловой сертификат выпускается собственной CA по публичной части ключа. В нём проверяются имя узла в subject и SAN, издатель, срок и назначения <code>serverAuth</code>/<code>clientAuth</code>. Закрытый ключ CA остаётся только на выделенном административном узле; на сервер передаются его собственный сертификат и открытый сертификат CA.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Выпуск узлового сертификата · фрагменты</span><div class="article-code-actions"><b>issue-node-cert.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="bash"># На новом узле: закрытый ключ не покидает сервер
+umask 077
+pki --gen --type ecdsa --size 256 &gt; node-key.pem
+pki --pub --type ecdsa --in node-key.pem &gt; node-public.pem
+
+# На узле CA: выпуск по переданной публичной части
+pki --issue --type pub --in node-public.pem \
+  --cacert mesh-ca.pem --cakey mesh-ca-key.pem \
+  --dn "CN=node-e.mesh.example, O=Mesh" \
+  --san node-e.mesh.example \
+  --flag serverAuth --flag clientAuth --lifetime 825 \
+  &gt; node-certificate.pem
+
+pki --print --in node-certificate.pem</code></pre>
+        </div>
+
+        <p>Перевыпуск выполняется как поэтапная замена, а не как перезапись действующего файла. На узле создаются ключ и сертификат с суффиксом <code>.next</code>, текущая пара сохраняется с временной меткой, затем StrongSwan перечитывает реквизиты и соединения. После этого по одной переустанавливаются и проверяются IPsec SA; только успешная полная проверка позволяет убрать резервную копию. Для смены самой CA нужен период перекрывающегося доверия: новый корень сначала получают все узлы, затем меняются узловые сертификаты, и лишь после проверки удаляется старый корень.</p>
+
+        <p>При исключении или компрометации узла доступ прекращается сразу на уровне всех механизмов доверия: удаляются WireGuard peer, соединение StrongSwan, BGP-соседство и его префикс, правила разрешения публичного адреса и запись DNS. Закрытые ключи удаляются только на исключаемом сервере после проверки оставшейся сети.</p>
+
+        <div class="article-note">
+          <strong>Что считать отзывом</strong>
+          <p>Само архивирование старого сертификата не отзывает его. Формальный CRL имеет смысл только тогда, когда он опубликован, доставлен на каждый узел и StrongSwan действительно отклоняет сертификат по этому списку. Текущий ранбук не полагается на доступность CRL или OCSP: немедленный отзыв доступа обеспечивается удалением личности из конфигураций и сетевых списков. Это свойство важно проверять отдельно от плановой ротации.</p>
+        </div>
+
+        <h2>Ранбук как часть реализации</h2>
+
+        <p>После внедрения я оформил отдельный эксплуатационный ранбук. В нём зафиксированы:</p>
+
+        <ul class="article-checklist">
+          <li>описание нормального состояния и ожидаемые числа соседей, туннелей и маршрутов;</li>
+          <li>порядок запуска после перезагрузки и проверка зависимостей systemd;</li>
+          <li>плановое обслуживание WireGuard, IPsec, FRR и внутреннего DNS;</li>
+          <li>контролируемое переключение одной пары с обязательной прикладной проверкой;</li>
+          <li>добавление и исключение узла без перенумерации действующих XFRM-интерфейсов;</li>
+          <li>ротация ключей и сертификатов, диагностика и явный порядок отката;</li>
+          <li>проверка мониторинга через временные правила с гарантированной очисткой.</li>
+        </ul>
+
+        <p>Отдельно описан неприятный класс ошибок запуска: локальные интерфейсы должны появиться до WireGuard, StrongSwan, FRR и Docker, но не образовывать цикл через <code>network-online.target</code>. Без этого IPsec SA может выглядеть установленной, хотя XFRM-интерфейса для передачи трафика нет.</p>
+
+        <div class="article-note">
+          <strong>Результат</strong>
+          <p>Службы обращаются к постоянным именам и адресам. Оба зашифрованных канала подняты заранее, путь выбирает FRR, переключение проверяется на уровне приложения, а порядок восстановления и отката записан в ранбуке.</p>
+        </div>
+
+        <div class="article-sources">
+          <span>Технологии:</span>
+          <a href="https://www.wireguard.com/" target="_blank" rel="noreferrer">WireGuard ↗</a>
+          <a href="https://docs.strongswan.org/" target="_blank" rel="noreferrer">StrongSwan ↗</a>
+          <a href="https://docs.frrouting.org/" target="_blank" rel="noreferrer">FRRouting ↗</a>
+        </div>
+      </div>
+
+      <div class="article-language lang lang-en">
+        <h2>Separating node identity from transport</h2>
+
+        <p>The key design choice was not to treat a WireGuard address as the server address. Every node received a stable <code>/32</code> on a local <code>mesh0</code> interface. That address is published in internal DNS and used by applications.</p>
+
+        <p>WireGuard and IPsec use separate transit networks. WireGuard runs with <code>Table = off</code>, while StrongSwan does not install application routes. FRR is the only component allowed to decide the path and receives two BGP routes to each remote service address.</p>
+
+        <ul class="article-flow network-flow">
+          <li><span>01</span><strong>Node identity</strong><small>stable /32 on mesh0</small></li>
+          <li><span>02</span><strong>Primary path</strong><small>full-mesh WireGuard</small></li>
+          <li><span>03</span><strong>Backup path</strong><small>IKEv2/IPsec over XFRM</small></li>
+          <li><span>04</span><strong>Path selection</strong><small>FRR, BGP and BFD</small></li>
+        </ul>
+
+        <h2>Why BGP instead of two static routes</h2>
+
+        <p>Static routes are simple when failure can be inferred from interface state. A tunnel may remain up while its remote endpoint or the path between sites is no longer usable. BGP provides explicit neighbour state and routing policy; BFD ties that state to the health of each transport.</p>
+
+        <p>Each node pair establishes two adjacencies, one over WireGuard and one over XFRM. Routes learned over WireGuard receive <code>local-preference 200</code>; the IPsec route keeps the default 100. Inbound prefix lists accept only the peer's stable <code>/32</code>, while the outbound list permits only the local one. A configuration mistake on one node must not turn a small private network into an unintended transit domain.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>FRR · anonymised example</span><div class="article-code-actions"><b>frr.conf</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="frr">ip prefix-list PEER-A-IN seq 10 permit 192.0.2.20/32
+ip prefix-list SELF-OUT seq 10 permit 192.0.2.10/32
+
+route-map WG-PREFER permit 10
+ set local-preference 200
+
+router bgp 64512
+ bgp router-id 192.0.2.10
+ neighbor 198.51.100.2 remote-as 64513
+ neighbor 198.51.100.2 bfd
+ neighbor 203.0.113.2 remote-as 64513
+ neighbor 203.0.113.2 bfd
+ address-family ipv4 unicast
+  network 192.0.2.10/32
+  neighbor 198.51.100.2 route-map WG-PREFER in
+  neighbor 198.51.100.2 prefix-list PEER-A-IN in
+  neighbor 203.0.113.2 prefix-list PEER-A-IN in
+  neighbor 198.51.100.2 prefix-list SELF-OUT out
+  neighbor 203.0.113.2 prefix-list SELF-OUT out</code></pre>
+        </div>
+
+        <h2>BFD without chasing milliseconds</h2>
+
+        <p>This network did not require carrier-router failover times. Avoiding a false failure caused by a short packet loss or a busy virtual machine mattered more. BFD therefore probes every 60 seconds with a multiplier of 3. Depending on the timer phase, detection takes roughly two to three minutes, but remains predictable.</p>
+
+        <blockquote>The BFD intervals match this network: confirming a sustained failure in two to three minutes is preferable to changing routes after a brief packet loss.</blockquote>
+
+        <p>Both transports are established in advance. Failover does not wait for a new IKE exchange: BGP removes the primary route and immediately uses the existing XFRM path. Once the adjacency recovers, the higher local preference returns traffic to WireGuard.</p>
+
+        <h2>Testing a real failover</h2>
+
+        <p>Stopping the whole WireGuard interface is a poor test because it affects every peer at once. The runbook limits the test to a single pair. Temporary rules block only BFD and BGP from the chosen neighbour; the script then waits for the XFRM route, checks ICMP and an application request, removes the rules and confirms recovery of the primary path.</p>
+
+        <p>The controlled test became part of maintaining the live network rather than a one-off acceptance check. I run it periodically for a selected peer pair, recording the route before failover, operation over the backup path and the return to WireGuard, then verifying adjacencies, tunnels and the application request.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Controlled failure of one pair</span><div class="article-code-actions"><b>test-failover.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="bash">#!/bin/bash
+set -euo pipefail
+
+peer=198.51.100.2
+target=192.0.2.20
+bfd=(-i wg-mesh -s "$peer" -p udp --dport 3784 -j DROP)
+bgp=(-i wg-mesh -s "$peer" -p tcp --dport 179 -j DROP)
+blocked=0
+
+cleanup() {
+  if test "$blocked" -eq 1; then
+    iptables -D INPUT "${bfd[@]}" 2&gt;/dev/null || true
+    iptables -D INPUT "${bgp[@]}" 2&gt;/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+iptables -I INPUT 1 "${bfd[@]}"
+iptables -I INPUT 1 "${bgp[@]}"
+blocked=1
+
+fallback=0
+for attempt in $(seq 1 12); do
+  route=$(ip route get "$target" | head -n 1)
+  case "$route" in
+    *" dev xfrm"*) fallback=1; break ;;
+  esac
+  sleep 15
+done
+test "$fallback" -eq 1
+
+ping -c 3 -W 2 "$target"
+curl --resolve "service.example:443:$target" \
+  --fail --max-time 10 https://service.example/health
+
+cleanup
+blocked=0
+
+recovered=0
+for attempt in $(seq 1 12); do
+  route=$(ip route get "$target" | head -n 1)
+  case "$route" in
+    *" dev wg-mesh "*) recovered=1; break ;;
+  esac
+  sleep 15
+done
+test "$recovered" -eq 1</code></pre>
+        </div>
+
+        <p>The <code>trap</code> is only a safety net. The runbook separately requires checking that no temporary rules remain, the route has returned to WireGuard, both BGP adjacencies are established, BFD is up and the application path works in both directions.</p>
+
+        <h2>Observability without an alert storm</h2>
+
+        <p>Zabbix receives the selected transport, WireGuard handshake freshness and the presence of IPsec security associations. One snapshot per remote node records the primary transport, backup transport and actual route. Dependent metrics are extracted from that snapshot without repeatedly executing system commands.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Compact route state</span><div class="article-code-actions"><b>mesh-status.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="bash">route=$(ip -4 route get "$target" 2&gt;/dev/null | head -n 1 || true)
+
+case "$route" in
+  *" dev wg-mesh "*) transport=1 ;; # primary
+  *" dev xfrm"*)    transport=2 ;; # backup
+  *)                transport=0 ;; # no route
+esac
+
+printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
+  "$peer" "$transport" "$wg_available" "$ipsec_available"</code></pre>
+        </div>
+
+        <p>Every node collects state, but a single observer creates connectivity incidents. Otherwise one failed server would produce mirror alerts from every remaining node. A network-wide failure is also collapsed into one event rather than one problem per neighbour.</p>
+
+        <h2>A new node changes the whole link matrix</h2>
+
+        <p>A full mesh is straightforward at a small scale, but its cost is explicit: every new server creates one WireGuard and one IPsec pair with every existing node. Onboarding therefore starts by allocating a stable <code>/32</code>, a WireGuard transit address, an autonomous-system number, public and local IKE endpoints, and checking every server for address conflicts.</p>
+
+        <p>Both private keys are created on the new node. Only the WireGuard public key and the public part of the IPsec key leave it. Once the host certificate has been issued, the new node is connected to every existing peer first; updated public configuration is then applied to the remaining nodes one at a time. This keeps the live network observable and prevents one mistake from becoming a simultaneous restart of the whole mesh.</p>
+
+        <ol class="article-steps">
+          <li><strong>Inventory.</strong> Record the ID, name, stable and transit addresses, ASN, NAT state and endpoints.</li>
+          <li><strong>Keys.</strong> Generate private keys locally and move only public material into the operating directory.</li>
+          <li><strong>Generation.</strong> Build XFRM, StrongSwan and FRR configuration for every node and review the diff.</li>
+          <li><strong>Deployment.</strong> Configure the new server first, then update one existing node at a time with checks between steps.</li>
+          <li><strong>Closure.</strong> Update firewall policy, internal DNS, monitoring and the complete test matrices.</li>
+        </ol>
+
+        <h2>What the configuration generator does</h2>
+
+        <p>The generator contains public inventory only. For every node pair it allocates a dedicated XFRM <code>if_id</code> and transit pair, chooses the IKE initiator with NAT in mind, creates both BGP adjacencies and emits restrictive prefix lists. Each host receives a <code>mesh0</code>/XFRM setup script, a systemd unit, StrongSwan and FRR configuration, plus two migration helpers for moving the stable address to BGP-controlled routing.</p>
+
+        <p>The order of existing pairs is treated as a compatibility contract. Pairs for a new node are appended, so existing XFRM IDs do not change. Validation includes both Python syntax and a review of the generated diff: an unexpected renumbering is a reason to stop the rollout.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Stable numbering for new pairs</span><div class="article-code-actions"><b>generate.py</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="python">from itertools import combinations
+
+node_ids = [1, 2, 3, 4, 5]  # node 5 was appended
+legacy_ids = [node_id for node_id in node_ids if node_id &lt;= 4]
+
+pair_order = list(combinations(legacy_ids, 2))
+pair_order += [
+    pair for pair in combinations(node_ids, 2)
+    if pair not in pair_order
+]
+
+for pair_no, (left, right) in enumerate(pair_order, start=1):
+    pairs[(left, right)] = {
+        "if_id": 1000 + pair_no,
+        "ifname": f"xfrm{left}{right}",
+    }</code></pre>
+        </div>
+
+        <h2>Issuance, renewal and access revocation</h2>
+
+        <p>A host certificate is issued by the private CA from the public part of the node key. Its subject and SAN, issuer, lifetime and <code>serverAuth</code>/<code>clientAuth</code> usages are checked before deployment. The CA private key remains on the designated administrative node; only the host certificate and public CA certificate are delivered to the server.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Host certificate issuance · excerpts</span><div class="article-code-actions"><b>issue-node-cert.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="bash"># On the new node: the private key never leaves the server
+umask 077
+pki --gen --type ecdsa --size 256 &gt; node-key.pem
+pki --pub --type ecdsa --in node-key.pem &gt; node-public.pem
+
+# On the CA node: issue from the transferred public key
+pki --issue --type pub --in node-public.pem \
+  --cacert mesh-ca.pem --cakey mesh-ca-key.pem \
+  --dn "CN=node-e.mesh.example, O=Mesh" \
+  --san node-e.mesh.example \
+  --flag serverAuth --flag clientAuth --lifetime 825 \
+  &gt; node-certificate.pem
+
+pki --print --in node-certificate.pem</code></pre>
+        </div>
+
+        <p>Renewal is staged rather than overwriting the active files. The node creates a <code>.next</code> key and certificate, saves timestamped copies of the current pair, and asks StrongSwan to reload credentials and connections. IPsec SAs are then re-established and checked one at a time. A CA rotation needs an overlap period: every node receives the new root first, host certificates follow, and the old root is removed only after the full mesh has been verified.</p>
+
+        <p>When a node is removed or compromised, access is denied across every trust mechanism: its WireGuard peer, StrongSwan connection, BGP neighbour and prefix, public-address allowlist rules and DNS record are removed. Private keys are destroyed only on the removed host after the remaining network is healthy.</p>
+
+        <div class="article-note">
+          <strong>What counts as revocation</strong>
+          <p>Archiving an old certificate does not revoke it. A formal CRL matters only after it is published, distributed to every node and enforced by StrongSwan. The current runbook does not depend on CRL or OCSP availability: immediate access revocation is achieved by removing the identity from configuration and network allowlists. That property is tested separately from routine certificate rotation.</p>
+        </div>
+
+        <h2>The runbook was part of the implementation</h2>
+
+        <p>After deployment I wrote a separate operational runbook. It covers:</p>
+
+        <ul class="article-checklist">
+          <li>the expected healthy state and counts of neighbours, tunnels and routes;</li>
+          <li>boot ordering and verification of systemd dependencies;</li>
+          <li>planned maintenance for WireGuard, IPsec, FRR and internal DNS;</li>
+          <li>a controlled single-pair failover with a mandatory application check;</li>
+          <li>adding and removing nodes without renumbering existing XFRM interfaces;</li>
+          <li>key and certificate rotation, diagnostics and an explicit rollback order;</li>
+          <li>monitoring tests built from temporary firewall rules with guaranteed cleanup.</li>
+        </ul>
+
+        <p>A particularly important boot failure mode is documented separately. Local stable and XFRM interfaces must exist before WireGuard, StrongSwan, FRR and Docker, but their units must not create an ordering cycle through <code>network-online.target</code>. Otherwise an IPsec SA may look established while there is no XFRM interface capable of carrying traffic.</p>
+
+        <div class="article-note">
+          <strong>Result</strong>
+          <p>Services use stable names and addresses. Both encrypted paths are established in advance, FRR selects the route, failover is verified at application level, and the recovery and rollback procedure is recorded in the runbook.</p>
+        </div>
+
+        <div class="article-sources">
+          <span>Technology:</span>
+          <a href="https://www.wireguard.com/" target="_blank" rel="noreferrer">WireGuard ↗</a>
+          <a href="https://docs.strongswan.org/" target="_blank" rel="noreferrer">StrongSwan ↗</a>
+          <a href="https://docs.frrouting.org/" target="_blank" rel="noreferrer">FRRouting ↗</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К другим<br>публикациям.</span><span class="lang lang-en">Read more<br>technical notes.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/articles/">Все публикации <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/articles/">All publications <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург · удалённо</span><span class="lang lang-en">Saint Petersburg · remote</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i><i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i><i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i><i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i><i class="energia-plume energia-plume-outer"></i><i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260728zi" defer></script>
+</body>
+</html>

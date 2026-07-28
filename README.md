@@ -18,6 +18,7 @@
 npx terser script.js --compress passes=2 --mangle --format comments=false -o script.min.js
 npx terser lab/lab.js --compress passes=2 --mangle --format comments=false -o lab/lab.min.js
 npx clean-css-cli -O2 -o styles.min.css styles.css
+npx clean-css-cli -O2 -o articles.min.css articles.css
 npx clean-css-cli -O2 -o rocket.min.css rocket.css
 npx clean-css-cli -O2 -o lab/lab.min.css lab/lab.css
 ```
@@ -28,7 +29,7 @@ npx clean-css-cli -O2 -o lab/lab.min.css lab/lab.css
 node --check script.js
 node --check lab/lab.js
 npx @biomejs/biome lint script.js lab/lab.js
-npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html errors/*.html
+npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html articles/network-ha/index.html articles/rabbithole-vpn/index.html errors/*.html
 
 cd leaderboard-api
 go test -race ./...
@@ -37,7 +38,7 @@ go run honnef.co/go/tools/cmd/staticcheck@latest ./...
 go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 ```
 
-Производственные данные таблицы игроков и сертификаты TLS в репозиторий не входят.
+Производственные данные таблицы игроков в репозиторий не входят.
 
 Файловые журналы Nginx ротируются правилом
 `deploy/alice-bg-haeniken.logrotate`: ежедневно или при достижении 25 МБ,

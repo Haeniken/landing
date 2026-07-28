@@ -5,43 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111f">
   <meta name="robots" content="index, follow, max-image-preview:large">
-  <meta name="description" content="Как «Астросферум» превращает открытые данные DWD ICON в почасовой прогноз условий для астрономических наблюдений.">
+  <meta name="description" content="Архитектура «Астросферума»: атомарное обновление DWD ICON, расчёт облаков и турбулентности, анализ «Горизонт» и почасовые графики для наблюдений.">
   <meta name="author" content="Sergey Haeniken">
   <link rel="canonical" href="https://haeniken.com/articles/astrosferum/">
   <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/astrosferum/">
   <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/astrosferum/">
   <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/astrosferum/">
-  <meta property="og:title" content="От полей ICON к прогнозу для телескопа — Астросферум">
-  <meta property="og:description" content="Коротко о выборе погодной модели, расчёте облачной преграды и состояния атмосферы, воспроизводимости и границах точности.">
+  <meta property="og:title" content="Прогноз для астронома: модели и расчёты «Астросферума»">
+  <meta property="og:description" content="Архитектура службы, атомарное обновление ICON, расчёт облаков и турбулентности, анализ «Горизонт», воспроизводимость и границы точности.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://haeniken.com/articles/astrosferum/">
   <meta property="og:site_name" content="Sergey Haeniken">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:locale:alternate" content="en_US">
-  <meta property="og:image" content="https://haeniken.com/assets/night-sky.png">
-  <meta property="og:image:secure_url" content="https://haeniken.com/assets/night-sky.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1051">
-  <meta property="og:image:height" content="793">
-  <meta property="og:image:alt" content="Ночное небо и наблюдение в телескоп">
+  <meta property="og:image" content="https://haeniken.com/assets/social/astrosferum-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/astrosferum-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Астросферум — прогноз для астронома">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="От полей ICON к прогнозу для телескопа">
-  <meta name="twitter:description" content="Как устроена расчётная цепочка «Астросферума» и где заканчиваются возможности модели.">
-  <meta name="twitter:image" content="https://haeniken.com/assets/night-sky.png">
-  <meta name="twitter:image:alt" content="Ночное небо и наблюдение в телескоп">
-  <title>От полей ICON к прогнозу для телескопа — Астросферум</title>
+  <meta name="twitter:title" content="Прогноз для астронома: модели и расчёты «Астросферума»">
+  <meta name="twitter:description" content="Как устроены расчётная цепочка «Астросферума», отдельный анализ «Горизонт» и защита от неполных модельных циклов.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/astrosferum-preview.jpg">
+  <meta name="twitter:image:alt" content="Астросферум — прогноз для астронома">
+  <title>Прогноз для астронома: модели и расчёты «Астросферума»</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.min.css?v=20260728ah">
+  <link rel="stylesheet" href="/articles.min.css?v=20260728b">
   <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": "От полей ICON к прогнозу для телескопа",
+    "headline": "Прогноз для астронома: модели и расчёты «Астросферума»",
     "description": "Как «Астросферум» превращает открытые данные DWD ICON в почасовой прогноз условий для астрономических наблюдений.",
     "inLanguage": "ru",
     "datePublished": "2026-07-27",
-    "dateModified": "2026-07-27",
+    "dateModified": "2026-07-28",
     "mainEntityOfPage": "https://haeniken.com/articles/astrosferum/",
     "image": "https://haeniken.com/assets/night-sky.png",
     "keywords": ["Астросферум", "DWD ICON", "GRIB2", "астрономические наблюдения", "оптическая турбулентность", "облачность"],
@@ -98,7 +98,7 @@
   </header>
 
   <main id="article">
-    <header class="article-hero">
+    <header class="article-hero astrosferum-article-hero">
       <div class="article-hero-inner">
         <p class="eyebrow reveal">
           <span class="status-light"></span>
@@ -106,8 +106,8 @@
           <span class="lang lang-en">Technical note · Astrosferum</span>
         </p>
         <h1 class="reveal">
-          <span class="lang lang-ru">От полей ICON<br>к прогнозу для <em>телескопа.</em></span>
-          <span class="lang lang-en">From ICON fields<br>to a forecast for a <em>telescope.</em></span>
+          <span class="lang lang-ru">Прогноз для астронома:<br>модели и расчёты <em>«Астросферума».</em></span>
+          <span class="lang lang-en">Forecast for astronomers:<br>models and calculations in <em>Astrosferum.</em></span>
         </h1>
         <p class="article-deck reveal">
           <span class="lang lang-ru">Как численный прогноз погоды превращается в почасовую оценку облаков, состояния атмосферы и пригодности ночи для наблюдений.</span>
@@ -121,18 +121,29 @@
       </div>
     </header>
 
-    <article class="technical-article">
-      <div class="article-language lang lang-ru">
+    <article class="technical-article astrosferum-technical-article">
+      <div class="article-language astro-article-intro lang lang-ru">
         <p class="article-lead">В обычном прогнозе погоды часто хватает одной строки: облачность, осадки, ветер у земли. Для телескопа этого мало. Тонкие верхние облака и плотная облачность у горизонта мешают по-разному, а спокойный воздух рядом с наблюдателем ничего не говорит о сильном потоке на высоте десяти километров.</p>
+
+        <figure class="astro-intro-photo">
+          <picture>
+            <source type="image/webp" srcset="/assets/astrosferum/astronomer-at-telescope-640.webp 640w, /assets/astrosferum/astronomer-at-telescope-960.webp 960w, /assets/astrosferum/astronomer-at-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1020px) calc(100vw - 10vw), 920px">
+            <img src="/assets/astrosferum/astronomer-at-telescope-960.webp" alt="Астроном с телескопом на наблюдательной площадке" width="1448" height="1086" loading="lazy" decoding="async">
+          </picture>
+        </figure>
 
         <p>Я начал «Астросферум» именно с этой проблемы. Хотелось не угадывать качество ночи по одному признаку, а сохранить всю цепочку причин: от исходного цикла погодной модели до графика, на котором видно, что именно ограничивает наблюдение в конкретный час.</p>
 
-        <ul class="article-flow" aria-label="Цепочка расчёта">
+        <ul class="article-flow">
           <li><span>01</span><strong>Модель</strong><small>ICON-EU или ICON Global</small></li>
           <li><span>02</span><strong>Поля</strong><small>GRIB2, уровни атмосферы</small></li>
           <li><span>03</span><strong>Расчёт</strong><small>облака, ветер, турбулентность</small></li>
           <li><span>04</span><strong>Результат</strong><small>почасовые графики</small></li>
         </ul>
+
+      </div>
+
+      <div class="article-language astro-article-body lang lang-ru">
 
         <h2>Сначала — подходящая модель</h2>
 
@@ -140,25 +151,83 @@
 
         <p>Новый цикл становится рабочим только после проверки полноты. Если загрузка оборвалась, предыдущий завершённый цикл остаётся на месте. Это простое правило важнее попытки любой ценой показать самые свежие данные.</p>
 
+        <h2>Один процесс, несколько независимых контуров</h2>
+
+        <p>Рабочая служба — один исполняемый файл на Go и один основной контейнер. Внутри него живут планировщик обновления моделей, общий обработчик прогноза, расчёты, отрисовка и два независимых опросчика Telegram и VK. Адаптеры платформ не знают друг о друге: временный сбой одного API не останавливает получение моделей и вторую платформу.</p>
+
+        <p>Это не попытка собрать монолит любой ценой. Границы сохранены в коде: адаптеры отвечают за доставку, слой приложения — за команды, очередь и кэш, пакеты модели — за получение GRIB2, расчётные пакеты — за физику, а отрисовка получает уже готовые ряды и не обращается к сети. Для одного экземпляра такой разрез проще отдельного брокера, Redis и службы построения изображений.</p>
+
+        <h2>Новый цикл публикуется целиком</h2>
+
+        <p>Планировщик проверяет DWD при старте и затем раз в 15 минут. Файлы нового цикла сначала попадают в отдельный каталог <code>incoming</code>: загрузка идёт во временные имена, после чего проверяются размер, поля, уровни, сроки, чтение ecCodes и SHA-256. Только полностью собранный набор переносится в <code>runs</code>, а ссылка <code>current</code> меняется одной атомарной операцией.</p>
+
+        <p>Пока идёт загрузка, запросы продолжают читать предыдущий полный цикл. Неполные данные не могут случайно стать рабочими. Хранятся два опубликованных цикла; временные каталоги, старые точечные кэши и готовые изображения очищаются по ограниченным правилам. Синхронизация не начинается, если на диске не осталось заданного запаса.</p>
+
         <h2>Что извлекается из GRIB2</h2>
 
         <p>Для заданных координат выбирается ближайший узел сетки. Из приземных полей берутся температура, влажность, осадки, видимость и ветер. Из слоёв атмосферы — давление, температура, составляющие ветра, облачная вода и лёд, высота слоёв и модельная энергия турбулентности.</p>
 
         <p>Эти данные не складываются в одну непрозрачную формулу. Облачная преграда, туман, осадки, ветер и оптическая турбулентность рассчитываются отдельно. Поэтому плохой час можно объяснить: например, плотными нижними облаками, сильным сдвигом ветра на высоте или осадками, которые сразу запрещают практическое наблюдение.</p>
 
+        <h2>Запрос пользователя ничего не скачивает</h2>
+
+        <p>Координаты проходят проверку, для них определяется часовой пояс, затем маршрутизатор выбирает ICON-EU или ICON Global. Внутри европейского покрытия используется ближайшая ячейка ICON-EU; для всемирной модели CDO привязывает координаты к нативной треугольной сетке DWD. Приземные поля, облака и вертикальный профиль всегда берутся из одного цикла одной модели.</p>
+
+        <p>Сначала проверяется комплект готовых графиков, затем точечный кэш на диске и ограниченный кэш в памяти. Совпавшие одновременные запросы объединяются, а общая очередь расчётов не позволяет Telegram и VK одновременно занять все процессы ecCodes/CDO. Холодный запрос выполняет извлечение и расчёт; повторный обычно ограничивается чтением готового набора и отправкой семи PNG.</p>
+
         <h2>Одна оценка — не весь прогноз</h2>
 
         <p>Общий индекс пригодности от 1 до 10 удобен для первого взгляда, но рядом всегда остаются исходные причины. Потеря качества распределяется между ними, а не прячется внутри итогового числа. Отдельно строятся облачность по высоте, скорость и сдвиг ветра, оценка качества изображения, события Солнца, Луны, Юпитера и Сатурна.</p>
 
-        <blockquote>«Астросферум» не измеряет небо над площадкой. Он рассчитывает, что следует из конкретного цикла модели и явно показывает границы этой оценки.</blockquote>
+        <figure class="astro-quote-photo">
+          <blockquote>«Астросферум» не измеряет небо над площадкой. Он рассчитывает, что следует из конкретного цикла модели и явно показывает границы этой оценки.</blockquote>
+          <picture>
+            <source type="image/webp" srcset="/assets/astrosferum/night-telescope-640.webp 640w, /assets/astrosferum/night-telescope-960.webp 960w, /assets/astrosferum/night-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1060px) calc(100vw - 10vw), 960px">
+            <img src="/assets/astrosferum/night-telescope-960.webp" alt="Телескоп под Луной на ночной наблюдательной площадке" width="1448" height="1086" loading="lazy" decoding="async">
+          </picture>
+        </figure>
 
         <p>Число, связанное с размыванием изображения атмосферой, остаётся модельной оценкой. Локальный рельеф, нагретая крыша, купол телескопа и облако меньше шага сетки могут изменить реальную картину. Для абсолютной калибровки нужны наблюдения и специализированные приборы, а не ещё один коэффициент в программе.</p>
 
+        <h2>«Горизонт»: восемь направлений и 73 часа</h2>
+
+        <p>Обычный прогноз отвечает на вопрос о состоянии атмосферы над площадкой. «Горизонт» решает другую задачу: сравнивает север, северо-восток, восток, юго-восток, юг, юго-запад, запад и северо-запад для объекта на геометрической высоте 10°. Расчёт выполняется отдельно для каждого из 73 почасовых сроков <code>f000…f072</code> одного неизменяемого цикла ICON-EU.</p>
+
+        <p>Для каждого азимута строится прямой луч на сферической Земле от модельной высоты наблюдателя до 22,3 км. На уровне моря длина такого пути около 122 км. Он разбивается по наземному расстоянию шагом не более 500 м — примерно на 240 сегментов в каждом направлении. Высота точки луча вычисляется из его длины <code>s</code>, радиуса Земли <code>R</code>, высоты площадки <code>h₀</code> и угла <code>e</code>:</p>
+
+        <div class="article-equation">h(s) = √((R + h₀)² + s² + 2(R + h₀)s·sin e) − R</div>
+
+        <p>Средняя точка каждого сегмента переводится в широту и долготу по большому кругу и сопоставляется с ячейкой ICON-EU. Поля поверхности и нативных слоёв доступны каждый час. Исходные <code>U/V/T/Z</code> на изобарических уровнях приходят раз в три часа: между сроками интерполируются именно они, а нелинейные величины — профиль <code>Cn²</code>, сиинг, время когерентности и итоговый индекс — каждый час рассчитываются заново.</p>
+
+        <p>Вдоль луча суммируются два момента турбулентности. Первый задаёт модельное размытие изображения, второй учитывает поперечную к лучу скорость ветра и определяет время когерентности:</p>
+
+        <div class="article-equation article-equation-pair"><span>J<sub>H</sub> = Σ Cn² · Δs</span><span>J<sub>V,H</sub> = Σ Cn² · V<sub>⊥</sub><sup>5/3</sup> · Δs</span></div>
+
+        <p>Поперечный ветер нельзя взять одной разностью азимутов. Направление луча фиксируется в земной системе координат, а в каждой точке заново проецируется в локальный базис «восток — север — вверх». Так учитываются изгиб большого круга и изменение локальной вертикали. Вертикальная скорость в открытых полях отсутствует и принимается нулевой — это явно записанное ограничение.</p>
+
+        <h3>Облака, рельеф и качество входов</h3>
+
+        <p>На высоте каждого сегмента выбираются давление, температура, облачная вода и лёд, покрытие облаками и границы слоёв HHL. Путь конденсата переводится в оптическую толщину; повторные точки одной модельной ячейки группируются, чтобы шаг 500 м не учитывал одно покрытие много раз. Отдельно проверяется, не проходит ли луч ниже модельной поверхности HHL. Это грубый рельеф сетки около семи километров, а не локальная линия горизонта.</p>
+
+        <p>Туман берётся в ячейке наблюдателя и одинаков для всех направлений: сетка не позволяет честно восстановить локальную стену тумана по азимуту. Состояние дня, сумерек и ночи влияет только на фон графика. Луна, засветка, атмосферная рефракция и оборудование пользователя не получают скрытого штрафа.</p>
+
+        <p>Итоговая ячейка показывает оценку 1–10, основной ограничитель и полоску качества данных. Эта полоска — не вероятность удачной съёмки: она учитывает полноту пути, срок прогноза и доступность профилей. Её верхняя граница намеренно ограничена, поскольку HHL не заменяет цифровую модель рельефа и съёмку реального горизонта.</p>
+
+        <h3>Почему расчёт вынесен в отдельную очередь</h3>
+
+        <p>Один запуск обрабатывает восемь направлений, десятки тысяч сегментов и полный почасовой период, поэтому он не занимает рабочие места обычного прогноза. У «Горизонта» собственная ограниченная очередь, отдельный предел процессов CDO и атомарный кэш. Одинаковые задачи объединяются, а перед извлечением, после расчёта и непосредственно перед отправкой снова проверяется идентификатор текущего цикла. Если модель успела смениться, старое изображение пользователю не отправляется.</p>
+
         <h2>Как сохраняется воспроизводимость</h2>
 
-        <p>На каждом графике указаны источник, модель, время исходного цикла, сетка, часовой пояс и версии расчёта. Цикл, конфигурация без секретов и ревизия кода позволяют повторить результат. Промежуточные данные привязаны к циклу модели, координатам и версии алгоритма, поэтому старый расчёт нельзя случайно выдать за новый.</p>
+        <p>На каждом графике указаны источник, модель, время исходного цикла, сетка, часовой пояс и версии расчёта и отрисовки. Идентификатор цикла входит в ключи кэша, поэтому новый опубликованный набор автоматически обходит старые производные данные. Для повторения результата нужны тот же цикл, конфигурация без секретов и соответствующая ревизия кода.</p>
 
-        <p>Вся служба собрана в одном исполняемом файле на Go. Он обновляет модели, обслуживает Telegram и VK, выполняет расчёты и строит изображения. PostgreSQL хранит только пользовательские точки и сводную статистику. Публичный сетевой порт, отдельная очередь сообщений и самостоятельная служба отрисовки здесь не нужны.</p>
+        <p>PostgreSQL хранит сохранённые точки и ограниченную сводную статистику, но не модельные поля и не очередь заданий. Точные несохранённые координаты могут временно оказаться только внутри ограниченного кэша изображений без идентификатора пользователя. В журнал не попадают токены, тексты сообщений и полные координаты.</p>
+
+        <h2>Как система ведёт себя при сбоях</h2>
+
+        <p>Недоступность DWD оставляет в работе последний полный цикл с явным предупреждением о возрасте. Ошибка GEOS-CF убирает необязательную оценку в полосе Johnson V, но не ломает основной прогноз ICON. Если не построился один график, отправляются остальные, а сбой сообщается после всех попыток. Telegram и VK перезапускаются независимо; публичного входящего порта у приложения нет.</p>
+
+        <p>Перед выпуском проходят тесты расчётных формул, границ сетки, неполных циклов, кэшей и очередей, а также реальные контрольные построения. Для «Горизонта» отдельно проверяются сферические траектории, линия перемены даты, околополярные точки, проекция ветра, облачное замыкание, грубый рельеф и отсутствие функции у ICON Global.</p>
 
         <div class="article-sources">
           <span>Подробнее:</span>
@@ -168,17 +237,28 @@
         </div>
       </div>
 
-      <div class="article-language lang lang-en">
+      <div class="article-language astro-article-intro lang lang-en">
         <p class="article-lead">A conventional weather forecast can often be reduced to cloud cover, precipitation and surface wind. A telescope needs more context. Thin high cloud and dense cloud near the horizon cause different problems, while calm air at the observing site says little about a strong flow ten kilometres above it.</p>
+
+        <figure class="astro-intro-photo">
+          <picture>
+            <source type="image/webp" srcset="/assets/astrosferum/astronomer-at-telescope-640.webp 640w, /assets/astrosferum/astronomer-at-telescope-960.webp 960w, /assets/astrosferum/astronomer-at-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1020px) calc(100vw - 10vw), 920px">
+            <img src="/assets/astrosferum/astronomer-at-telescope-960.webp" alt="Astronomer with a telescope at the observing site" width="1448" height="1086" loading="lazy" decoding="async">
+          </picture>
+        </figure>
 
         <p>That was the starting point for Astrosferum. Instead of guessing the quality of a night from one value, the system keeps the full chain of evidence: from a specific numerical-model run to a chart that shows what limits observing at a particular hour.</p>
 
-        <ul class="article-flow" aria-label="Calculation flow">
+        <ul class="article-flow">
           <li><span>01</span><strong>Model</strong><small>ICON-EU or ICON Global</small></li>
           <li><span>02</span><strong>Fields</strong><small>GRIB2, atmospheric levels</small></li>
           <li><span>03</span><strong>Calculation</strong><small>cloud, wind, turbulence</small></li>
           <li><span>04</span><strong>Result</strong><small>hourly charts</small></li>
         </ul>
+
+      </div>
+
+      <div class="article-language astro-article-body lang lang-en">
 
         <h2>Choosing one coherent model</h2>
 
@@ -186,25 +266,83 @@
 
         <p>A new model run becomes active only after a completeness check. If a download is interrupted, the previous complete run remains in use. This simple rule matters more than showing the newest timestamp at any cost.</p>
 
+        <h2>One process with several independent paths</h2>
+
+        <p>The production service is one Go executable in one main container. It contains the model scheduler, shared forecast handler, calculations, rendering, and independent Telegram and VK pollers. The platform adapters do not depend on each other: a temporary failure of one API does not stop model updates or the other platform.</p>
+
+        <p>This is not a monolith without boundaries. Delivery remains inside the adapters; commands, queues and caches belong to the application layer; model packages acquire GRIB2; forecast packages own the calculations; and rendering receives finished series without network access. For one running instance this separation is simpler than an external broker, Redis and a separate image service.</p>
+
+        <h2>A model run is published as a whole</h2>
+
+        <p>The scheduler checks DWD at startup and every 15 minutes. Files for a new run first enter a dedicated <code>incoming</code> directory under temporary names. Size, fields, levels, valid times, ecCodes readability and SHA-256 are checked before the run moves to <code>runs</code> and the <code>current</code> link changes in one atomic operation.</p>
+
+        <p>Requests keep reading the previous complete run while a download is in progress. Partial data cannot become current by accident. Two published runs are retained; staging directories, old point caches and rendered images have explicit limits. Synchronisation does not begin when free disk space falls below the configured reserve.</p>
+
         <h2>What is extracted from GRIB2</h2>
 
         <p>The nearest model grid point is selected for the requested coordinates. Surface fields provide temperature, humidity, precipitation, visibility and wind. Atmospheric layers provide pressure, temperature, wind components, cloud water and ice, layer heights and model turbulent kinetic energy.</p>
 
         <p>These inputs are not collapsed into one opaque formula. Cloud obstruction, fog, precipitation, wind and optical turbulence are calculated separately. A poor hour can therefore be explained by dense low cloud, strong shear aloft or precipitation that makes practical observing impossible.</p>
 
+        <h2>A user request downloads nothing</h2>
+
+        <p>Coordinates are validated and resolved to a time zone before the router selects ICON-EU or ICON Global. The nearest regular ICON-EU cell is used inside its domain; for the global model, CDO maps the location onto DWD's native triangular grid. Surface fields, cloud layers and the vertical profile always come from one provider and one run.</p>
+
+        <p>The request checks the rendered bundle first, followed by the disk point cache and a bounded in-memory cache. Concurrent misses for the same cell are combined, while a shared forecast queue prevents Telegram and VK from occupying every ecCodes/CDO process at once. A cold request extracts and computes the data; a repeated request normally reads and delivers the existing seven PNG files.</p>
+
         <h2>One score is not the whole forecast</h2>
 
         <p>The overall 1–10 suitability score is useful for a quick scan, but the underlying reasons remain visible. Losses are attributed to individual factors instead of being hidden inside the final number. Separate charts cover cloud by height, wind speed and shear, image-quality estimates, and events for the Sun, Moon, Jupiter and Saturn.</p>
 
-        <blockquote>Astrosferum does not measure the sky above an observing site. It calculates what follows from a named model run and makes the limits of that estimate explicit.</blockquote>
+        <figure class="astro-quote-photo">
+          <blockquote>Astrosferum does not measure the sky above an observing site. It calculates what follows from a named model run and makes the limits of that estimate explicit.</blockquote>
+          <picture>
+            <source type="image/webp" srcset="/assets/astrosferum/night-telescope-640.webp 640w, /assets/astrosferum/night-telescope-960.webp 960w, /assets/astrosferum/night-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1060px) calc(100vw - 10vw), 960px">
+            <img src="/assets/astrosferum/night-telescope-960.webp" alt="Telescope under the Moon at a nighttime observing site" width="1448" height="1086" loading="lazy" decoding="async">
+          </picture>
+        </figure>
 
         <p>The atmospheric image-blur value remains a model-derived estimate. Local terrain, a warm roof, a telescope dome or cloud smaller than the model grid can change real conditions. Absolute calibration requires observations and dedicated instruments, not another tuning constant.</p>
 
+        <h2>Horizon: eight directions over 73 hours</h2>
+
+        <p>The standard forecast describes the atmosphere above the site. Horizon answers a different question: it compares north, north-east, east, south-east, south, south-west, west and north-west for a target at a fixed geometric elevation of 10°. Every direction is calculated for all 73 hourly steps <code>f000…f072</code> from one immutable ICON-EU run.</p>
+
+        <p>Each azimuth starts as a straight ray over a spherical Earth, from the model surface elevation to 22.3 km. At sea level that path is about 122 km long. Ground-distance boundaries are no more than 500 metres apart, producing roughly 240 segments per direction. Ray height follows from the path length <code>s</code>, Earth radius <code>R</code>, site elevation <code>h₀</code> and elevation angle <code>e</code>:</p>
+
+        <div class="article-equation">h(s) = √((R + h₀)² + s² + 2(R + h₀)s·sin e) − R</div>
+
+        <p>The midpoint of every segment is converted to latitude and longitude along a great-circle path and matched to an ICON-EU cell. Surface and native-level data are hourly. Pressure-level <code>U/V/T/Z</code> arrives every three hours: those input variables are interpolated inside one run, then nonlinear quantities—<code>Cn²</code>, seeing, coherence time and the directional score—are recomputed for every hour.</p>
+
+        <p>Two turbulence moments are accumulated along the line of sight. The first determines model-derived image blur; the second uses wind transverse to the ray and determines coherence time:</p>
+
+        <div class="article-equation article-equation-pair"><span>J<sub>H</sub> = Σ Cn² · Δs</span><span>J<sub>V,H</sub> = Σ Cn² · V<sub>⊥</sub><sup>5/3</sup> · Δs</span></div>
+
+        <p>Transverse wind cannot be reduced to one azimuth difference. The ray direction is fixed in Earth-centred coordinates and projected into the local east–north–up basis at every midpoint. This accounts for the great-circle turn and changing local vertical. Public inputs contain horizontal wind only, so vertical velocity is set to zero as an explicit limitation.</p>
+
+        <h3>Cloud, terrain and input quality</h3>
+
+        <p>Pressure, temperature, cloud water and ice, cloud fraction and HHL layer boundaries are sampled at each ray height. Condensate path becomes optical depth; repeated points in the same model cell are grouped so a 500-metre integration step does not count one cloud fraction repeatedly. A separate test checks whether the ray falls below the HHL model surface. This is terrain averaged over a roughly seven-kilometre cell, not a surveyed local skyline.</p>
+
+        <p>Fog is classified in the observer's cell and is therefore common to all directions: the grid cannot honestly resolve a nearby directional fog bank. Day, twilight and night change only the chart background. The Moon, light pollution, atmospheric refraction and the observer's equipment receive no hidden penalty.</p>
+
+        <p>Every output cell carries a 1–10 score, the main limiting factor and a data-quality strip. That strip is not the probability of a successful exposure: it records path completeness, forecast lead time and profile availability. Its upper bound is deliberately capped because HHL cannot replace a local digital terrain model or a measured skyline.</p>
+
+        <h3>Why Horizon has its own queue</h3>
+
+        <p>One run covers eight directions, tens of thousands of segments and a full hourly period, so it does not consume normal forecast workers. Horizon has a separate bounded queue, its own CDO process limit and an atomic cache. Identical jobs are combined, while the current run ID is checked before extraction, after calculation and immediately before delivery. If the model run changed, the stale image is not sent.</p>
+
         <h2>Keeping results reproducible</h2>
 
-        <p>Every chart records the source, model, base time, grid, time zone, calculation version and drawing version. The model run, non-secret configuration and source revision are enough to repeat a result. Intermediate data is keyed by model run, coordinates and algorithm version, preventing an older calculation from being presented as current.</p>
+        <p>Every chart records the source, model, base time, grid, time zone, calculation version and renderer version. The run ID is part of each cache key, so a newly published run automatically bypasses old derived data. Reproducing a result requires the same model run, non-secret configuration and matching source revision.</p>
 
-        <p>The service is built as one Go executable. It updates model data, serves Telegram and VK, performs calculations and draws the images. PostgreSQL stores saved user locations and aggregate statistics. The system does not need a public listening port, an external message broker or a separate drawing service.</p>
+        <p>PostgreSQL stores saved locations and bounded aggregate statistics, not model fields or a job queue. Exact unsaved coordinates may temporarily exist only inside a limited image cache without a user identifier. Tokens, message text and complete coordinates are not written to application logs.</p>
+
+        <h2>Behaviour under failure</h2>
+
+        <p>If DWD is unavailable, the last complete run remains active and its age is shown explicitly. A GEOS-CF failure removes the optional Johnson V estimate without breaking the main ICON forecast. If one chart fails, the others are delivered before the error is reported. Telegram and VK supervisors restart independently, and the application exposes no public listening port.</p>
+
+        <p>Releases cover calculation formulas, grid boundaries, incomplete runs, caches and queues, followed by live reference renders. Horizon adds tests for spherical paths, the date line, near-polar coordinates, wind projection, cloud closure, coarse terrain and the deliberate absence of the feature for ICON Global.</p>
 
         <div class="article-sources">
           <span>Read more:</span>
@@ -213,6 +351,176 @@
           <a href="https://github.com/Haeniken/bot_astrosferum" target="_blank" rel="noreferrer">source code ↗</a>
         </div>
       </div>
+
+      <figure class="astro-architecture-figure" data-astro-architecture>
+        <div class="astro-architecture-hud" aria-hidden="true">
+          <span>ASTROSFERUM · <span class="lang lang-ru">КОНТУР ДАННЫХ</span><span class="lang lang-en">DATA PIPELINE</span></span>
+          <strong data-astro-stage-label data-label-ru="СИНХРОНИЗАЦИЯ · ПРОВЕРКА ЦИКЛА" data-label-en="SYNC · RUN VALIDATION">СИНХРОНИЗАЦИЯ · ПРОВЕРКА ЦИКЛА</strong>
+          <i data-astro-stage-index>01 / 04</i>
+        </div>
+        <div class="astro-architecture-canvas">
+          <svg viewBox="0 0 1180 700" aria-hidden="true" focusable="false">
+            <defs>
+              <pattern id="astro-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" class="astro-grid-line"></path></pattern>
+              <linearGradient id="astro-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#142c3d"></stop><stop offset="1" stop-color="#07111f"></stop></linearGradient>
+              <radialGradient id="astro-core" cx="50%" cy="42%" r="68%"><stop offset="0" stop-color="#173b4a"></stop><stop offset=".62" stop-color="#081522"></stop><stop offset="1" stop-color="#030811"></stop></radialGradient>
+              <filter id="astro-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+              <marker id="astro-arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4 0 8Z" fill="#73d5da"></path></marker>
+              <marker id="astro-arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4 0 8Z" fill="#ff7657"></path></marker>
+            </defs>
+
+            <rect width="1180" height="700" class="astro-architecture-grid"></rect>
+            <circle cx="590" cy="350" r="220" class="astro-orbit astro-orbit-outer"></circle>
+            <circle cx="590" cy="350" r="150" class="astro-orbit astro-orbit-inner"></circle>
+            <path d="M42 350H1138M590 42V658" class="astro-axis"></path>
+
+            <g class="astro-channels">
+              <path d="M250 151C286 151 300 151 330 151" class="astro-channel astro-channel-sync" data-astro-channel="sync" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M520 151C565 151 606 151 650 151" class="astro-channel astro-channel-sync" data-astro-channel="sync" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M760 202C760 266 695 294 658 329" class="astro-channel astro-channel-compute" data-astro-channel="compute" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M930 197C842 245 760 314 684 346" class="astro-channel astro-channel-compute" data-astro-channel="compute" marker-end="url(#astro-arrow-orange)"></path>
+              <path d="M944 526C828 504 744 437 681 389" class="astro-channel astro-channel-request" data-astro-channel="request" marker-end="url(#astro-arrow-orange)"></path>
+              <path d="M501 402C392 433 280 493 235 534" class="astro-channel astro-channel-state" data-astro-channel="request" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M528 438C500 474 465 503 444 526" class="astro-channel astro-channel-compute" data-astro-channel="compute" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M650 196C628 340 548 445 488 526" class="astro-channel astro-channel-compute" data-astro-channel="compute" marker-end="url(#astro-arrow-cyan)"></path>
+              <path d="M570 581H650" class="astro-channel astro-channel-render" data-astro-channel="render" marker-end="url(#astro-arrow-orange)"></path>
+              <path d="M870 581H944" class="astro-channel astro-channel-render" data-astro-channel="render" marker-end="url(#astro-arrow-orange)"></path>
+              <path d="M677 406C772 456 831 524 944 557" class="astro-channel astro-channel-render" data-astro-channel="render" marker-end="url(#astro-arrow-orange)"></path>
+            </g>
+
+            <g class="astro-flow astro-flow-sync" data-astro-flow="sync"><circle r="5"></circle><animateMotion dur="3.6s" repeatCount="indefinite" path="M250 151C286 151 300 151 330 151"></animateMotion></g>
+            <g class="astro-flow astro-flow-sync" data-astro-flow="sync"><rect width="11" height="6" rx="2"></rect><animateMotion dur="4.2s" begin="-.8s" repeatCount="indefinite" path="M520 151C565 151 606 151 650 151"></animateMotion></g>
+            <g class="astro-flow astro-flow-request" data-astro-flow="request"><circle r="5"></circle><animateMotion dur="4s" repeatCount="indefinite" path="M944 526C828 504 744 437 681 389"></animateMotion></g>
+            <g class="astro-flow astro-flow-compute" data-astro-flow="compute"><rect width="11" height="6" rx="2"></rect><animateMotion dur="4.8s" repeatCount="indefinite" path="M650 196C628 340 548 445 488 526"></animateMotion></g>
+            <g class="astro-flow astro-flow-compute" data-astro-flow="compute"><circle r="5"></circle><animateMotion dur="4.4s" begin="-1.7s" repeatCount="indefinite" path="M930 197C842 245 760 314 684 346"></animateMotion></g>
+            <g class="astro-flow astro-flow-render" data-astro-flow="render"><rect width="11" height="6" rx="2"></rect><animateMotion dur="3.4s" repeatCount="indefinite" path="M570 581H650"></animateMotion></g>
+            <g class="astro-flow astro-flow-render" data-astro-flow="render"><circle r="5"></circle><animateMotion dur="3.8s" begin="-.9s" repeatCount="indefinite" path="M870 581H944"></animateMotion></g>
+
+            <g class="astro-architecture-node astro-node-models" data-astro-node="sync" transform="translate(40 96)">
+              <rect width="210" height="112" rx="8" fill="url(#astro-panel)"></rect>
+              <path d="M17 18H193M17 82H193" class="astro-node-divider"></path>
+              <circle cx="28" cy="35" r="8" class="astro-node-led"></circle><circle cx="28" cy="61" r="8" class="astro-node-led astro-node-led-alt"></circle>
+              <text x="47" y="39" class="astro-node-title">DWD ICON-EU</text><text x="47" y="65" class="astro-node-title">ICON GLOBAL</text>
+              <text x="17" y="101" class="astro-node-meta lang lang-ru">GRIB2 · ОТКРЫТЫЕ ДАННЫЕ</text><text x="17" y="101" class="astro-node-meta lang lang-en">GRIB2 · OPEN DATA</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-scheduler" data-astro-node="sync" transform="translate(330 106)">
+              <path d="M0 0H172L190 18V90H0Z" fill="url(#astro-panel)"></path>
+              <circle cx="30" cy="42" r="17" class="astro-clock"></circle><path d="M30 31V42L39 47" class="astro-clock-hand"></path>
+              <text x="58" y="36" class="astro-node-title lang lang-ru">ПЛАНИРОВЩИК</text><text x="58" y="36" class="astro-node-title lang lang-en">SCHEDULER</text>
+              <text x="58" y="55" class="astro-node-meta lang lang-ru">РАЗ В 15 МИНУТ</text><text x="58" y="55" class="astro-node-meta lang lang-en">EVERY 15 MINUTES</text>
+              <text x="16" y="77" class="astro-node-status lang lang-ru">ЗАГРУЗКА → ПРОВЕРКА</text><text x="16" y="77" class="astro-node-status lang lang-en">DOWNLOAD → VALIDATE</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-store" data-astro-node="sync compute" transform="translate(650 96)">
+              <path d="M0 0H218L236 18V112H0Z" fill="url(#astro-panel)"></path>
+              <ellipse cx="40" cy="32" rx="22" ry="8" class="astro-store-disk"></ellipse><path d="M18 32V72C18 83 62 83 62 72V32M18 51C18 62 62 62 62 51" class="astro-store-lines"></path>
+              <text x="82" y="36" class="astro-node-title lang lang-ru">АТОМАРНОЕ ХРАНИЛИЩЕ</text><text x="82" y="36" class="astro-node-title lang lang-en">ATOMIC MODEL STORE</text>
+              <text x="82" y="57" class="astro-node-meta">INCOMING → RUNS → CURRENT</text>
+              <text x="17" y="94" class="astro-node-status lang lang-ru">2 ЦИКЛА · MANIFEST · SHA-256</text><text x="17" y="94" class="astro-node-status lang lang-en">2 RUNS · MANIFEST · SHA-256</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-external" data-astro-node="compute" transform="translate(930 82)">
+              <rect width="210" height="142" rx="8" fill="url(#astro-panel)"></rect>
+              <text x="18" y="30" class="astro-node-title lang lang-ru">ДОПОЛНИТЕЛЬНЫЕ ПОЛЯ</text><text x="18" y="30" class="astro-node-title lang lang-en">AUXILIARY FIELDS</text>
+              <path d="M18 43H192" class="astro-node-divider"></path>
+              <text x="18" y="67" class="astro-node-meta">NASA GEOS-CF · AOD / O₃</text>
+              <text x="18" y="91" class="astro-node-meta">LIGHT POLLUTION ATLAS</text>
+              <text x="18" y="116" class="astro-node-meta lang lang-ru">ЭФЕМЕРИДЫ · ЧАСОВОЙ ПОЯС</text><text x="18" y="116" class="astro-node-meta lang lang-en">EPHEMERIDES · TIME ZONE</text>
+              <circle cx="188" cy="120" r="5" class="astro-node-led astro-node-led-alt"></circle>
+            </g>
+
+            <g class="astro-core" data-astro-node="request compute" transform="translate(590 350)">
+              <circle r="114" class="astro-core-halo"></circle><circle r="93" fill="url(#astro-core)" class="astro-core-body"></circle>
+              <path d="M-65-17H65M-65 25H65" class="astro-core-divider"></path>
+              <text y="-30" text-anchor="middle" class="astro-core-go">GO</text>
+              <text y="8" text-anchor="middle" class="astro-core-name">ASTROSFERUM</text>
+              <text y="49" text-anchor="middle" class="astro-core-meta lang lang-ru">ОДИН ПРОЦЕСС · НЕТ ВХОДЯЩЕГО ПОРТА</text><text y="49" text-anchor="middle" class="astro-core-meta lang lang-en">ONE PROCESS · NO INBOUND PORT</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-postgres" data-astro-node="request" transform="translate(40 498)">
+              <rect width="210" height="118" rx="8" fill="url(#astro-panel)"></rect>
+              <ellipse cx="38" cy="34" rx="20" ry="8" class="astro-store-disk"></ellipse><path d="M18 34V75C18 86 58 86 58 75V34M18 54C18 65 58 65 58 54" class="astro-store-lines"></path>
+              <text x="74" y="38" class="astro-node-title">POSTGRESQL</text>
+              <text x="74" y="58" class="astro-node-meta lang lang-ru">ТОЧКИ · СТАТИСТИКА</text><text x="74" y="58" class="astro-node-meta lang lang-en">LOCATIONS · STATS</text>
+              <text x="18" y="98" class="astro-node-status lang lang-ru">ДО 10 ТОЧЕК · ХРАНЕНИЕ 90 ДНЕЙ</text><text x="18" y="98" class="astro-node-status lang lang-en">UP TO 10 POINTS · 90-DAY STATS</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-forecast" data-astro-node="compute" transform="translate(330 526)">
+              <path d="M0 0H222L240 18V110H0Z" fill="url(#astro-panel)"></path>
+              <path d="M22 76L44 52 65 64 88 29" class="astro-forecast-chart"></path><circle cx="88" cy="29" r="5" class="astro-node-led"></circle>
+              <text x="110" y="32" class="astro-node-title lang lang-ru">РАСЧЁТ</text><text x="110" y="32" class="astro-node-title lang lang-en">FORECAST</text>
+              <text x="110" y="52" class="astro-node-meta">CLOUD · Cn² · τ₀</text>
+              <text x="110" y="72" class="astro-node-meta lang lang-ru">ПОГОДА · ГОРИЗОНТ</text><text x="110" y="72" class="astro-node-meta lang lang-en">WEATHER · HORIZON</text>
+              <text x="18" y="96" class="astro-node-status lang lang-ru">ОДИН ЦИКЛ · ПРОВЕРЯЕМЫЕ ПРИЧИНЫ</text><text x="18" y="96" class="astro-node-status lang lang-en">ONE RUN · EXPLAINABLE FACTORS</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-render" data-astro-node="render" transform="translate(650 526)">
+              <path d="M0 0H202L220 18V110H0Z" fill="url(#astro-panel)"></path>
+              <rect x="18" y="24" width="58" height="48" rx="4" class="astro-render-screen"></rect><path d="M25 61L37 49 48 57 67 35" class="astro-render-chart"></path>
+              <text x="92" y="37" class="astro-node-title lang lang-ru">ОТРИСОВКА</text><text x="92" y="37" class="astro-node-title lang lang-en">RENDERER</text>
+              <text x="92" y="58" class="astro-node-meta lang lang-ru">7 PNG · RU / EN</text><text x="92" y="58" class="astro-node-meta lang lang-en">7 PNG · RU / EN</text>
+              <text x="18" y="95" class="astro-node-status lang lang-ru">АТОМАРНЫЙ КЭШ · 48 ЧАСОВ</text><text x="18" y="95" class="astro-node-status lang lang-en">ATOMIC CACHE · 48 HOURS</text>
+            </g>
+
+            <g class="astro-architecture-node astro-node-platforms" data-astro-node="request render" transform="translate(944 480)">
+              <rect width="196" height="156" rx="8" fill="url(#astro-panel)"></rect>
+              <circle cx="42" cy="51" r="22" class="astro-platform-circle"></circle><path d="M30 50L57 38 50 65 40 55Z" class="astro-platform-mark"></path>
+              <circle cx="42" cy="107" r="22" class="astro-platform-circle astro-platform-circle-alt"></circle><text x="42" y="114" text-anchor="middle" class="astro-platform-vk">VK</text>
+              <text x="78" y="47" class="astro-node-title">TELEGRAM</text><text x="78" y="67" class="astro-node-meta">LONG POLLING</text>
+              <text x="78" y="103" class="astro-node-title">VK</text><text x="78" y="123" class="astro-node-meta">LONG POLL</text>
+              <text x="18" y="145" class="astro-node-status lang lang-ru">НЕЗАВИСИМЫЕ АДАПТЕРЫ</text><text x="18" y="145" class="astro-node-status lang lang-en">INDEPENDENT ADAPTERS</text>
+            </g>
+
+            <g class="astro-stage-legend" transform="translate(314 670)">
+              <circle cx="0" cy="0" r="4" data-astro-stage-dot="sync"></circle><text x="12" y="4" class="lang lang-ru">ЦИКЛ</text><text x="12" y="4" class="lang lang-en">SYNC</text>
+              <circle cx="142" cy="0" r="4" data-astro-stage-dot="request"></circle><text x="154" y="4" class="lang lang-ru">ЗАПРОС</text><text x="154" y="4" class="lang lang-en">REQUEST</text>
+              <circle cx="310" cy="0" r="4" data-astro-stage-dot="compute"></circle><text x="322" y="4" class="lang lang-ru">РАСЧЁТ</text><text x="322" y="4" class="lang lang-en">COMPUTE</text>
+              <circle cx="476" cy="0" r="4" data-astro-stage-dot="render"></circle><text x="488" y="4" class="lang lang-ru">ОТВЕТ</text><text x="488" y="4" class="lang lang-en">DELIVERY</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption id="astro-architecture-caption">
+          <span class="lang lang-ru">Демонстрация полного пути данных: публикация проверенного цикла ICON, выбор модели и точки, расчёт, построение графиков и независимая доставка в Telegram и VK.</span>
+          <span class="lang lang-en">The complete data path: publishing a validated ICON run, selecting the provider and point, calculation, chart rendering and independent delivery to Telegram and VK.</span>
+        </figcaption>
+      </figure>
+
+      <section class="astro-results" aria-labelledby="astro-results-title">
+        <p class="kicker"><span class="lang lang-ru">Фактический результат</span><span class="lang lang-en">Actual output</span></p>
+        <h2 id="astro-results-title"><span class="lang lang-ru">Что получает<br>наблюдатель.</span><span class="lang lang-en">What the observer<br>receives.</span></h2>
+        <p class="astro-results-lead"><span class="lang lang-ru">Пример построен для Плавска по одному сохранённому циклу ICON-EU. Это датированный результат из репозитория, а не текущий прогноз.</span><span class="lang lang-en">This Plavsk example was rendered from one preserved ICON-EU run. It is a dated repository artifact, not a current forecast.</span></p>
+
+        <div class="astro-results-grid">
+          <figure class="astro-result-card astro-result-wide">
+            <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/assets/examples/plavsk/ru/weather-hourly.png" target="_blank" rel="noreferrer">
+              <img src="/assets/astrosferum/ru/weather-hourly-640.webp" srcset="/assets/astrosferum/ru/weather-hourly-640.webp 640w, /assets/astrosferum/ru/weather-hourly-1280.webp 1280w" sizes="(max-width: 720px) calc(100vw - 32px), 1100px" width="1280" height="432" loading="lazy" decoding="async" alt="Почасовая погода, облачность и астрономические события в Астросферуме">
+            </a>
+            <figcaption><strong>01</strong><span class="lang lang-ru">Почасовая погода</span><span class="lang lang-en">Hourly weather</span><small class="lang lang-ru">Облака по ярусам, видимость, осадки, ветер и события светил на одной временной шкале.</small><small class="lang lang-en">Cloud layers, visibility, precipitation, wind and astronomical events on one timeline.</small></figcaption>
+          </figure>
+
+          <figure class="astro-result-card astro-result-wide">
+            <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/assets/examples/plavsk/ru/overall-astronomy-index-hourly.png" target="_blank" rel="noreferrer">
+              <img src="/assets/astrosferum/ru/overall-astronomy-index-hourly-640.webp" srcset="/assets/astrosferum/ru/overall-astronomy-index-hourly-640.webp 640w, /assets/astrosferum/ru/overall-astronomy-index-hourly-1280.webp 1280w" sizes="(max-width: 720px) calc(100vw - 32px), 1100px" width="1280" height="474" loading="lazy" decoding="async" alt="Общий астрономический индекс и разложение ограничивающих факторов">
+            </a>
+            <figcaption><strong>02</strong><span class="lang lang-ru">Общий индекс и причины</span><span class="lang lang-en">Overall score and causes</span><small class="lang lang-ru">Сохранившаяся пригодность и вклад турбулентности, облаков, ветра, тумана и осадков.</small><small class="lang lang-en">Remaining suitability and the contributions of turbulence, cloud, wind, fog and precipitation.</small></figcaption>
+          </figure>
+
+          <figure class="astro-result-card">
+            <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/assets/examples/plavsk/ru/cloud-obstruction-height-hourly.png" target="_blank" rel="noreferrer">
+              <img src="/assets/astrosferum/ru/cloud-obstruction-height-hourly-640.webp" srcset="/assets/astrosferum/ru/cloud-obstruction-height-hourly-640.webp 640w, /assets/astrosferum/ru/cloud-obstruction-height-hourly-1280.webp 1280w" sizes="(max-width: 720px) calc(100vw - 32px), 540px" width="1280" height="440" loading="lazy" decoding="async" alt="Эффективная облачная преграда по высоте и времени">
+            </a>
+            <figcaption><strong>03</strong><span class="lang lang-ru">Облачная преграда</span><span class="lang lang-en">Cloud obstruction</span><small class="lang lang-ru">Видно, в каком слое и в какой час возникает оптически значимая облачность.</small><small class="lang lang-en">Shows the layer and hour in which optically significant cloud appears.</small></figcaption>
+          </figure>
+
+          <figure class="astro-result-card astro-result-horizon">
+            <a href="https://github.com/Haeniken/bot_astrosferum/blob/main/docs/assets/examples/plavsk/ru/horizon-analysis.png" target="_blank" rel="noreferrer">
+              <img src="/assets/astrosferum/ru/horizon-analysis-640.webp" srcset="/assets/astrosferum/ru/horizon-analysis-640.webp 640w, /assets/astrosferum/ru/horizon-analysis-1280.webp 1280w" sizes="(max-width: 720px) calc(100vw - 32px), 540px" width="1280" height="560" loading="lazy" decoding="async" alt="Анализ условий у горизонта по восьми направлениям">
+            </a>
+            <figcaption><strong>04</strong><span class="lang lang-ru">«Горизонт»</span><span class="lang lang-en">Horizon</span><small class="lang lang-ru">Сравнение восьми азимутов на 10° для каждого часа одного 72-часового периода.</small><small class="lang lang-en">Eight azimuths at 10° compared for every hour in one 72-hour period.</small></figcaption>
+          </figure>
+        </div>
+      </section>
     </article>
 
     <section class="article-cta">
@@ -243,6 +551,6 @@
       <i class="energia-plume energia-plume-core"></i>
     </span>
   </button>
-  <script src="/script.min.js?v=20260728za" defer></script>
+  <script src="/script.min.js?v=20260728zi" defer></script>
 </body>
 </html>

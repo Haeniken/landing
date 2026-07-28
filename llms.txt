@@ -11,8 +11,12 @@
 
 - [Publications in Russian](https://haeniken.com/articles/): index of technical articles.
 - [Publications in English](https://haeniken.com/en/articles/): English publication index.
-- [From ICON fields to a telescope forecast](https://haeniken.com/articles/astrosferum/): Russian article about the Astrosferum weather-processing pipeline for astronomical observations.
-- [From ICON fields to a telescope forecast — English](https://haeniken.com/en/articles/astrosferum/): English version of the Astrosferum article.
+- [BGP and BFD in a small production network](https://haeniken.com/articles/network-ha/): Russian practical article about primary WireGuard, backup IPsec, FRR path selection, BFD, monitoring and an operational runbook.
+- [BGP and BFD in a small production network — English](https://haeniken.com/en/articles/network-ha/): English version of the resilient-network article.
+- [Forecast for astronomers: models and calculations in Astrosferum](https://haeniken.com/articles/astrosferum/): Russian article about the service architecture, atomic DWD ICON updates, forecast calculations and the eight-direction Horizon analysis.
+- [Forecast for astronomers: models and calculations in Astrosferum — English](https://haeniken.com/en/articles/astrosferum/): English version covering the same architecture, calculations, output examples and Horizon method.
+- [RabbitHole VPN control panel: payments and actual 3x-ui state](https://haeniken.com/articles/rabbithole-vpn/): Russian technical case study of an internal control panel, idempotent payment handling, provisioning and state reconciliation. It is not a service offer and contains no connection link.
+- [RabbitHole VPN control panel — English](https://haeniken.com/en/articles/rabbithole-vpn/): English version of the private control-panel architecture and failure-recovery case study.
 
 ## Interactive engineering lab
 

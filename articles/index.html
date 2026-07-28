@@ -18,20 +18,20 @@
   <meta property="og:site_name" content="Sergey Haeniken">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:locale:alternate" content="en_US">
-  <meta property="og:image" content="https://haeniken.com/assets/night-sky.png">
-  <meta property="og:image:secure_url" content="https://haeniken.com/assets/night-sky.png">
-  <meta property="og:image:type" content="image/png">
-  <meta property="og:image:width" content="1051">
-  <meta property="og:image:height" content="793">
-  <meta property="og:image:alt" content="Ночное небо и наблюдение в телескоп">
+  <meta property="og:image" content="https://haeniken.com/assets/social/articles-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/articles-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Технические публикации Sergey Haeniken">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Технические публикации — Sergey Haeniken">
   <meta name="twitter:description" content="Инженерные заметки об инфраструктуре и научно-техническом программном обеспечении.">
-  <meta name="twitter:image" content="https://haeniken.com/assets/night-sky.png">
-  <meta name="twitter:image:alt" content="Ночное небо и наблюдение в телескоп">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/articles-preview.jpg">
+  <meta name="twitter:image:alt" content="Технические публикации Sergey Haeniken">
   <title>Технические публикации — Sergey Haeniken</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.min.css?v=20260728ah">
+  <link rel="stylesheet" href="/styles.min.css?v=20260728az">
   <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
   <script type="application/ld+json">
   {
@@ -52,13 +52,25 @@
     },
     "mainEntity": {
       "@type": "ItemList",
-      "numberOfItems": 1,
+      "numberOfItems": 3,
       "itemListElement": [
         {
           "@type": "ListItem",
           "position": 1,
           "url": "https://haeniken.com/articles/astrosferum/",
-          "name": "От полей ICON к прогнозу для телескопа"
+          "name": "Прогноз для астронома: модели и расчёты «Астросферума»"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "url": "https://haeniken.com/articles/network-ha/",
+          "name": "BGP и BFD в небольшом производственном контуре"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "url": "https://haeniken.com/articles/rabbithole-vpn/",
+          "name": "Панель управления RabbitHole VPN: платежи и состояние 3x-ui"
         }
       ]
     }
@@ -132,15 +144,57 @@
             <span class="lang lang-en">Astrosferum · DWD ICON · GRIB2</span>
           </p>
           <h2>
-            <span class="lang lang-ru">От полей ICON к прогнозу для телескопа</span>
-            <span class="lang lang-en">From ICON fields to a telescope forecast</span>
+            <span class="lang lang-ru">Прогноз для астронома: модели и расчёты «Астросферума»</span>
+            <span class="lang lang-en">Forecast for astronomers: models and calculations in Astrosferum</span>
           </h2>
           <p>
-            <span class="lang lang-ru">Как выбирается погодная модель, какие поля извлекаются для заданной точки, из чего складывается оценка условий и почему расчёт нельзя выдавать за измерение.</span>
-            <span class="lang lang-en">How the weather model is selected, which fields are extracted for a point, how observing conditions are calculated and why the result is not a measurement.</span>
+            <span class="lang lang-ru">Как устроен путь от цикла ICON до готовых графиков, из чего складывается оценка условий и как «Горизонт» сравнивает восемь направлений для телескопа.</span>
+            <span class="lang lang-en">How an ICON run becomes a set of charts, how observing conditions are evaluated and how Horizon compares eight telescope directions.</span>
           </p>
           <a class="publication-card-link lang lang-ru" href="/articles/astrosferum/">Читать заметку <span aria-hidden="true">→</span></a>
           <a class="publication-card-link lang lang-en" href="/en/articles/astrosferum/">Read the article <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="publication-mark" aria-hidden="true">↗</div>
+      </article>
+
+      <article class="publication-card reveal">
+        <div class="publication-index">02</div>
+        <div class="publication-content">
+          <p class="publication-meta">
+            <span class="lang lang-ru">Сети · WireGuard · IPsec · BGP / BFD</span>
+            <span class="lang lang-en">Networking · WireGuard · IPsec · BGP / BFD</span>
+          </p>
+          <h2>
+            <span class="lang lang-ru">BGP и BFD в небольшом производственном контуре</span>
+            <span class="lang lang-en">BGP and BFD in a small production network</span>
+          </h2>
+          <p>
+            <span class="lang lang-ru">Практический разбор сети с постоянными адресами узлов, основным WireGuard, резервным IPsec, выбором пути через FRR и контролируемой проверкой переключения.</span>
+            <span class="lang lang-en">A practical design with stable node addresses, primary WireGuard, backup IPsec, FRR path selection and controlled failover testing.</span>
+          </p>
+          <a class="publication-card-link lang lang-ru" href="/articles/network-ha/">Читать заметку <span aria-hidden="true">→</span></a>
+          <a class="publication-card-link lang lang-en" href="/en/articles/network-ha/">Read the article <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="publication-mark" aria-hidden="true">↗</div>
+      </article>
+
+      <article class="publication-card reveal">
+        <div class="publication-index">03</div>
+        <div class="publication-content">
+          <p class="publication-meta">
+            <span class="lang lang-ru">Панель управления · Go · PostgreSQL · 3x-ui</span>
+            <span class="lang lang-en">Control panel · Go · PostgreSQL · 3x-ui</span>
+          </p>
+          <h2>
+            <span class="lang lang-ru">Платежи и реальное состояние 3x-ui в RabbitHole</span>
+            <span class="lang lang-en">Payments and actual 3x-ui state in RabbitHole</span>
+          </h2>
+          <p>
+            <span class="lang lang-ru">Технический разбор внутренней панели: независимая проверка платежей, идемпотентная запись, выдача доступа и восстановление расхождений между PostgreSQL и несколькими 3x-ui.</span>
+            <span class="lang lang-en">An internal control-panel case study: independent payment verification, idempotent records, access provisioning and recovery from drift between PostgreSQL and several 3x-ui targets.</span>
+          </p>
+          <a class="publication-card-link lang lang-ru" href="/articles/rabbithole-vpn/">Читать заметку <span aria-hidden="true">→</span></a>
+          <a class="publication-card-link lang lang-en" href="/en/articles/rabbithole-vpn/">Read the article <span aria-hidden="true">→</span></a>
         </div>
         <div class="publication-mark" aria-hidden="true">↗</div>
       </article>
@@ -167,6 +221,6 @@
       <i class="energia-plume energia-plume-core"></i>
     </span>
   </button>
-  <script src="/script.min.js?v=20260728za" defer></script>
+  <script src="/script.min.js?v=20260728zi" defer></script>
 </body>
 </html>

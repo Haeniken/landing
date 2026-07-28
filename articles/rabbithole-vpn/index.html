@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Технический разбор панели RabbitHole VPN: сверка платежей YooMoney, идемпотентные операции, управление несколькими 3x-ui и восстановление расхождений.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/rabbithole-vpn/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/rabbithole-vpn/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/rabbithole-vpn/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/rabbithole-vpn/">
+  <meta property="og:title" content="Панель управления RabbitHole VPN: платежи и состояние 3x-ui">
+  <meta property="og:description" content="Технический разбор внутренней панели: проверка платежей, журнал операций, выдача доступа и сверка состояния нескольких 3x-ui.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/rabbithole-vpn/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/social/rabbithole-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/rabbithole-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Панель RabbitHole: платежи, подписки и состояние 3x-ui">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Панель управления RabbitHole VPN: платежи и состояние 3x-ui">
+  <meta name="twitter:description" content="Платёжный обработчик, журнал операций, очередь выдачи доступа и сверка нескольких 3x-ui в одном частном проекте.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/rabbithole-preview.jpg">
+  <meta name="twitter:image:alt" content="Панель RabbitHole: платежи, подписки и состояние 3x-ui">
+  <title>Панель RabbitHole: платежи и состояние 3x-ui — Sergey Haeniken</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/articles.min.css?v=20260728b">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Панель управления RabbitHole VPN: платежи и состояние 3x-ui",
+    "description": "Практический разбор внутренней панели управления: обработчик YooMoney, идемпотентность, выдача доступа и сверка состояния 3x-ui.",
+    "inLanguage": "ru",
+    "datePublished": "2026-07-28",
+    "dateModified": "2026-07-28",
+    "mainEntityOfPage": "https://haeniken.com/articles/rabbithole-vpn/",
+    "image": "https://haeniken.com/assets/social-preview.jpg",
+    "keywords": ["RabbitHole VPN", "Go", "PostgreSQL", "3x-ui", "YooMoney", "идемпотентность", "сверка состояния"],
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": {
+      "@type": "SoftwareApplication",
+      "name": "Панель управления RabbitHole VPN",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Linux",
+      "description": "Частная панель управления подписками, платежами и доступом на нескольких узлах 3x-ui."
+    }
+  }
+  </script>
+</head>
+<body class="article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand lang lang-ru" href="/">
+      <span class="brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <a class="brand lang lang-en" href="/en/">
+      <span class="brand-mark">H</span>
+      <span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span>
+    </a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a>
+      <a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a>
+      <a class="lang lang-en" href="/en/articles/">Publications</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label"><span class="lang lang-ru">Меню</span><span class="lang lang-en">Menu</span></span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/rabbithole-vpn/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/rabbithole-vpn/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero rabbithole-article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal">
+          <span class="status-light"></span>
+          <span class="lang lang-ru">Техническая заметка · панель управления RabbitHole VPN</span>
+          <span class="lang lang-en">Technical note · RabbitHole VPN control panel</span>
+        </p>
+        <h1 class="reveal">
+          <span class="lang lang-ru">Платёж, подписка<br>и реальное состояние <em>3x-ui.</em></span>
+          <span class="lang lang-en">Payment, subscription<br>and the actual state of <em>3x-ui.</em></span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Разбор внутренней панели: как связать оплату в Telegram, баланс и несколько узлов так, чтобы повторное уведомление не начислило деньги дважды, а сбой 3x-ui не потерял выданный доступ.</span>
+          <span class="lang lang-en">An internal control-panel case study: connecting Telegram payments, a balance and several nodes without double-crediting a repeated notification or losing provisioned access when 3x-ui fails.</span>
+        </p>
+        <div class="article-meta reveal">
+          <span>Sergey Haeniken</span>
+          <a href="https://orcid.org/0009-0005-5804-5011" target="_blank" rel="me noreferrer">ORCID 0009-0005-5804-5011 ↗</a>
+          <span><span class="lang lang-ru">Частный проект</span><span class="lang lang-en">Private project</span></span>
+        </div>
+      </div>
+    </header>
+
+    <article class="technical-article rabbithole-technical-article">
+      <div class="article-language rabbit-article-intro lang lang-ru">
+        <aside class="rabbit-scope-notice" aria-label="Важная информация">
+          <strong>Не является рекламой VPN</strong>
+          <p>Это технический разбор внутренней панели управления. Материал не предлагает услугу, не содержит ссылки для подключения и посвящён только архитектуре программного обеспечения.</p>
+        </aside>
+        <p class="article-lead">Исходная задача выглядела компактно: принять оплату, создать клиента в 3x-ui и отправить человеку конфигурацию. На практике между этими действиями нет общей транзакции. Платёжная система, PostgreSQL, Telegram и каждая панель 3x-ui могут ответить в разное время — или не ответить вовсе.</p>
+
+        <figure class="rabbit-background-video" role="img" aria-label="Фоновая анимация с кроликом за ноутбуком">
+          <div class="rabbit-background-media" aria-hidden="true">
+            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+          </div>
+        </figure>
+
+        <p>Готовые платёжные модули не закрывали нужный сценарий. Они обычно считали входящее уведомление окончательной истиной, ожидали заранее заданную сумму и не знали, что после зачисления нужно согласованно изменить несколько узлов. Поэтому я решил реализовать прикладную границу с YooMoney внутри собственной будущей панели: отдельный обработчик проверяет операцию, вычисляет сумму зачисления и передаёт подтверждённый результат в общий журнал.</p>
+
+        <ul class="article-flow">
+          <li><span>01</span><strong>Намерение</strong><small>сумма, услуга, непрозрачная метка</small></li>
+          <li><span>02</span><strong>Подтверждение</strong><small>подпись, операция, фактическая сумма</small></li>
+          <li><span>03</span><strong>Доступ</strong><small>желаемое состояние нескольких 3x-ui</small></li>
+          <li><span>04</span><strong>Сверка</strong><small>повторы, расхождения, восстановление</small></li>
+        </ul>
+      </div>
+
+      <div class="article-language rabbit-article-body lang lang-ru">
+        <h2>Исходная задача и ограничения</h2>
+
+        <p>Пользователю нужна была понятная цепочка: выбрать услугу в Telegram, пополнить баланс удобным способом и получить одну ссылку или QR-код. Для составной услуги за этим простым интерфейсом стоят несколько клиентов на разных 3x-ui-направлениях с одинаковыми сроками и лимитами.</p>
+
+        <p>Система должна принимать произвольное пополнение, а не только точную цену тарифа. После оплаты важно зачислить фактически внесённую сумму, отдельно списать стоимость услуги и сохранить остаток. Продление считается календарным месяцем, а не условными 30 днями. Администратору при этом нужны состояние всех направлений, журнал платежей и возможность безопасного ручного вмешательства.</p>
+
+        <p>Нагрузка измеряется единицами действий в минуту, поэтому я оставил развёртывание компактным. Требования к целостности от этого не меняются: повторное уведомление не должно удваивать баланс; частично недоступный набор 3x-ui не должен создавать половину составной подписки; ручное изменение панели не должно оставаться незамеченным.</p>
+
+        <h2>Почему я реализовал свой обработчик платежей</h2>
+
+        <p>YooMoney остаётся платёжным провайдером. Собственный компонент отвечает за прикладную часть: создаёт непрозрачную метку без Telegram ID, принимает уведомление, проверяет подпись HMAC-SHA256, тип операции, валюту и идентификатор, а затем связывает подтверждение с ожидаемой операцией пользователя.</p>
+
+        <p>Уведомление — быстрый путь, но не единственный. Если оно не дошло, пользователь может запустить проверку кнопкой, а фоновая задача раз в минуту сверяет незавершённые платежи через <code>operation-history</code>. Все три пути сходятся в один обработчик и записывают источник подтверждения. Входящие уведомления получают отдельный журнал: адрес источника, метка, операция, результат проверки подписи и ошибка применения.</p>
+
+        <p>Есть ещё одна неочевидная деталь: сумма уведомления может означать сумму после комиссии. Для карточного пополнения обработчик по типу события и, когда возможно, по <code>operation-details</code> определяет канал и восстанавливает сумму до комиссии. Запланированная сумма не подменяет фактическую: в одной из ранних версий я исправил ошибку, при которой баланс мог пополняться минимум на ожидаемое значение.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Восстановление суммы · упрощённый фрагмент</span><div class="article-code-actions"><b>payments.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="go">func creditedAmount(kind string, netMinor int64) int64 {
+    switch kind {
+    case "card":
+        return int64(math.Round(float64(netMinor) / 0.97))
+    case "wallet":
+        return netMinor
+    default:
+        return netMinor
+    }
+}</code></pre>
+        </div>
+
+        <h2>Платёж ещё не означает готовую подписку</h2>
+
+        <p>Подтверждение платежа атомарно меняет транзакцию и баланс в PostgreSQL. Здесь же закрывается ожидаемое пополнение, фиксируется промокод и рассчитывается реферальное начисление. Создание клиентов 3x-ui начинается только после фиксации денег и желаемого состояния.</p>
+
+        <p>Защита от повторов находится не в одном условии, а в нескольких слоях. Пара «провайдер — идентификатор операции» и внутренний ключ идемпотентности уникальны. Строка транзакции блокируется через <code>FOR UPDATE</code>; уже завершённый платёж возвращает <code>already_processed</code>. Аналогично обновление Telegram получает короткую аренду: неудачная обработка освобождает маркер и может быть повторена, завершённая больше не выполняется.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Один платёж применяется один раз · схема</span><div class="article-code-actions"><b>apply-payment.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="go">payment := lockByLabelOrOperationID(tx, label, operationID)
+if payment.Status == "succeeded" {
+    return AlreadyProcessed
+}
+
+markSucceeded(tx, payment.ID, operationID, actualAmount, source)
+creditBalance(tx, payment.UserID, actualAmount)
+completePendingOperation(tx, payment.UserID, label)
+
+return tx.Commit()</code></pre>
+        </div>
+
+        <h2>Желаемое состояние вместо длинной транзакции</h2>
+
+        <p>В первой реализации я менял 3x-ui прямо внутри транзакции БД. История коммитов показала, почему это плохо: сетевой запрос удерживает блокировки, а успешный внешний вызов всё равно нельзя отменить откатом PostgreSQL. При обрыве между API и <code>COMMIT</code> панель и база расходятся.</p>
+
+        <p>Теперь транзакция только записывает желаемые параметры узла: входящее правило, адрес и идентификатор клиента, срок, лимиты и поколение операции. После <code>COMMIT</code> обработчик получает задачу с пятиминутной арендой, обращается к нужному адаптеру 3x-ui и завершает её лишь тогда, когда маркер аренды и поколение всё ещё совпадают. Если желаемое состояние успело измениться, старый результат не может затереть новое.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Аренда и поколение задачи · сокращённый SQL</span><div class="article-code-actions"><b>provision.sql</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="sql">UPDATE subscription_nodes
+SET provisioning_status = 'processing',
+    provisioning_attempts = provisioning_attempts + 1,
+    provisioning_lease_until = NOW() + INTERVAL '5 minutes',
+    provisioning_claim_token = $claim
+WHERE id = $node
+  AND provisioning_status &lt;&gt; 'done'
+  AND (provisioning_lease_until IS NULL
+       OR provisioning_lease_until &lt;= NOW())
+RETURNING provisioning_generation;</code></pre>
+        </div>
+
+        <h2>Почему я выбрал Go, PostgreSQL и два процесса</h2>
+
+        <p><strong>Go</strong> я выбрал из-за небольшого исполняемого файла, явных таймаутов и общего кода для HTTP, Telegram и адаптеров 3x-ui. <strong>PostgreSQL</strong> одновременно служит журналом денег, источником желаемого состояния и надёжной очередью небольшой нагрузки: частичные уникальные индексы, блокировки строк, аренды и поколения здесь полезнее отдельного брокера.</p>
+
+        <p>Один образ запускается в двух ролях. Процесс <code>bot</code> отвечает за Telegram, платёжные маршруты, выдачу агрегированных подписок и быстрые попытки применения. Процесс <code>worker</code> сверяет сроки, автопродление, незавершённую выдачу доступа и фактическое состояние 3x-ui. PostgreSQL остаётся общей точкой согласования, а наружу через Nginx публикуется только HTTP-контур бота.</p>
+
+        <p>От Redis и распределённого брокера я отказался сознательно: для текущего профиля нагрузки они добавили бы больше эксплуатационных состояний, чем сняли. Это не универсальная рекомендация — при нескольких репликах, тяжёлых очередях или строгом времени доставки я бы пересмотрел эту границу.</p>
+
+        <h2>Контроль нескольких 3x-ui</h2>
+
+        <p>В текущей конфигурации код знает четыре логических направления 3x-ui. У каждого свой адаптер и входящее правило, а составная услуга разворачивает несколько узлов с общим сроком. Пользователь при этом получает одну токенизированную подписку с ограниченным сроком действия, а не набор внутренних адресов панели.</p>
+
+        <p>Интерфейс 3x-ui не является стабильным контрактом между версиями. Методы добавления и обновления клиента, формат отдельных полей и параметры VLESS менялись. Поэтому адаптер сначала читает входящее правило, находит клиента по идентификатору или адресу, пробует изменить его и только при подтверждённом отсутствии создаёт нового. Параметры ссылки строятся из фактической конфигурации, включая TLS, REALITY, WebSocket, gRPC или XHTTP.</p>
+
+        <h2>Сбои и компромиссы из истории проекта</h2>
+
+        <ol class="article-history">
+          <li><time>01.04</time><div><strong>Перестал доверять уведомлению только по факту доставки.</strong><p>Добавил секрет уведомлений Telegram, устранение повторов обновлений и более безопасный порядок привязки клиентов; позже дополнил YooMoney отдельной HMAC-проверкой и тестом.</p></div></li>
+          <li><time>21.04</time><div><strong>Перевёл баланс на фактическую сумму платежа.</strong><p>Убрал ожидаемое пополнение из роли нижней границы зачисления, а затем отдельно уточнил восстановление карточной суммы после комиссии.</p></div></li>
+          <li><time>26.05</time><div><strong>Зафиксировал версию 3x-ui как часть контракта.</strong><p>Поддержка v3.1 потребовала новых вариантов запросов. Различия оставил внутри адаптера, а не размазывал по прикладной логике.</p></div></li>
+          <li><time>15.07</time><div><strong>Вынес вызовы 3x-ui из транзакций PostgreSQL.</strong><p>Добавил состояния выдачи, аренду, поколение операции и повторную обработку; следующим изменением — компенсацию расхождений между БД и панелью.</p></div></li>
+          <li><time>18.07</time><div><strong>Убрал зависимость запуска от порядка контейнеров.</strong><p>Оба процесса теперь ожидают готовность PostgreSQL с повторными попытками, а не завершаются после первого неудачного подключения.</p></div></li>
+        </ol>
+
+        <h2>Что происходит при отказе</h2>
+
+        <ul class="article-checklist">
+          <li>не пришло уведомление — платёж может подтвердить пользовательская кнопка или фоновая сверка;</li>
+          <li>уведомление повторилось — уникальные ключи и блокировка строки возвращают уже готовый результат без второго начисления;</li>
+          <li>3x-ui недоступен — деньги и желаемое состояние остаются в БД, задача получает задержку и повтор;</li>
+          <li>клиента удалили или изменили вручную — фоновый процесс сравнивает активные неистёкшие подписки с панелью и ставит компенсацию;</li>
+          <li>во время запроса изменился срок или лимит — старое поколение не может завершить новую задачу;</li>
+          <li>ошибка становится повторяющейся — администратор получает уведомления на первой, третьей и затем каждой десятой попытке.</li>
+        </ul>
+
+        <div class="article-note">
+          <strong>Неизбежный компромисс</strong>
+          <p>Между PostgreSQL и несколькими 3x-ui нет общей распределённой транзакции. Я выбрал наблюдаемую согласованность: платёж фиксируется строго, доступ может короткое время оставаться в состоянии <code>pending</code>, а повторяемая операция доводит фактическую конфигурацию до желаемой. Коэффициент восстановления карточной суммы <code>0.97</code> — часть текущего договора с провайдером; при изменении комиссии я пересмотрю его.</p>
+        </div>
+
+        <h2>Измеримый результат</h2>
+
+        <p>Коммерческие показатели и пользовательские данные закрыты. Инженерный результат можно проверить по границам актуальной реализации:</p>
+
+        <ul class="article-metrics">
+          <li><strong>4</strong><span>логических направления 3x-ui в одном контуре управления</span></li>
+          <li><strong>3</strong><span>пути подтверждения платежа сходятся в одну идемпотентную операцию</span></li>
+          <li><strong>2</strong><span>процесса Go разделяют быстрый интерфейс и фоновое восстановление</span></li>
+          <li><strong>1</strong><span>агрегированная ссылка и QR скрывают устройство составной подписки</span></li>
+        </ul>
+
+        <p>Каждый подтверждённый платёж получает источник, фактическую сумму и запись аудита; каждый управляемый узел — желаемые параметры, число попыток, аренду, поколение и последнюю ошибку. Благодаря этому я могу ответить не только на вопрос «работает ли сейчас», но и восстановить, почему система пришла в текущее состояние.</p>
+
+        <div class="article-sources">
+          <span>Основание материала:</span>
+          <span>частный репозиторий · 52 изменения</span>
+          <span>контракты 3x-ui · журнал решений</span>
+        </div>
+      </div>
+
+      <div class="article-language rabbit-article-intro lang lang-en">
+        <aside class="rabbit-scope-notice" aria-label="Important information">
+          <strong>Not a VPN advertisement</strong>
+          <p>This is an engineering review of an internal control panel. It does not offer a service or contain a connection link; the subject is software architecture only.</p>
+        </aside>
+        <p class="article-lead">The initial task looked compact: accept a payment, create a 3x-ui client and send the connection details. In practice, there is no shared transaction across those actions. The payment provider, PostgreSQL, Telegram and each 3x-ui panel can respond at different times—or not respond at all.</p>
+
+        <figure class="rabbit-background-video" role="img" aria-label="Background animation of a rabbit working at a laptop">
+          <div class="rabbit-background-media" aria-hidden="true">
+            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+          </div>
+        </figure>
+
+        <p>Off-the-shelf payment modules did not fit this workflow. They commonly treated a webhook as the final truth, expected a fixed amount and knew nothing about applying one purchase to several nodes. I therefore decided to implement the YooMoney application boundary inside my future control panel: a dedicated handler verifies the operation, calculates the credited amount and records one confirmed result in the shared ledger.</p>
+
+        <ul class="article-flow">
+          <li><span>01</span><strong>Intent</strong><small>amount, product, opaque label</small></li>
+          <li><span>02</span><strong>Confirmation</strong><small>signature, operation, actual amount</small></li>
+          <li><span>03</span><strong>Access</strong><small>desired state across several 3x-ui nodes</small></li>
+          <li><span>04</span><strong>Reconcile</strong><small>retries, drift and recovery</small></li>
+        </ul>
+      </div>
+
+      <div class="article-language rabbit-article-body lang lang-en">
+        <h2>The original task and its constraints</h2>
+
+        <p>The user-facing path had to stay simple: choose a product in Telegram, add funds conveniently and receive one link or QR code. A bundled product hides several clients on different 3x-ui targets, all sharing the same expiry and limits.</p>
+
+        <p>The system accepts an arbitrary top-up rather than only the exact subscription price. It must credit the amount actually paid, debit the product price separately and retain the remainder. Renewal means one calendar month, not an assumed 30 days. Administrators also need a view of every target, payment audit records and guarded manual controls.</p>
+
+        <p>Traffic is measured in single-digit actions per minute, so I kept the deployment compact. The consistency requirements remain: a repeated notification must not duplicate credit, partial 3x-ui availability must not create half a bundle, and a manual panel edit must not remain invisible.</p>
+
+        <h2>Why I implemented the payment boundary</h2>
+
+        <p>YooMoney remains the payment provider. The custom component owns application semantics: it creates an opaque label without a Telegram ID, receives the notification, verifies its HMAC-SHA256 signature, type, currency and operation ID, and links it to a pending user operation.</p>
+
+        <p>The webhook is the fast path, not the only path. A user can request a check when delivery fails, while a background task compares pending payments through <code>operation-history</code> every minute. All three paths converge on the same handler and store the confirmation source. Incoming notifications have a separate audit trail covering source address, label, operation, signature outcome and application error.</p>
+
+        <p>Notification amount has another subtlety: it may be net of commission. For card top-ups the handler uses the event type and, when available, <code>operation-details</code> to identify the channel and reconstruct the gross amount. The expected top-up never replaces the actual payment; in an early version I fixed a path that credited at least the planned amount.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Gross amount reconstruction · simplified</span><div class="article-code-actions"><b>payments.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="go">func creditedAmount(kind string, netMinor int64) int64 {
+    switch kind {
+    case "card":
+        return int64(math.Round(float64(netMinor) / 0.97))
+    case "wallet":
+        return netMinor
+    default:
+        return netMinor
+    }
+}</code></pre>
+        </div>
+
+        <h2>A confirmed payment is not yet a subscription</h2>
+
+        <p>Payment confirmation updates the transaction and balance atomically in PostgreSQL. The same transaction closes the pending top-up, records a promotion use and calculates referral credit. 3x-ui provisioning starts only after money and desired state are committed.</p>
+
+        <p>Duplicate protection is layered rather than reduced to one <code>if</code>. Both the provider-operation pair and the internal idempotency key are unique. The transaction row is locked with <code>FOR UPDATE</code>; a completed payment returns <code>already_processed</code>. Telegram updates use a similar short lease: a failed handler releases its claim for retry, while a completed update cannot run again.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Apply one payment once · outline</span><div class="article-code-actions"><b>apply-payment.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="go">payment := lockByLabelOrOperationID(tx, label, operationID)
+if payment.Status == "succeeded" {
+    return AlreadyProcessed
+}
+
+markSucceeded(tx, payment.ID, operationID, actualAmount, source)
+creditBalance(tx, payment.UserID, actualAmount)
+completePendingOperation(tx, payment.UserID, label)
+
+return tx.Commit()</code></pre>
+        </div>
+
+        <h2>Desired state instead of a long transaction</h2>
+
+        <p>In the first implementation I changed 3x-ui inside a database transaction. Commit history shows why this was wrong: a network call holds locks, while a successful external mutation cannot be undone by rolling PostgreSQL back. A failure between the API response and <code>COMMIT</code> leaves the panel and database apart.</p>
+
+        <p>The transaction now records only the desired node state: inbound, email, client ID, expiry, limits and operation generation. After commit, a handler claims the job with a five-minute lease, calls the selected 3x-ui adapter, and completes it only when the claim and generation still match. A stale result cannot overwrite newer intent.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Provisioning lease and generation · shortened SQL</span><div class="article-code-actions"><b>provision.sql</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="sql">UPDATE subscription_nodes
+SET provisioning_status = 'processing',
+    provisioning_attempts = provisioning_attempts + 1,
+    provisioning_lease_until = NOW() + INTERVAL '5 minutes',
+    provisioning_claim_token = $claim
+WHERE id = $node
+  AND provisioning_status &lt;&gt; 'done'
+  AND (provisioning_lease_until IS NULL
+       OR provisioning_lease_until &lt;= NOW())
+RETURNING provisioning_generation;</code></pre>
+        </div>
+
+        <h2>Why I chose Go, PostgreSQL and two processes</h2>
+
+        <p>I chose <strong>Go</strong> for a small executable, explicit timeouts and shared code for HTTP, Telegram and 3x-ui adapters. <strong>PostgreSQL</strong> acts as the money ledger, desired-state store and durable low-volume queue: partial unique indexes, row locks, leases and generations remove the need for a separate broker here.</p>
+
+        <p>One image runs in two roles. <code>bot</code> handles Telegram, payment routes, combined subscriptions and immediate apply attempts. <code>worker</code> reconciles expiry, auto-renewal, unfinished provisioning and actual 3x-ui state. PostgreSQL is the shared coordination point; Nginx exposes only the bot's HTTP surface.</p>
+
+        <p>I deliberately omitted Redis and a distributed broker for this workload. With several replicas, heavier queues or a strict delivery deadline, I would revisit that boundary.</p>
+
+        <h2>Controlling several 3x-ui targets</h2>
+
+        <p>The current code knows four logical 3x-ui targets. Each has its own adapter and inbound; a bundled product stages several nodes with one expiry. The user receives one time-limited tokenised subscription instead of internal panel addresses.</p>
+
+        <p>3x-ui does not provide a stable API contract across versions. Client mutation methods, field shapes and VLESS parameters have changed. The adapter reads the inbound, finds a client by ID or email, attempts a patch and creates a client only after a confirmed not-found result. Public connection parameters are built from the actual inbound configuration, including TLS, REALITY, WebSocket, gRPC or XHTTP.</p>
+
+        <h2>Failures and compromises found in history</h2>
+
+        <ol class="article-history">
+          <li><time>01 Apr</time><div><strong>Stopped trusting delivery alone.</strong><p>Added a Telegram webhook secret, update deduplication and safer bind ordering, then gave YooMoney an independent HMAC verifier and test.</p></div></li>
+          <li><time>21 Apr</time><div><strong>Moved the balance to the actual payment.</strong><p>Removed the planned top-up as a credit floor, then refined card gross reconstruction separately.</p></div></li>
+          <li><time>26 May</time><div><strong>Made the 3x-ui version part of the contract.</strong><p>Supporting v3.1 required additional request variants. Kept compatibility handling inside the adapter.</p></div></li>
+          <li><time>15 Jul</time><div><strong>Moved 3x-ui calls outside PostgreSQL transactions.</strong><p>Added provisioning states, leases, generations and retry processing; the next change added drift compensation.</p></div></li>
+          <li><time>18 Jul</time><div><strong>Removed startup's dependency on container timing.</strong><p>Both processes now wait and retry while PostgreSQL becomes ready instead of exiting after the first failed connection.</p></div></li>
+        </ol>
+
+        <h2>Failure behaviour</h2>
+
+        <ul class="article-checklist">
+          <li>a missing webhook is replaced by the user check or background reconciliation;</li>
+          <li>a repeated webhook meets unique keys and a row lock, returning the completed result without another credit;</li>
+          <li>an unavailable 3x-ui leaves money and desired state intact while provisioning is delayed and retried;</li>
+          <li>a client changed or removed manually is detected by comparing active unexpired subscriptions to the panel;</li>
+          <li>a changed expiry or limit advances the generation, preventing an older job from completing the new one;</li>
+          <li>repeated failures notify administrators on the first, third and then every tenth attempt.</li>
+        </ul>
+
+        <div class="article-note">
+          <strong>The unavoidable compromise</strong>
+          <p>PostgreSQL and several 3x-ui panels cannot share one distributed transaction. I chose observable consistency: payment is committed strictly, access may briefly remain <code>pending</code>, and a repeatable operation brings actual configuration to the desired state. The <code>0.97</code> card gross-up factor is part of the current provider contract; I will review it if that fee changes.</p>
+        </div>
+
+        <h2>Measurable result</h2>
+
+        <p>Commercial figures and user data remain private. The engineering result can be verified from the current implementation boundaries:</p>
+
+        <ul class="article-metrics">
+          <li><strong>4</strong><span>logical 3x-ui targets under one control plane</span></li>
+          <li><strong>3</strong><span>payment confirmation paths converge on one idempotent operation</span></li>
+          <li><strong>2</strong><span>Go processes separate the immediate interface from background recovery</span></li>
+          <li><strong>1</strong><span>combined link and QR code hide the bundled subscription topology</span></li>
+        </ul>
+
+        <p>Each confirmed payment stores its source, actual amount and audit record; each managed node stores desired parameters, attempt count, lease, generation and last error. This lets me explain not only whether the system works now, but how it reached its current state.</p>
+
+        <div class="article-sources">
+          <span>Material based on:</span>
+          <span>private repository · 52 changes</span>
+          <span>3x-ui contracts · decision history</span>
+        </div>
+      </div>
+
+      <figure class="astro-architecture-figure rabbit-architecture-figure" data-rabbit-architecture>
+        <div class="astro-architecture-hud" aria-hidden="true">
+          <span>RABBITHOLE VPN · <span class="lang lang-ru">КОНТУР ОПЕРАЦИИ</span><span class="lang lang-en">OPERATION PIPELINE</span></span>
+          <strong data-rabbit-stage-label>НАМЕРЕНИЕ · ПЛАТЁЖ СОЗДАН</strong>
+          <i data-rabbit-stage-index>01 / 04</i>
+        </div>
+        <div class="astro-architecture-canvas">
+          <svg viewBox="0 0 1180 700" aria-hidden="true" focusable="false">
+            <defs>
+              <pattern id="rabbit-grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" class="astro-grid-line"></path></pattern>
+              <linearGradient id="rabbit-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#142c3d"></stop><stop offset="1" stop-color="#07111f"></stop></linearGradient>
+              <radialGradient id="rabbit-core" cx="50%" cy="42%" r="68%"><stop offset="0" stop-color="#173b4a"></stop><stop offset=".62" stop-color="#081522"></stop><stop offset="1" stop-color="#030811"></stop></radialGradient>
+              <filter id="rabbit-glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+              <marker id="rabbit-arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4 0 8Z" fill="#73d5da"></path></marker>
+              <marker id="rabbit-arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4 0 8Z" fill="#ff7657"></path></marker>
+            </defs>
+
+            <rect width="1180" height="700" fill="url(#rabbit-grid)"></rect>
+            <circle cx="590" cy="350" r="226" class="astro-orbit"></circle>
+            <circle cx="590" cy="350" r="154" class="astro-orbit astro-orbit-inner"></circle>
+            <path d="M42 350H1138M590 42V658" class="astro-axis"></path>
+
+            <g>
+              <path d="M245 154C345 210 431 270 505 324" class="astro-channel rabbit-channel-intent" data-rabbit-channel="intent" marker-end="url(#rabbit-arrow-cyan)"></path>
+              <path d="M680 319C748 264 778 215 805 169" class="astro-channel rabbit-channel-intent" data-rabbit-channel="intent" marker-end="url(#rabbit-arrow-orange)"></path>
+              <path d="M930 154C895 154 884 154 862 154" class="astro-channel rabbit-channel-confirm" data-rabbit-channel="confirm" marker-end="url(#rabbit-arrow-orange)"></path>
+              <path d="M750 198C707 260 673 300 646 321" class="astro-channel rabbit-channel-confirm" data-rabbit-channel="confirm" marker-end="url(#rabbit-arrow-orange)"></path>
+              <path d="M514 403C421 450 326 507 249 548" class="astro-channel rabbit-channel-confirm" data-rabbit-channel="confirm" marker-end="url(#rabbit-arrow-cyan)"></path>
+              <path d="M250 568H330" class="astro-channel rabbit-channel-provision" data-rabbit-channel="provision" marker-end="url(#rabbit-arrow-cyan)"></path>
+              <path d="M570 568H650" class="astro-channel rabbit-channel-provision" data-rabbit-channel="provision" marker-end="url(#rabbit-arrow-cyan)"></path>
+              <path d="M870 568C904 552 927 539 949 526" class="astro-channel rabbit-channel-provision" data-rabbit-channel="provision" marker-end="url(#rabbit-arrow-orange)"></path>
+              <path d="M946 595C850 641 734 638 663 607" class="astro-channel rabbit-channel-reconcile" data-rabbit-channel="reconcile" marker-end="url(#rabbit-arrow-orange)"></path>
+              <path d="M653 616C523 653 360 642 246 594" class="astro-channel rabbit-channel-reconcile" data-rabbit-channel="reconcile" marker-end="url(#rabbit-arrow-cyan)"></path>
+              <path d="M671 398C777 438 870 474 947 501" class="astro-channel rabbit-channel-reconcile" data-rabbit-channel="reconcile" marker-end="url(#rabbit-arrow-cyan)"></path>
+            </g>
+
+            <g class="astro-flow rabbit-flow" data-rabbit-flow="intent"><circle r="5"></circle><animateMotion dur="3.5s" repeatCount="indefinite" path="M245 154C345 210 431 270 505 324"></animateMotion></g>
+            <g class="astro-flow rabbit-flow" data-rabbit-flow="intent"><rect width="11" height="6" rx="2"></rect><animateMotion dur="3.8s" begin="-.8s" repeatCount="indefinite" path="M680 319C748 264 778 215 805 169"></animateMotion></g>
+            <g class="astro-flow rabbit-flow rabbit-flow-orange" data-rabbit-flow="confirm"><circle r="5"></circle><animateMotion dur="3.2s" repeatCount="indefinite" path="M930 154C895 154 884 154 862 154"></animateMotion></g>
+            <g class="astro-flow rabbit-flow rabbit-flow-orange" data-rabbit-flow="confirm"><rect width="11" height="6" rx="2"></rect><animateMotion dur="4.1s" begin="-1.2s" repeatCount="indefinite" path="M750 198C707 260 673 300 646 321"></animateMotion></g>
+            <g class="astro-flow rabbit-flow" data-rabbit-flow="provision"><rect width="11" height="6" rx="2"></rect><animateMotion dur="3.4s" repeatCount="indefinite" path="M250 568H330"></animateMotion></g>
+            <g class="astro-flow rabbit-flow rabbit-flow-orange" data-rabbit-flow="provision"><circle r="5"></circle><animateMotion dur="4.2s" begin="-1.1s" repeatCount="indefinite" path="M870 568C904 552 927 539 949 526"></animateMotion></g>
+            <g class="astro-flow rabbit-flow rabbit-flow-orange" data-rabbit-flow="reconcile"><circle r="5"></circle><animateMotion dur="4.5s" repeatCount="indefinite" path="M946 595C850 641 734 638 663 607"></animateMotion></g>
+            <g class="astro-flow rabbit-flow" data-rabbit-flow="reconcile"><rect width="11" height="6" rx="2"></rect><animateMotion dur="4.8s" begin="-1.8s" repeatCount="indefinite" path="M653 616C523 653 360 642 246 594"></animateMotion></g>
+
+            <g class="astro-architecture-node" data-rabbit-node="intent" transform="translate(40 96)">
+              <rect width="205" height="116" rx="8" fill="url(#rabbit-panel)"></rect>
+              <circle cx="36" cy="43" r="22" class="astro-platform-circle"></circle><path d="M23 42L51 29 44 57 34 48Z" class="astro-platform-mark"></path>
+              <text x="74" y="38" class="astro-node-title">TELEGRAM</text>
+              <text x="74" y="59" class="astro-node-meta lang lang-ru">ПОЛЬЗОВАТЕЛЬ · АДМИН</text><text x="74" y="59" class="astro-node-meta lang lang-en">USER · ADMIN</text>
+              <path d="M18 79H187" class="astro-node-divider"></path>
+              <text x="18" y="101" class="astro-node-status lang lang-ru">МЕНЮ · БАЛАНС · QR</text><text x="18" y="101" class="astro-node-status lang lang-en">MENU · BALANCE · QR</text>
+            </g>
+
+            <g class="astro-architecture-node" data-rabbit-node="intent confirm" transform="translate(650 96)">
+              <path d="M0 0H194L214 20V116H0Z" fill="url(#rabbit-panel)"></path>
+              <text x="18" y="31" class="astro-node-title lang lang-ru">ОБРАБОТЧИК ПЛАТЕЖЕЙ</text><text x="18" y="31" class="astro-node-title lang lang-en">PAYMENT HANDLER</text>
+              <path d="M18 44H194" class="astro-node-divider"></path>
+              <text x="18" y="68" class="astro-node-meta">LABEL · HMAC-SHA256</text>
+              <text x="18" y="88" class="astro-node-meta lang lang-ru">СУММА · ИСТОЧНИК · АУДИТ</text><text x="18" y="88" class="astro-node-meta lang lang-en">AMOUNT · SOURCE · AUDIT</text>
+              <circle cx="189" cy="95" r="5" class="astro-node-led astro-node-led-alt"></circle>
+            </g>
+
+            <g class="astro-architecture-node" data-rabbit-node="confirm" transform="translate(930 96)">
+              <rect width="210" height="116" rx="8" fill="url(#rabbit-panel)"></rect>
+              <text x="18" y="34" class="astro-node-title">YOOMONEY</text>
+              <text x="18" y="57" class="astro-node-meta">WEBHOOK · OPERATION API</text>
+              <path d="M18 72H192" class="astro-node-divider"></path>
+              <text x="18" y="98" class="astro-node-status lang lang-ru">3 ПУТИ ПОДТВЕРЖДЕНИЯ</text><text x="18" y="98" class="astro-node-status lang lang-en">3 CONFIRMATION PATHS</text>
+            </g>
+
+            <g class="astro-core rabbit-core" data-rabbit-node="intent confirm reconcile" transform="translate(590 350)">
+              <circle r="116" class="astro-core-halo"></circle><circle r="94" fill="url(#rabbit-core)" class="astro-core-body"></circle>
+              <path d="M-66-17H66M-66 27H66" class="astro-core-divider"></path>
+              <text y="-31" text-anchor="middle" class="astro-core-go">GO</text>
+              <text y="8" text-anchor="middle" class="astro-core-name">RABBITHOLE</text>
+              <text y="51" text-anchor="middle" class="astro-core-meta lang lang-ru">БОТ · HTTP · АДМИН-КОНТУР</text><text y="51" text-anchor="middle" class="astro-core-meta lang lang-en">BOT · HTTP · ADMIN CONTROL</text>
+            </g>
+
+            <g class="astro-architecture-node" data-rabbit-node="confirm provision reconcile" transform="translate(40 510)">
+              <rect width="210" height="126" rx="8" fill="url(#rabbit-panel)"></rect>
+              <ellipse cx="40" cy="35" rx="22" ry="8" class="astro-store-disk"></ellipse><path d="M18 35V76C18 87 62 87 62 76V35M18 55C18 66 62 66 62 55" class="astro-store-lines"></path>
+              <text x="80" y="39" class="astro-node-title">POSTGRESQL</text>
+              <text x="80" y="58" class="astro-node-meta lang lang-ru">БАЛАНС</text><text x="80" y="58" class="astro-node-meta lang lang-en">BALANCE</text>
+              <text x="80" y="71" class="astro-node-meta lang lang-ru">ЖЕЛАЕМОЕ</text><text x="80" y="71" class="astro-node-meta lang lang-en">DESIRED STATE</text>
+              <text x="80" y="84" class="astro-node-meta lang lang-ru">СОСТОЯНИЕ</text>
+              <text x="18" y="108" class="astro-node-status">UNIQUE · LOCK · AUDIT</text>
+            </g>
+
+            <g class="astro-architecture-node" data-rabbit-node="provision" transform="translate(330 520)">
+              <path d="M0 0H220L240 20V116H0Z" fill="url(#rabbit-panel)"></path>
+              <text x="18" y="31" class="astro-node-title lang lang-ru">ОЧЕРЕДЬ ВЫДАЧИ</text><text x="18" y="31" class="astro-node-title lang lang-en">PROVISIONING QUEUE</text>
+              <path d="M18 44H218" class="astro-node-divider"></path>
+              <text x="18" y="68" class="astro-node-meta">PENDING → PROCESSING → DONE</text>
+              <text x="18" y="89" class="astro-node-meta">LEASE · GENERATION · RETRY</text>
+              <circle cx="216" cy="95" r="5" class="astro-node-led"></circle>
+            </g>
+
+            <g class="astro-architecture-node" data-rabbit-node="provision reconcile" transform="translate(650 520)">
+              <path d="M0 0H202L220 18V116H0Z" fill="url(#rabbit-panel)"></path>
+              <circle cx="38" cy="48" r="19" class="astro-clock"></circle><path d="M38 36V48L48 54" class="astro-clock-hand"></path>
+              <text x="74" y="38" class="astro-node-title">WORKER</text>
+              <text x="74" y="59" class="astro-node-meta lang lang-ru">СРОКИ · ПОВТОРЫ</text><text x="74" y="59" class="astro-node-meta lang lang-en">EXPIRY · RETRIES</text>
+              <text x="18" y="95" class="astro-node-status lang lang-ru">СВЕРКА ФАКТА С БД</text><text x="18" y="95" class="astro-node-status lang lang-en">ACTUAL VS DESIRED</text>
+            </g>
+
+            <g class="astro-architecture-node rabbit-xui-cluster" data-rabbit-node="provision reconcile" transform="translate(945 460)">
+              <rect width="195" height="186" rx="10" fill="url(#rabbit-panel)"></rect>
+              <text x="18" y="28" class="astro-node-title">3X-UI CONTROL</text>
+              <text x="18" y="47" class="astro-node-meta lang lang-ru">4 НАПРАВЛЕНИЯ</text><text x="18" y="47" class="astro-node-meta lang lang-en">4 TARGETS</text>
+              <path d="M18 59H177" class="astro-node-divider"></path>
+              <g transform="translate(22 78)"><circle r="16"></circle><text text-anchor="middle" y="4">R</text></g>
+              <g transform="translate(73 78)"><circle r="16"></circle><text text-anchor="middle" y="4">D</text></g>
+              <g transform="translate(124 78)"><circle r="16"></circle><text text-anchor="middle" y="4">A1</text></g>
+              <g transform="translate(166 78)"><circle r="16"></circle><text text-anchor="middle" y="4">A2</text></g>
+              <path d="M22 105H166M22 105V126M73 105V126M124 105V126M166 105V126" class="rabbit-xui-bus"></path>
+              <text x="18" y="151" class="astro-node-meta">VLESS · LIMITS · EXPIRY</text>
+              <text x="18" y="174" class="astro-node-status">PATCH → ADD → RECONCILE</text>
+            </g>
+
+            <g class="astro-stage-legend" transform="translate(275 674)">
+              <circle cx="0" cy="0" r="4" data-rabbit-stage-dot="intent"></circle><text x="12" y="4" class="lang lang-ru">НАМЕРЕНИЕ</text><text x="12" y="4" class="lang lang-en">INTENT</text>
+              <circle cx="190" cy="0" r="4" data-rabbit-stage-dot="confirm"></circle><text x="202" y="4" class="lang lang-ru">ПЛАТЁЖ</text><text x="202" y="4" class="lang lang-en">PAYMENT</text>
+              <circle cx="350" cy="0" r="4" data-rabbit-stage-dot="provision"></circle><text x="362" y="4" class="lang lang-ru">ДОСТУП</text><text x="362" y="4" class="lang lang-en">ACCESS</text>
+              <circle cx="515" cy="0" r="4" data-rabbit-stage-dot="reconcile"></circle><text x="527" y="4" class="lang lang-ru">СВЕРКА</text><text x="527" y="4" class="lang lang-en">RECONCILE</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>
+          <span class="lang lang-ru">Демонстрация полного цикла: платёжное намерение, независимая проверка YooMoney, атомарная запись баланса и желаемого состояния, выдача доступа на нескольких 3x-ui и последующая сверка.</span>
+          <span class="lang lang-en">The complete cycle: payment intent, independent YooMoney verification, atomic balance and desired-state records, provisioning across several 3x-ui targets and subsequent reconciliation.</span>
+        </figcaption>
+      </figure>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К профилю<br>и другим проектам.</span><span class="lang lang-en">Back to the profile<br>and other work.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/">Вернуться на главную <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/">Back to home <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург · удалённо</span><span class="lang lang-en">Saint Petersburg · remote</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i>
+      <i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i>
+      <i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i>
+      <i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i>
+      <i class="energia-plume energia-plume-outer"></i>
+      <i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260728zi" defer></script>
+</body>
+</html>

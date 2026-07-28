@@ -18,20 +18,20 @@
   <meta property="og:site_name" content="Sergey Haeniken">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:locale:alternate" content="en_US">
-  <meta property="og:image" content="https://haeniken.com/assets/social-preview.jpg">
-  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social-preview.jpg">
+  <meta property="og:image" content="https://haeniken.com/assets/social/main-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/main-preview.jpg">
   <meta property="og:image:type" content="image/jpeg">
-  <meta property="og:image:width" content="1731">
-  <meta property="og:image:height" content="909">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Sergey Haeniken — DevOps / DevSecOps / SRE">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Sergey Haeniken — DevOps / DevSecOps / SRE">
   <meta name="twitter:description" content="Linux-инфраструктура, распределённые системы, надёжность, безопасность и автоматизация.">
-  <meta name="twitter:image" content="https://haeniken.com/assets/social-preview.jpg">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/main-preview.jpg">
   <meta name="twitter:image:alt" content="Sergey Haeniken — DevOps / DevSecOps / SRE">
   <title>Sergey Haeniken — DevOps / DevSecOps / SRE</title>
   <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.min.css?v=20260728ah">
+  <link rel="stylesheet" href="/styles.min.css?v=20260728az">
   <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
   <script type="application/ld+json">
   {
@@ -347,6 +347,10 @@
         <figure class="image-frame" data-ambient-scan>
           <picture>
             <source
+              media="(max-width: 520px)"
+              type="image/webp"
+              srcset="/assets/night-sky-original-480.webp">
+            <source
               type="image/webp"
               srcset="/assets/night-sky-original-640.webp 640w, /assets/night-sky-original-840.webp 840w, /assets/night-sky-original-1051.webp 1051w"
               sizes="(max-width: 1000px) 100vw, 48vw">
@@ -477,7 +481,7 @@
           <div class="timeline-meta">
             <h3>TIPPO Cloud Service</h3>
             <span><span class="lang lang-ru">Инженер DevOps / DevSecOps / SRE</span><span class="lang lang-en">DevOps / DevSecOps / SRE Engineer</span></span>
-            <span class="timeline-period"><time datetime="2024-03">2024</time>—<time datetime="2026-06">2026</time><span class="lang lang-ru"> · проектная работа</span><span class="lang lang-en"> · project role</span></span>
+            <span class="timeline-period"><time datetime="2024-03">2024</time><span class="lang lang-ru"> — настоящее время · проектная работа</span><span class="lang lang-en"> — present · project role</span></span>
           </div>
           <div class="timeline-detail">
             <p><span class="lang lang-ru">Архитектура и эксплуатация SaaS-инфраструктуры: 500+ клиентских ресурсов, 7 виртуальных и 6 физических серверов, более 75 ТБ данных.</span><span class="lang lang-en">Architecture and operations for SaaS infrastructure: 500+ client resources, 7 virtual and 6 physical servers, and 75+ TB of data.</span></p>
@@ -597,6 +601,10 @@
           <div>
             <h3>RabbitHole VPN</h3>
             <p><span class="lang lang-ru">Закрытая система на Go и PostgreSQL: Telegram-бот, фоновый обработчик и административный контур. Идемпотентно обрабатывает платежи, выдаёт и сверяет подписки через 3x-ui, формирует ссылки VLESS и QR-коды, контролирует сроки и автопродление.</span><span class="lang lang-en">A private Go and PostgreSQL system comprising a Telegram bot, background worker and administrative controls. It processes payments idempotently, provisions and reconciles subscriptions through 3x-ui, generates VLESS links and QR codes, and manages expiry and auto-renewal.</span></p>
+            <div class="project-links">
+              <a class="lang lang-ru" href="/articles/rabbithole-vpn/">Техническая заметка <span aria-hidden="true">→</span></a>
+              <a class="lang lang-en" href="/en/articles/rabbithole-vpn/">Technical note <span aria-hidden="true">→</span></a>
+            </div>
           </div>
         </article>
       </div>
@@ -843,6 +851,6 @@
       <i class="energia-plume energia-plume-core"></i>
     </span>
   </button>
-  <script src="/script.min.js?v=20260728za" defer></script>
+  <script src="/script.min.js?v=20260728zi" defer></script>
 </body>
 </html>
