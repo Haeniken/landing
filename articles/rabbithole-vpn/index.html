@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html lang="ru" data-language="ru">
+<html lang="ru" data-language="ru" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111f">
   <meta name="robots" content="index, follow, max-image-preview:large">
@@ -24,6 +24,10 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Панель RabbitHole: платежи, подписки и состояние 3x-ui">
+  <meta property="article:published_time" content="2026-07-28">
+  <meta property="article:modified_time" content="2026-07-28">
+  <meta property="article:author" content="https://haeniken.com/">
+  <meta property="article:section" content="Разработка панели управления">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Панель управления RabbitHole VPN: платежи и состояние 3x-ui">
   <meta name="twitter:description" content="Платёжный обработчик, журнал операций, очередь выдачи доступа и сверка нескольких 3x-ui в одном частном проекте.">
@@ -43,7 +47,8 @@
     "datePublished": "2026-07-28",
     "dateModified": "2026-07-28",
     "mainEntityOfPage": "https://haeniken.com/articles/rabbithole-vpn/",
-    "image": "https://haeniken.com/assets/social-preview.jpg",
+    "image": "https://haeniken.com/assets/social/rabbithole-preview.jpg",
+    "articleSection": "Разработка панели управления",
     "keywords": ["RabbitHole VPN", "Go", "PostgreSQL", "3x-ui", "YooMoney", "идемпотентность", "сверка состояния"],
     "author": {
       "@type": "Person",
@@ -127,7 +132,7 @@
 
         <figure class="rabbit-background-video" role="img" aria-label="Фоновая анимация с кроликом за ноутбуком">
           <div class="rabbit-background-media" aria-hidden="true">
-            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none"></video>
           </div>
         </figure>
 
@@ -229,11 +234,11 @@ RETURNING provisioning_generation;</code></pre>
         <h2>Сбои и компромиссы из истории проекта</h2>
 
         <ol class="article-history">
-          <li><time>01.04</time><div><strong>Перестал доверять уведомлению только по факту доставки.</strong><p>Добавил секрет уведомлений Telegram, устранение повторов обновлений и более безопасный порядок привязки клиентов; позже дополнил YooMoney отдельной HMAC-проверкой и тестом.</p></div></li>
-          <li><time>21.04</time><div><strong>Перевёл баланс на фактическую сумму платежа.</strong><p>Убрал ожидаемое пополнение из роли нижней границы зачисления, а затем отдельно уточнил восстановление карточной суммы после комиссии.</p></div></li>
-          <li><time>26.05</time><div><strong>Зафиксировал версию 3x-ui как часть контракта.</strong><p>Поддержка v3.1 потребовала новых вариантов запросов. Различия оставил внутри адаптера, а не размазывал по прикладной логике.</p></div></li>
-          <li><time>15.07</time><div><strong>Вынес вызовы 3x-ui из транзакций PostgreSQL.</strong><p>Добавил состояния выдачи, аренду, поколение операции и повторную обработку; следующим изменением — компенсацию расхождений между БД и панелью.</p></div></li>
-          <li><time>18.07</time><div><strong>Убрал зависимость запуска от порядка контейнеров.</strong><p>Оба процесса теперь ожидают готовность PostgreSQL с повторными попытками, а не завершаются после первого неудачного подключения.</p></div></li>
+          <li><time datetime="2026-04-01">01.04</time><div><strong>Перестал доверять уведомлению только по факту доставки.</strong><p>Добавил секрет уведомлений Telegram, устранение повторов обновлений и более безопасный порядок привязки клиентов; позже дополнил YooMoney отдельной HMAC-проверкой и тестом.</p></div></li>
+          <li><time datetime="2026-04-21">21.04</time><div><strong>Перевёл баланс на фактическую сумму платежа.</strong><p>Убрал ожидаемое пополнение из роли нижней границы зачисления, а затем отдельно уточнил восстановление карточной суммы после комиссии.</p></div></li>
+          <li><time datetime="2026-05-26">26.05</time><div><strong>Зафиксировал версию 3x-ui как часть контракта.</strong><p>Поддержка v3.1 потребовала новых вариантов запросов. Различия оставил внутри адаптера, а не размазывал по прикладной логике.</p></div></li>
+          <li><time datetime="2026-07-15">15.07</time><div><strong>Вынес вызовы 3x-ui из транзакций PostgreSQL.</strong><p>Добавил состояния выдачи, аренду, поколение операции и повторную обработку; следующим изменением — компенсацию расхождений между БД и панелью.</p></div></li>
+          <li><time datetime="2026-07-18">18.07</time><div><strong>Убрал зависимость запуска от порядка контейнеров.</strong><p>Оба процесса теперь ожидают готовность PostgreSQL с повторными попытками, а не завершаются после первого неудачного подключения.</p></div></li>
         </ol>
 
         <h2>Что происходит при отказе</h2>
@@ -281,7 +286,7 @@ RETURNING provisioning_generation;</code></pre>
 
         <figure class="rabbit-background-video" role="img" aria-label="Background animation of a rabbit working at a laptop">
           <div class="rabbit-background-media" aria-hidden="true">
-            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none" disablepictureinpicture tabindex="-1"></video>
+            <video data-lazy-background-video data-src-mobile="/assets/rabbithole/rabbit-background-720.mp4" data-src-desktop="/assets/rabbithole/rabbit-background-1280.mp4" data-poster="/assets/rabbithole/rabbit-background-poster.webp" width="1928" height="1074" muted loop playsinline preload="none"></video>
           </div>
         </figure>
 
@@ -383,11 +388,11 @@ RETURNING provisioning_generation;</code></pre>
         <h2>Failures and compromises found in history</h2>
 
         <ol class="article-history">
-          <li><time>01 Apr</time><div><strong>Stopped trusting delivery alone.</strong><p>Added a Telegram webhook secret, update deduplication and safer bind ordering, then gave YooMoney an independent HMAC verifier and test.</p></div></li>
-          <li><time>21 Apr</time><div><strong>Moved the balance to the actual payment.</strong><p>Removed the planned top-up as a credit floor, then refined card gross reconstruction separately.</p></div></li>
-          <li><time>26 May</time><div><strong>Made the 3x-ui version part of the contract.</strong><p>Supporting v3.1 required additional request variants. Kept compatibility handling inside the adapter.</p></div></li>
-          <li><time>15 Jul</time><div><strong>Moved 3x-ui calls outside PostgreSQL transactions.</strong><p>Added provisioning states, leases, generations and retry processing; the next change added drift compensation.</p></div></li>
-          <li><time>18 Jul</time><div><strong>Removed startup's dependency on container timing.</strong><p>Both processes now wait and retry while PostgreSQL becomes ready instead of exiting after the first failed connection.</p></div></li>
+          <li><time datetime="2026-04-01">01 Apr</time><div><strong>Stopped trusting delivery alone.</strong><p>Added a Telegram webhook secret, update deduplication and safer bind ordering, then gave YooMoney an independent HMAC verifier and test.</p></div></li>
+          <li><time datetime="2026-04-21">21 Apr</time><div><strong>Moved the balance to the actual payment.</strong><p>Removed the planned top-up as a credit floor, then refined card gross reconstruction separately.</p></div></li>
+          <li><time datetime="2026-05-26">26 May</time><div><strong>Made the 3x-ui version part of the contract.</strong><p>Supporting v3.1 required additional request variants. Kept compatibility handling inside the adapter.</p></div></li>
+          <li><time datetime="2026-07-15">15 Jul</time><div><strong>Moved 3x-ui calls outside PostgreSQL transactions.</strong><p>Added provisioning states, leases, generations and retry processing; the next change added drift compensation.</p></div></li>
+          <li><time datetime="2026-07-18">18 Jul</time><div><strong>Removed startup's dependency on container timing.</strong><p>Both processes now wait and retry while PostgreSQL becomes ready instead of exiting after the first failed connection.</p></div></li>
         </ol>
 
         <h2>Failure behaviour</h2>
