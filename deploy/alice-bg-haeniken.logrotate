@@ -1,0 +1,18 @@
+/home/container/docker/landing-nginx/logs/*.log {
+    daily
+    maxsize 25M
+    rotate 14
+    maxage 30
+    missingok
+    notifempty
+    compress
+    delaycompress
+    dateext
+    dateformat -%Y%m%d
+    create 0640 root root
+    su root root
+    sharedscripts
+    postrotate
+        /usr/bin/docker kill --signal=USR1 landing-nginx >/dev/null 2>&1 || true
+    endscript
+}
