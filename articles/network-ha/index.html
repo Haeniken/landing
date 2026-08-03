@@ -25,7 +25,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="BGP, BFD и отказоустойчивость производственной сети">
   <meta property="article:published_time" content="2026-07-28T12:56:02+03:00">
-  <meta property="article:modified_time" content="2026-07-28T13:32:05+03:00">
+  <meta property="article:modified_time" content="2026-08-03T17:45:44+03:00">
   <meta property="article:author" content="https://haeniken.com/">
   <meta property="article:section" content="Сетевая инфраструктура">
   <meta name="twitter:card" content="summary_large_image">
@@ -45,7 +45,7 @@
     "description": "Практический разбор отказоустойчивой сети с WireGuard, IPsec, BGP, BFD, мониторингом и эксплуатационным ранбуком.",
     "inLanguage": "ru",
     "datePublished": "2026-07-28T12:56:02+03:00",
-    "dateModified": "2026-07-28T13:32:05+03:00",
+    "dateModified": "2026-08-03T17:45:44+03:00",
     "mainEntityOfPage": "https://haeniken.com/articles/network-ha/",
     "image": "https://haeniken.com/assets/social/network-ha-preview.jpg",
     "keywords": ["BGP", "BFD", "WireGuard", "IPsec", "FRR", "StrongSwan", "отказоустойчивая сеть", "ранбук"],
@@ -330,7 +330,7 @@
 
         <p>Ключевое решение — не считать адрес WireGuard адресом сервера. Каждый узел получил собственный постоянный <code>/32</code> на локальном интерфейсе <code>mesh0</code>. Именно этот адрес публикуется во внутреннем DNS и используется приложениями.</p>
 
-        <p>У WireGuard и IPsec отдельные транзитные сети. WireGuard работает с <code>Table = off</code>, StrongSwan не устанавливает прикладные маршруты самостоятельно. Единственным источником решения о пути становится FRR: к одному удалённому <code>/32</code> он видит два BGP-маршрута.</p>
+        <p>У WireGuard и IPsec отдельные транзитные сети. WireGuard работает с <code>Table = off</code>, StrongSwan не устанавливает прикладные маршруты самостоятельно. Маршрут выбирает только FRR: к одному удалённому <code>/32</code> он видит два BGP-маршрута.</p>
 
         <ul class="article-flow network-flow">
           <li><span>01</span><strong>Адрес узла</strong><small>постоянный /32 на mesh0</small></li>
@@ -370,9 +370,9 @@ router bgp 64512
 
         <h2>BFD без гонки за миллисекундами</h2>
 
-        <p>В этом контуре не требовалось переключение уровня магистрального маршрутизатора. Важнее было не получить ложный отказ из-за короткой потери пакетов или нагрузки на виртуальную машину. Поэтому контроль выполняется раз в 60 секунд с множителем 3. В зависимости от фазы таймера обнаружение занимает примерно две-три минуты, но остаётся предсказуемым.</p>
+        <p>В этом контуре не требовалась скорость переключения магистрального маршрутизатора. BFD отправляет проверку раз в минуту, а три пропущенных ответа подряд снимают соседство. После обрыва маршрут меняется за две-три минуты: короткой потери пакетов или занятой виртуальной машины для этого недостаточно.</p>
 
-        <blockquote>Интервалы BFD выбраны под характер контура: лучше подтвердить устойчивый отказ за две-три минуты, чем менять маршрут после краткой потери пакетов.</blockquote>
+        <blockquote>Две-три минуты здесь — осознанный запас от кратких потерь пакетов, а не попытка получить самое быстрое переключение.</blockquote>
 
         <p>В штатном состоянии оба транспорта подняты заранее. Переключение не ждёт нового согласования IKE: BGP удаляет основной маршрут и сразу использует уже существующий путь через XFRM. После восстановления соседства более высокий <code>local-preference</code> возвращает трафик в WireGuard.</p>
 
@@ -380,7 +380,7 @@ router bgp 64512
 
         <p>Остановка всего WireGuard-интерфейса — плохой тест: она одновременно задевает все связи узла. В ранбуке тест ограничен одной парой. Временные правила блокируют BFD и BGP только от выбранного соседа, после чего скрипт ждёт маршрут через XFRM, проверяет ICMP и прикладной запрос, снимает блокировку и подтверждает возврат основного пути.</p>
 
-        <p>Контролируемая проверка вошла в обслуживание действующего контура, а не осталась разовой приёмкой. Я периодически запускаю её для выбранной пары: фиксирую маршрут до переключения, работу через резерв и возврат в WireGuard, после чего сверяю состояние соседств, туннелей и прикладного запроса.</p>
+        <p>Этот тест я добавил в регламент обслуживания и периодически повторяю для выбранной пары. Сначала фиксирую исходный маршрут, затем работу через резерв и возврат в WireGuard; в конце сверяю соседства, туннели и прикладной запрос.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Контролируемый отказ одной пары</span><div class="article-code-actions"><b>test-failover.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
@@ -457,9 +457,9 @@ printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
 
         <h2>Новый узел меняет всю матрицу связей</h2>
 
-        <p>Полносвязная схема удобна на небольшом числе площадок, но у неё есть понятная цена: новый сервер образует по одной паре WireGuard и IPsec с каждым действующим узлом. Поэтому добавление начинается не с копирования готового конфига, а с выделения постоянного адреса <code>/32</code>, транзитного адреса WireGuard, номера автономной системы, публичного и локального адресов для IKE и проверки пересечений на всех серверах.</p>
+        <p>В небольшом контуре полносвязная схема остаётся управляемой, но каждый новый сервер образует по одной паре WireGuard и IPsec с каждым действующим узлом. Перед генерацией конфигурации ему выделяются постоянный адрес <code>/32</code>, транзитный адрес WireGuard, номер автономной системы, публичный и локальный адреса для IKE; затем адреса проверяются на пересечения на всех серверах.</p>
 
-        <p>Оба закрытых ключа создаются на новом узле. Наружу выходят только открытый ключ WireGuard и публичная часть ключа IPsec. После выпуска узлового сертификата новый сервер сначала подключается ко всем действующим, затем обновлённые открытые конфигурации раскладываются по остальным узлам последовательно. Такой порядок оставляет рабочую сеть наблюдаемой и не превращает одну ошибку в одновременный перезапуск всего контура.</p>
+        <p>Оба закрытых ключа создаются на новом узле. Наружу выходят только открытый ключ WireGuard и публичная часть ключа IPsec. После выпуска узлового сертификата новый сервер сначала подключается ко всем действующим, затем обновлённые открытые конфигурации раскладываются по остальным узлам последовательно. Между шагами сеть проверяется, поэтому ошибка затрагивает один узел, а не вызывает одновременный перезапуск всего контура.</p>
 
         <ol class="article-steps">
           <li><strong>Инвентарь.</strong> Зафиксировать идентификатор, имя, постоянный и транзитный адреса, ASN, NAT и конечные точки.</li>
@@ -473,7 +473,7 @@ printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
 
         <p>В генераторе хранится только открытый инвентарь. Для каждой пары он назначает отдельный <code>if_id</code> XFRM и пару транзитных адресов, определяет инициатора IKE с учётом NAT, создаёт два BGP-соседства и ограничивающие списки префиксов. На выходе для каждого узла получаются скрипт создания <code>mesh0</code> и XFRM, unit systemd, конфигурации StrongSwan и FRR, а также два сценария перехода от старой адресации к маршрутам BGP.</p>
 
-        <p>Порядок уже работающих пар считается частью совместимости. Новый узел добавляет пары в конец, поэтому прежние <code>if_id</code> не меняются. После генерации проверяется не только синтаксис Python, но и разница файлов: внезапная перенумерация XFRM была бы поводом остановить развёртывание.</p>
+        <p>Генератор не перенумеровывает существующие пары: для нового узла они добавляются в конец, а прежние <code>if_id</code> сохраняются. После генерации проверяются синтаксис Python и разница файлов; неожиданное изменение номера XFRM останавливает развёртывание.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Стабильная нумерация новых пар</span><div class="article-code-actions"><b>generate.py</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
@@ -523,7 +523,7 @@ pki --print --in node-certificate.pem</code></pre>
 
         <div class="article-note">
           <strong>Что считать отзывом</strong>
-          <p>Само архивирование старого сертификата не отзывает его. Формальный CRL имеет смысл только тогда, когда он опубликован, доставлен на каждый узел и StrongSwan действительно отклоняет сертификат по этому списку. Текущий ранбук не полагается на доступность CRL или OCSP: немедленный отзыв доступа обеспечивается удалением личности из конфигураций и сетевых списков. Это свойство важно проверять отдельно от плановой ротации.</p>
+          <p>Само архивирование старого сертификата не отзывает его. Формальный CRL имеет смысл только тогда, когда он опубликован, доставлен на каждый узел и StrongSwan действительно отклоняет сертификат по этому списку. Текущий ранбук не полагается на доступность CRL или OCSP: немедленный отзыв доступа обеспечивается удалением личности из конфигураций и сетевых списков. Этот сценарий проверяется отдельно от плановой ротации.</p>
         </div>
 
         <h2>Ранбук как часть реализации</h2>
@@ -600,9 +600,9 @@ router bgp 64512
 
         <h2>BFD without chasing milliseconds</h2>
 
-        <p>This network did not require carrier-router failover times. Avoiding a false failure caused by a short packet loss or a busy virtual machine mattered more. BFD therefore probes every 60 seconds with a multiplier of 3. Depending on the timer phase, detection takes roughly two to three minutes, but remains predictable.</p>
+        <p>This network did not need carrier-grade failover times. BFD sends one probe per minute and drops the adjacency after three consecutive misses. A failed path therefore takes two to three minutes to withdraw; a short burst of packet loss or a busy virtual machine is not enough to trigger it.</p>
 
-        <blockquote>The BFD intervals match this network: confirming a sustained failure in two to three minutes is preferable to changing routes after a brief packet loss.</blockquote>
+        <blockquote>The two-to-three-minute window is deliberate headroom for brief packet loss, not an attempt to produce the fastest possible failover.</blockquote>
 
         <p>Both transports are established in advance. Failover does not wait for a new IKE exchange: BGP removes the primary route and immediately uses the existing XFRM path. Once the adjacency recovers, the higher local preference returns traffic to WireGuard.</p>
 
@@ -610,7 +610,7 @@ router bgp 64512
 
         <p>Stopping the whole WireGuard interface is a poor test because it affects every peer at once. The runbook limits the test to a single pair. Temporary rules block only BFD and BGP from the chosen neighbour; the script then waits for the XFRM route, checks ICMP and an application request, removes the rules and confirms recovery of the primary path.</p>
 
-        <p>The controlled test became part of maintaining the live network rather than a one-off acceptance check. I run it periodically for a selected peer pair, recording the route before failover, operation over the backup path and the return to WireGuard, then verifying adjacencies, tunnels and the application request.</p>
+        <p>I added this test to the maintenance runbook and repeat it periodically for a selected peer pair. I record the initial route, operation over the backup path and the return to WireGuard, then verify the adjacencies, tunnels and application request.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Controlled failure of one pair</span><div class="article-code-actions"><b>test-failover.sh</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
@@ -687,9 +687,9 @@ printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
 
         <h2>A new node changes the whole link matrix</h2>
 
-        <p>A full mesh is straightforward at a small scale, but its cost is explicit: every new server creates one WireGuard and one IPsec pair with every existing node. Onboarding therefore starts by allocating a stable <code>/32</code>, a WireGuard transit address, an autonomous-system number, public and local IKE endpoints, and checking every server for address conflicts.</p>
+        <p>A full mesh remains manageable at this scale, but every new server creates one WireGuard and one IPsec pair with every existing node. Before configuration is generated, it receives a stable <code>/32</code>, a WireGuard transit address, an autonomous-system number and public and local IKE endpoints; those addresses are then checked for conflicts on every server.</p>
 
-        <p>Both private keys are created on the new node. Only the WireGuard public key and the public part of the IPsec key leave it. Once the host certificate has been issued, the new node is connected to every existing peer first; updated public configuration is then applied to the remaining nodes one at a time. This keeps the live network observable and prevents one mistake from becoming a simultaneous restart of the whole mesh.</p>
+        <p>Both private keys are created on the new node. Only the WireGuard public key and the public part of the IPsec key leave it. Once the host certificate has been issued, the new node is connected to every existing peer first; updated public configuration is then applied to the remaining nodes one at a time. The network is checked between steps, so a mistake affects one node instead of restarting the whole mesh at once.</p>
 
         <ol class="article-steps">
           <li><strong>Inventory.</strong> Record the ID, name, stable and transit addresses, ASN, NAT state and endpoints.</li>
@@ -703,7 +703,7 @@ printf '{"peer":"%s","transport":%s,"wg":%s,"ipsec":%s}\n' \
 
         <p>The generator contains public inventory only. For every node pair it allocates a dedicated XFRM <code>if_id</code> and transit pair, chooses the IKE initiator with NAT in mind, creates both BGP adjacencies and emits restrictive prefix lists. Each host receives a <code>mesh0</code>/XFRM setup script, a systemd unit, StrongSwan and FRR configuration, plus two migration helpers for moving the stable address to BGP-controlled routing.</p>
 
-        <p>The order of existing pairs is treated as a compatibility contract. Pairs for a new node are appended, so existing XFRM IDs do not change. Validation includes both Python syntax and a review of the generated diff: an unexpected renumbering is a reason to stop the rollout.</p>
+        <p>The generator does not renumber existing pairs: pairs for a new node are appended and existing XFRM IDs remain unchanged. Validation checks both Python syntax and the generated diff; an unexpected XFRM number stops the rollout.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Stable numbering for new pairs</span><div class="article-code-actions"><b>generate.py</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
@@ -753,7 +753,7 @@ pki --print --in node-certificate.pem</code></pre>
 
         <div class="article-note">
           <strong>What counts as revocation</strong>
-          <p>Archiving an old certificate does not revoke it. A formal CRL matters only after it is published, distributed to every node and enforced by StrongSwan. The current runbook does not depend on CRL or OCSP availability: immediate access revocation is achieved by removing the identity from configuration and network allowlists. That property is tested separately from routine certificate rotation.</p>
+          <p>Archiving an old certificate does not revoke it. A formal CRL matters only after it is published, distributed to every node and enforced by StrongSwan. The current runbook does not depend on CRL or OCSP availability: immediate access revocation is achieved by removing the identity from configuration and network allowlists. This scenario is tested separately from routine certificate rotation.</p>
         </div>
 
         <h2>The runbook was part of the implementation</h2>

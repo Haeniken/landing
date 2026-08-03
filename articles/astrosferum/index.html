@@ -25,7 +25,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Астросферум — прогноз для астронома">
   <meta property="article:published_time" content="2026-07-27T00:00:00+03:00">
-  <meta property="article:modified_time" content="2026-07-28T13:32:05+03:00">
+  <meta property="article:modified_time" content="2026-08-03T17:45:44+03:00">
   <meta property="article:author" content="https://haeniken.com/">
   <meta property="article:section" content="Научно-техническое ПО">
   <meta name="twitter:card" content="summary_large_image">
@@ -45,7 +45,7 @@
     "description": "Как «Астросферум» превращает открытые данные DWD ICON в почасовой прогноз условий для астрономических наблюдений.",
     "inLanguage": "ru",
     "datePublished": "2026-07-27T00:00:00+03:00",
-    "dateModified": "2026-07-28T13:32:05+03:00",
+    "dateModified": "2026-08-03T17:45:44+03:00",
     "mainEntityOfPage": "https://haeniken.com/articles/astrosferum/",
     "image": "https://haeniken.com/assets/social/astrosferum-preview.jpg",
     "articleSection": "Научно-техническое ПО",
@@ -137,7 +137,7 @@
           </picture>
         </figure>
 
-        <p>Я начал «Астросферум» именно с этой проблемы. Хотелось не угадывать качество ночи по одному признаку, а сохранить всю цепочку причин: от исходного цикла погодной модели до графика, на котором видно, что именно ограничивает наблюдение в конкретный час.</p>
+        <p>С этого и начался «Астросферум». Одного показателя оказалось мало: на графике должны быть и общая оценка ночи, и конкретная причина, которая мешает наблюдению в выбранный час. Исходный цикл погодной модели при этом сохраняется вместе с результатом.</p>
 
         <ul class="article-flow">
           <li><span>01</span><strong>Модель</strong><small>ICON-EU или ICON Global</small></li>
@@ -154,13 +154,13 @@
 
         <p>Внутри европейской области служба использует ICON-EU с шагом сетки около семи километров. За её пределами берётся всемирная ICON Global с более крупной сеткой. Все величины для одного прогноза приходят из одной модели: приземная погода, облака и высотный профиль не смешиваются между разными источниками.</p>
 
-        <p>Новый цикл становится рабочим только после проверки полноты. Если загрузка оборвалась, предыдущий завершённый цикл остаётся на месте. Это простое правило важнее попытки любой ценой показать самые свежие данные.</p>
+        <p>Новый цикл становится рабочим только после проверки полноты. Если загрузка оборвалась, ссылка <code>current</code> не меняется и запросы продолжают читать предыдущий завершённый цикл.</p>
 
         <h2>Один процесс, несколько независимых контуров</h2>
 
         <p>Рабочая служба — один исполняемый файл на Go и один основной контейнер. Внутри него живут планировщик обновления моделей, общий обработчик прогноза, расчёты, отрисовка и два независимых опросчика Telegram и VK. Адаптеры платформ не знают друг о друге: временный сбой одного API не останавливает получение моделей и вторую платформу.</p>
 
-        <p>Это не попытка собрать монолит любой ценой. Границы сохранены в коде: адаптеры отвечают за доставку, слой приложения — за команды, очередь и кэш, пакеты модели — за получение GRIB2, расчётные пакеты — за физику, а отрисовка получает уже готовые ряды и не обращается к сети. Для одного экземпляра такой разрез проще отдельного брокера, Redis и службы построения изображений.</p>
+        <p>Процессы собраны в одном контейнере, но разделены по пакетам. Адаптеры отвечают за доставку; слой приложения — за команды, очередь и кэш; пакеты модели получают GRIB2; расчётные пакеты содержат физику; отрисовка работает с готовыми рядами и не обращается к сети. Для одного экземпляра этого достаточно без отдельного брокера, Redis и службы построения изображений.</p>
 
         <h2>Новый цикл публикуется целиком</h2>
 
@@ -172,7 +172,7 @@
 
         <p>Для заданных координат выбирается ближайший узел сетки. Из приземных полей берутся температура, влажность, осадки, видимость и ветер. Из слоёв атмосферы — давление, температура, составляющие ветра, облачная вода и лёд, высота слоёв и модельная энергия турбулентности.</p>
 
-        <p>Эти данные не складываются в одну непрозрачную формулу. Облачная преграда, туман, осадки, ветер и оптическая турбулентность рассчитываются отдельно. Поэтому плохой час можно объяснить: например, плотными нижними облаками, сильным сдвигом ветра на высоте или осадками, которые сразу запрещают практическое наблюдение.</p>
+        <p>Облачная преграда, туман, осадки, ветер и оптическая турбулентность рассчитываются отдельно. На графике поэтому видно, что испортило конкретный час: плотные нижние облака, сильный сдвиг ветра на высоте или осадки, при которых наблюдение теряет смысл.</p>
 
         <h2>Запрос пользователя ничего не скачивает</h2>
 
@@ -185,7 +185,7 @@
         <p>Общий индекс пригодности от 1 до 10 удобен для первого взгляда, но рядом всегда остаются исходные причины. Потеря качества распределяется между ними, а не прячется внутри итогового числа. Отдельно строятся облачность по высоте, скорость и сдвиг ветра, оценка качества изображения, события Солнца, Луны, Юпитера и Сатурна.</p>
 
         <figure class="astro-quote-photo">
-          <blockquote>«Астросферум» не измеряет небо над площадкой. Он рассчитывает, что следует из конкретного цикла модели и явно показывает границы этой оценки.</blockquote>
+          <blockquote>«Астросферум» не измеряет небо над площадкой. Это расчёт по конкретному циклу модели; на графиках отдельно отмечено, где точность такой оценки ограничена.</blockquote>
           <picture>
             <source type="image/webp" srcset="/assets/astrosferum/night-telescope-640.webp 640w, /assets/astrosferum/night-telescope-960.webp 960w, /assets/astrosferum/night-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1060px) calc(100vw - 10vw), 960px">
             <img src="/assets/astrosferum/night-telescope-960.webp" alt="Телескоп под Луной на ночной наблюдательной площадке" width="1448" height="1086" loading="lazy" decoding="async">
@@ -196,7 +196,7 @@
 
         <h2>«Горизонт»: восемь направлений и 73 часа</h2>
 
-        <p>Обычный прогноз отвечает на вопрос о состоянии атмосферы над площадкой. «Горизонт» решает другую задачу: сравнивает север, северо-восток, восток, юго-восток, юг, юго-запад, запад и северо-запад для объекта на геометрической высоте 10°. Расчёт выполняется отдельно для каждого из 73 почасовых сроков <code>f000…f072</code> одного неизменяемого цикла ICON-EU.</p>
+        <p>Прогноз над площадкой не показывает, что встретит луч зрения у горизонта: в каждом азимуте он проходит через свой участок атмосферы. Поэтому «Горизонт» рассчитывает условия отдельно по восьми направлениям для объекта на геометрической высоте 10°. Расчёт повторяется для 73 почасовых сроков <code>f000…f072</code> одного неизменяемого цикла ICON-EU.</p>
 
         <p>Для каждого азимута строится прямой луч на сферической Земле от модельной высоты наблюдателя до 22,3 км. На уровне моря длина такого пути около 122 км. Он разбивается по наземному расстоянию шагом не более 500 м — примерно на 240 сегментов в каждом направлении. Высота точки луча вычисляется из его длины <code>s</code>, радиуса Земли <code>R</code>, высоты площадки <code>h₀</code> и угла <code>e</code>:</p>
 
@@ -214,17 +214,17 @@
 
         <p>На высоте каждого сегмента выбираются давление, температура, облачная вода и лёд, покрытие облаками и границы слоёв HHL. Путь конденсата переводится в оптическую толщину; повторные точки одной модельной ячейки группируются, чтобы шаг 500 м не учитывал одно покрытие много раз. Отдельно проверяется, не проходит ли луч ниже модельной поверхности HHL. Это грубый рельеф сетки около семи километров, а не локальная линия горизонта.</p>
 
-        <p>Туман берётся в ячейке наблюдателя и одинаков для всех направлений: сетка не позволяет честно восстановить локальную стену тумана по азимуту. Состояние дня, сумерек и ночи влияет только на фон графика. Луна, засветка, атмосферная рефракция и оборудование пользователя не получают скрытого штрафа.</p>
+        <p>Туман берётся в ячейке наблюдателя и одинаков для всех направлений: сетка не позволяет честно восстановить локальную стену тумана по азимуту. Состояние дня, сумерек и ночи влияет только на фон графика. Луна, засветка, атмосферная рефракция и оборудование пользователя в этот расчёт не входят.</p>
 
         <p>Итоговая ячейка показывает оценку 1–10, основной ограничитель и полоску качества данных. Эта полоска — не вероятность удачной съёмки: она учитывает полноту пути, срок прогноза и доступность профилей. Её верхняя граница намеренно ограничена, поскольку HHL не заменяет цифровую модель рельефа и съёмку реального горизонта.</p>
 
         <h3>Почему расчёт вынесен в отдельную очередь</h3>
 
-        <p>Один запуск обрабатывает восемь направлений, десятки тысяч сегментов и полный почасовой период, поэтому он не занимает рабочие места обычного прогноза. У «Горизонта» собственная ограниченная очередь, отдельный предел процессов CDO и атомарный кэш. Одинаковые задачи объединяются, а перед извлечением, после расчёта и непосредственно перед отправкой снова проверяется идентификатор текущего цикла. Если модель успела смениться, старое изображение пользователю не отправляется.</p>
+        <p>Один запуск обрабатывает восемь направлений, десятки тысяч сегментов и полный почасовой период. Чтобы такой расчёт не задерживал обычный прогноз, у «Горизонта» есть собственная ограниченная очередь, отдельный предел процессов CDO и атомарный кэш. Одинаковые задачи объединяются, а перед извлечением, после расчёта и непосредственно перед отправкой снова проверяется идентификатор текущего цикла. Если модель успела смениться, старое изображение пользователю не отправляется.</p>
 
         <h2>Как сохраняется воспроизводимость</h2>
 
-        <p>На каждом графике указаны источник, модель, время исходного цикла, сетка, часовой пояс и версии расчёта и отрисовки. Идентификатор цикла входит в ключи кэша, поэтому новый опубликованный набор автоматически обходит старые производные данные. Для повторения результата нужны тот же цикл, конфигурация без секретов и соответствующая ревизия кода.</p>
+        <p>На каждом графике указаны источник, модель, время исходного цикла, сетка, часовой пояс и версии расчёта и отрисовки. Идентификатор цикла входит в ключи кэша, поэтому после публикации нового цикла старые производные данные больше не подходят по ключу. Для повторения результата нужны тот же цикл, конфигурация без секретов и соответствующая ревизия кода.</p>
 
         <p>PostgreSQL хранит сохранённые точки и ограниченную сводную статистику, но не модельные поля и не очередь заданий. Точные несохранённые координаты могут временно оказаться только внутри ограниченного кэша изображений без идентификатора пользователя. В журнал не попадают токены, тексты сообщений и полные координаты.</p>
 
@@ -252,7 +252,7 @@
           </picture>
         </figure>
 
-        <p>That was the starting point for Astrosferum. Instead of guessing the quality of a night from one value, the system keeps the full chain of evidence: from a specific numerical-model run to a chart that shows what limits observing at a particular hour.</p>
+        <p>That was the starting point for Astrosferum. One value was not enough: the chart had to show both the overall outlook and the specific reason that limits observing at a given hour. The source model run is kept with the result.</p>
 
         <ul class="article-flow">
           <li><span>01</span><strong>Model</strong><small>ICON-EU or ICON Global</small></li>
@@ -269,13 +269,13 @@
 
         <p>Within the European domain, the service uses ICON-EU at roughly seven-kilometre grid spacing. Outside that domain it uses the coarser global ICON model. Every value in one forecast comes from the same model, so surface weather, cloud fields and the vertical profile are not mixed across unrelated sources.</p>
 
-        <p>A new model run becomes active only after a completeness check. If a download is interrupted, the previous complete run remains in use. This simple rule matters more than showing the newest timestamp at any cost.</p>
+        <p>A new model run becomes active only after a completeness check. If a download is interrupted, the <code>current</code> link is left unchanged and requests continue to use the previous complete run.</p>
 
         <h2>One process with several independent paths</h2>
 
         <p>The production service is one Go executable in one main container. It contains the model scheduler, shared forecast handler, calculations, rendering, and independent Telegram and VK pollers. The platform adapters do not depend on each other: a temporary failure of one API does not stop model updates or the other platform.</p>
 
-        <p>This is not a monolith without boundaries. Delivery remains inside the adapters; commands, queues and caches belong to the application layer; model packages acquire GRIB2; forecast packages own the calculations; and rendering receives finished series without network access. For one running instance this separation is simpler than an external broker, Redis and a separate image service.</p>
+        <p>The processes share one container but remain separated by package. Adapters handle delivery; the application layer owns commands, queues and caches; model packages acquire GRIB2; forecast packages own the calculations; and rendering receives finished series without network access. One running instance needs no external broker, Redis or separate image service.</p>
 
         <h2>A model run is published as a whole</h2>
 
@@ -287,7 +287,7 @@
 
         <p>The nearest model grid point is selected for the requested coordinates. Surface fields provide temperature, humidity, precipitation, visibility and wind. Atmospheric layers provide pressure, temperature, wind components, cloud water and ice, layer heights and model turbulent kinetic energy.</p>
 
-        <p>These inputs are not collapsed into one opaque formula. Cloud obstruction, fog, precipitation, wind and optical turbulence are calculated separately. A poor hour can therefore be explained by dense low cloud, strong shear aloft or precipitation that makes practical observing impossible.</p>
+        <p>Cloud obstruction, fog, precipitation, wind and optical turbulence are calculated separately. The chart therefore shows what spoiled a given hour: dense low cloud, strong shear aloft or precipitation that makes practical observing pointless.</p>
 
         <h2>A user request downloads nothing</h2>
 
@@ -300,7 +300,7 @@
         <p>The overall 1–10 suitability score is useful for a quick scan, but the underlying reasons remain visible. Losses are attributed to individual factors instead of being hidden inside the final number. Separate charts cover cloud by height, wind speed and shear, image-quality estimates, and events for the Sun, Moon, Jupiter and Saturn.</p>
 
         <figure class="astro-quote-photo">
-          <blockquote>Astrosferum does not measure the sky above an observing site. It calculates what follows from a named model run and makes the limits of that estimate explicit.</blockquote>
+          <blockquote>Astrosferum does not measure the sky above an observing site. It is a calculation based on a specific model run, and the charts mark where that estimate is limited.</blockquote>
           <picture>
             <source type="image/webp" srcset="/assets/astrosferum/night-telescope-640.webp 640w, /assets/astrosferum/night-telescope-960.webp 960w, /assets/astrosferum/night-telescope-1448.webp 1448w" sizes="(max-width: 650px) calc(100vw - 20px), (max-width: 1060px) calc(100vw - 10vw), 960px">
             <img src="/assets/astrosferum/night-telescope-960.webp" alt="Telescope under the Moon at a nighttime observing site" width="1448" height="1086" loading="lazy" decoding="async">
@@ -311,7 +311,7 @@
 
         <h2>Horizon: eight directions over 73 hours</h2>
 
-        <p>The standard forecast describes the atmosphere above the site. Horizon answers a different question: it compares north, north-east, east, south-east, south, south-west, west and north-west for a target at a fixed geometric elevation of 10°. Every direction is calculated for all 73 hourly steps <code>f000…f072</code> from one immutable ICON-EU run.</p>
+        <p>A forecast above the site does not show what a low line of sight crosses near the horizon: each azimuth passes through a different part of the atmosphere. Horizon therefore calculates eight directions separately for a target at a geometric elevation of 10°. The calculation is repeated across 73 hourly steps <code>f000…f072</code> from one immutable ICON-EU run.</p>
 
         <p>Each azimuth starts as a straight ray over a spherical Earth, from the model surface elevation to 22.3 km. At sea level that path is about 122 km long. Ground-distance boundaries are no more than 500 metres apart, producing roughly 240 segments per direction. Ray height follows from the path length <code>s</code>, Earth radius <code>R</code>, site elevation <code>h₀</code> and elevation angle <code>e</code>:</p>
 
@@ -329,17 +329,17 @@
 
         <p>Pressure, temperature, cloud water and ice, cloud fraction and HHL layer boundaries are sampled at each ray height. Condensate path becomes optical depth; repeated points in the same model cell are grouped so a 500-metre integration step does not count one cloud fraction repeatedly. A separate test checks whether the ray falls below the HHL model surface. This is terrain averaged over a roughly seven-kilometre cell, not a surveyed local skyline.</p>
 
-        <p>Fog is classified in the observer's cell and is therefore common to all directions: the grid cannot honestly resolve a nearby directional fog bank. Day, twilight and night change only the chart background. The Moon, light pollution, atmospheric refraction and the observer's equipment receive no hidden penalty.</p>
+        <p>Fog is classified in the observer's cell and is therefore common to all directions: the grid cannot honestly resolve a nearby directional fog bank. Day, twilight and night change only the chart background. The Moon, light pollution, atmospheric refraction and the observer's equipment are outside this calculation.</p>
 
         <p>Every output cell carries a 1–10 score, the main limiting factor and a data-quality strip. That strip is not the probability of a successful exposure: it records path completeness, forecast lead time and profile availability. Its upper bound is deliberately capped because HHL cannot replace a local digital terrain model or a measured skyline.</p>
 
         <h3>Why Horizon has its own queue</h3>
 
-        <p>One run covers eight directions, tens of thousands of segments and a full hourly period, so it does not consume normal forecast workers. Horizon has a separate bounded queue, its own CDO process limit and an atomic cache. Identical jobs are combined, while the current run ID is checked before extraction, after calculation and immediately before delivery. If the model run changed, the stale image is not sent.</p>
+        <p>One run covers eight directions, tens of thousands of segments and a full hourly period. To keep that work from delaying a normal forecast, Horizon has a separate bounded queue, its own CDO process limit and an atomic cache. Identical jobs are combined, while the current run ID is checked before extraction, after calculation and immediately before delivery. If the model run changed, the stale image is not sent.</p>
 
         <h2>Keeping results reproducible</h2>
 
-        <p>Every chart records the source, model, base time, grid, time zone, calculation version and renderer version. The run ID is part of each cache key, so a newly published run automatically bypasses old derived data. Reproducing a result requires the same model run, non-secret configuration and matching source revision.</p>
+        <p>Every chart records the source, model, base time, grid, time zone, calculation version and renderer version. The run ID is part of each cache key, so derived data from an older run no longer match after a new run is published. Reproducing a result requires the same model run, non-secret configuration and matching source revision.</p>
 
         <p>PostgreSQL stores saved locations and bounded aggregate statistics, not model fields or a job queue. Exact unsaved coordinates may temporarily exist only inside a limited image cache without a user identifier. Tokens, message text and complete coordinates are not written to application logs.</p>
 

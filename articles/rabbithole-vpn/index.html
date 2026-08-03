@@ -25,7 +25,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Панель RabbitHole: платежи, подписки и состояние 3x-ui">
   <meta property="article:published_time" content="2026-07-28T12:56:02+03:00">
-  <meta property="article:modified_time" content="2026-07-28T13:32:05+03:00">
+  <meta property="article:modified_time" content="2026-08-03T17:45:44+03:00">
   <meta property="article:author" content="https://haeniken.com/">
   <meta property="article:section" content="Разработка панели управления">
   <meta name="twitter:card" content="summary_large_image">
@@ -45,7 +45,7 @@
     "description": "Практический разбор внутренней панели управления: обработчик YooMoney, идемпотентность, выдача доступа и сверка состояния 3x-ui.",
     "inLanguage": "ru",
     "datePublished": "2026-07-28T12:56:02+03:00",
-    "dateModified": "2026-07-28T13:32:05+03:00",
+    "dateModified": "2026-08-03T17:45:44+03:00",
     "mainEntityOfPage": "https://haeniken.com/articles/rabbithole-vpn/",
     "image": "https://haeniken.com/assets/social/rabbithole-preview.jpg",
     "articleSection": "Разработка панели управления",
@@ -128,7 +128,7 @@
           <strong>Не является рекламой VPN</strong>
           <p>Это технический разбор внутренней панели управления. Материал не предлагает услугу, не содержит ссылки для подключения и посвящён только архитектуре программного обеспечения.</p>
         </aside>
-        <p class="article-lead">Исходная задача выглядела компактно: принять оплату, создать клиента в 3x-ui и отправить человеку конфигурацию. На практике между этими действиями нет общей транзакции. Платёжная система, PostgreSQL, Telegram и каждая панель 3x-ui могут ответить в разное время — или не ответить вовсе.</p>
+        <p class="article-lead">На входе было три действия: принять оплату, создать клиента в 3x-ui и отправить человеку конфигурацию. Выполнить их одной транзакцией нельзя: платёжная система, PostgreSQL, Telegram и каждая панель 3x-ui отвечают независимо и иногда не отвечают вовсе.</p>
 
         <figure class="rabbit-background-video" role="img" aria-label="Фоновая анимация с кроликом за ноутбуком">
           <div class="rabbit-background-media" aria-hidden="true">
@@ -136,7 +136,7 @@
           </div>
         </figure>
 
-        <p>Готовые платёжные модули не закрывали нужный сценарий. Они обычно считали входящее уведомление окончательной истиной, ожидали заранее заданную сумму и не знали, что после зачисления нужно согласованно изменить несколько узлов. Поэтому я решил реализовать прикладную границу с YooMoney внутри собственной будущей панели: отдельный обработчик проверяет операцию, вычисляет сумму зачисления и передаёт подтверждённый результат в общий журнал.</p>
+        <p>Готовые платёжные модули не закрывали нужный сценарий: они доверяли одному входящему уведомлению, ожидали заранее заданную сумму и не учитывали применение покупки сразу на нескольких узлах. В своей будущей панели я выделил для YooMoney отдельный обработчик. Он проверяет операцию, вычисляет сумму зачисления и передаёт подтверждённый результат в общий журнал.</p>
 
         <ul class="article-flow">
           <li><span>01</span><strong>Намерение</strong><small>сумма, услуга, непрозрачная метка</small></li>
@@ -151,17 +151,17 @@
 
         <p>Пользователю нужна была понятная цепочка: выбрать услугу в Telegram, пополнить баланс удобным способом и получить одну ссылку или QR-код. Для составной услуги за этим простым интерфейсом стоят несколько клиентов на разных 3x-ui-направлениях с одинаковыми сроками и лимитами.</p>
 
-        <p>Система должна принимать произвольное пополнение, а не только точную цену тарифа. После оплаты важно зачислить фактически внесённую сумму, отдельно списать стоимость услуги и сохранить остаток. Продление считается календарным месяцем, а не условными 30 днями. Администратору при этом нужны состояние всех направлений, журнал платежей и возможность безопасного ручного вмешательства.</p>
+        <p>Пополнение здесь не привязано к цене тарифа. На баланс попадает подтверждённая сумма платежа; покупка услуги проходит отдельным списанием, поэтому остаток не теряется. Срок действия сдвигается на календарный месяц, а не на фиксированные 30 дней — иначе даты постепенно расходятся. В панели можно проверить состояние каждого направления и историю платежей, а спорную операцию при необходимости разобрать вручную.</p>
 
-        <p>Нагрузка измеряется единицами действий в минуту, поэтому я оставил развёртывание компактным. Требования к целостности от этого не меняются: повторное уведомление не должно удваивать баланс; частично недоступный набор 3x-ui не должен создавать половину составной подписки; ручное изменение панели не должно оставаться незамеченным.</p>
+        <p>Нагрузка здесь — несколько действий в минуту, поэтому развёртывание осталось компактным. При этом повторное уведомление не должно удваивать баланс, недоступность одной 3x-ui — оставлять половину составной подписки, а ручное изменение панели — проходить незамеченным.</p>
 
         <h2>Почему я реализовал свой обработчик платежей</h2>
 
         <p>YooMoney остаётся платёжным провайдером. Собственный компонент отвечает за прикладную часть: создаёт непрозрачную метку без Telegram ID, принимает уведомление, проверяет подпись HMAC-SHA256, тип операции, валюту и идентификатор, а затем связывает подтверждение с ожидаемой операцией пользователя.</p>
 
-        <p>Уведомление — быстрый путь, но не единственный. Если оно не дошло, пользователь может запустить проверку кнопкой, а фоновая задача раз в минуту сверяет незавершённые платежи через <code>operation-history</code>. Все три пути сходятся в один обработчик и записывают источник подтверждения. Входящие уведомления получают отдельный журнал: адрес источника, метка, операция, результат проверки подписи и ошибка применения.</p>
+        <p>Обычно платёж подтверждается входящим уведомлением. Если оно не дошло, пользователь может запустить проверку кнопкой; кроме того, фоновая задача раз в минуту сверяет незавершённые платежи через <code>operation-history</code>. Все три пути вызывают один обработчик и записывают источник подтверждения. Для входящих уведомлений ведётся отдельный журнал: адрес источника, метка, операция, результат проверки подписи и ошибка применения.</p>
 
-        <p>Есть ещё одна неочевидная деталь: сумма уведомления может означать сумму после комиссии. Для карточного пополнения обработчик по типу события и, когда возможно, по <code>operation-details</code> определяет канал и восстанавливает сумму до комиссии. Запланированная сумма не подменяет фактическую: в одной из ранних версий я исправил ошибку, при которой баланс мог пополняться минимум на ожидаемое значение.</p>
+        <p>В уведомлении может прийти сумма уже после комиссии. Для карточного пополнения обработчик определяет канал по типу события и, когда возможно, по <code>operation-details</code>, а затем восстанавливает исходную сумму. Запланированная сумма не подменяет фактическую: в одной из ранних версий я исправил ошибку, при которой баланс мог пополняться минимум на ожидаемое значение.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Восстановление суммы · упрощённый фрагмент</span><div class="article-code-actions"><b>payments.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
@@ -181,7 +181,7 @@
 
         <p>Подтверждение платежа атомарно меняет транзакцию и баланс в PostgreSQL. Здесь же закрывается ожидаемое пополнение, фиксируется промокод и рассчитывается реферальное начисление. Создание клиентов 3x-ui начинается только после фиксации денег и желаемого состояния.</p>
 
-        <p>Защита от повторов находится не в одном условии, а в нескольких слоях. Пара «провайдер — идентификатор операции» и внутренний ключ идемпотентности уникальны. Строка транзакции блокируется через <code>FOR UPDATE</code>; уже завершённый платёж возвращает <code>already_processed</code>. Аналогично обновление Telegram получает короткую аренду: неудачная обработка освобождает маркер и может быть повторена, завершённая больше не выполняется.</p>
+        <p>Повторная обработка блокируется на нескольких уровнях. Пара «провайдер — идентификатор операции» и внутренний ключ идемпотентности уникальны. Строка транзакции блокируется через <code>FOR UPDATE</code>; уже завершённый платёж возвращает <code>already_processed</code>. Обновление Telegram получает короткую аренду: после ошибки маркер освобождается для новой попытки, а завершённая обработка больше не запускается.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Один платёж применяется один раз · схема</span><div class="article-code-actions"><b>apply-payment.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
@@ -199,7 +199,7 @@ return tx.Commit()</code></pre>
 
         <h2>Желаемое состояние вместо длинной транзакции</h2>
 
-        <p>В первой реализации я менял 3x-ui прямо внутри транзакции БД. История коммитов показала, почему это плохо: сетевой запрос удерживает блокировки, а успешный внешний вызов всё равно нельзя отменить откатом PostgreSQL. При обрыве между API и <code>COMMIT</code> панель и база расходятся.</p>
+        <p>В первой реализации вызов 3x-ui выполнялся внутри транзакции БД. Сетевой запрос удерживал блокировки, а успешное изменение во внешней панели уже нельзя было отменить откатом PostgreSQL. При обрыве между ответом API и <code>COMMIT</code> панель и база расходились.</p>
 
         <p>Теперь транзакция только записывает желаемые параметры узла: входящее правило, адрес и идентификатор клиента, срок, лимиты и поколение операции. После <code>COMMIT</code> обработчик получает задачу с пятиминутной арендой, обращается к нужному адаптеру 3x-ui и завершает её лишь тогда, когда маркер аренды и поколение всё ещё совпадают. Если желаемое состояние успело измениться, старый результат не может затереть новое.</p>
 
@@ -223,13 +223,13 @@ RETURNING provisioning_generation;</code></pre>
 
         <p>Один образ запускается в двух ролях. Процесс <code>bot</code> отвечает за Telegram, платёжные маршруты, выдачу агрегированных подписок и быстрые попытки применения. Процесс <code>worker</code> сверяет сроки, автопродление, незавершённую выдачу доступа и фактическое состояние 3x-ui. PostgreSQL остаётся общей точкой согласования, а наружу через Nginx публикуется только HTTP-контур бота.</p>
 
-        <p>От Redis и распределённого брокера я отказался сознательно: для текущего профиля нагрузки они добавили бы больше эксплуатационных состояний, чем сняли. Это не универсальная рекомендация — при нескольких репликах, тяжёлых очередях или строгом времени доставки я бы пересмотрел эту границу.</p>
+        <p>Redis и отдельный брокер здесь не понадобились: при текущей нагрузке PostgreSQL закрывает очередь с меньшим числом служб в эксплуатации. Если появятся несколько реплик, тяжёлые очереди или жёсткое время доставки, это решение придётся пересмотреть.</p>
 
         <h2>Контроль нескольких 3x-ui</h2>
 
         <p>В текущей конфигурации код знает четыре логических направления 3x-ui. У каждого свой адаптер и входящее правило, а составная услуга разворачивает несколько узлов с общим сроком. Пользователь при этом получает одну токенизированную подписку с ограниченным сроком действия, а не набор внутренних адресов панели.</p>
 
-        <p>Интерфейс 3x-ui не является стабильным контрактом между версиями. Методы добавления и обновления клиента, формат отдельных полей и параметры VLESS менялись. Поэтому адаптер сначала читает входящее правило, находит клиента по идентификатору или адресу, пробует изменить его и только при подтверждённом отсутствии создаёт нового. Параметры ссылки строятся из фактической конфигурации, включая TLS, REALITY, WebSocket, gRPC или XHTTP.</p>
+        <p>API 3x-ui менялся между версиями: отличались методы добавления и обновления клиента, формат отдельных полей и параметры VLESS. Адаптер сначала читает входящее правило, находит клиента по идентификатору или адресу, пробует изменить его и только при подтверждённом отсутствии создаёт нового. Параметры ссылки строятся из фактической конфигурации, включая TLS, REALITY, WebSocket, gRPC или XHTTP.</p>
 
         <h2>Сбои и компромиссы из истории проекта</h2>
 
@@ -254,12 +254,12 @@ RETURNING provisioning_generation;</code></pre>
 
         <div class="article-note">
           <strong>Неизбежный компромисс</strong>
-          <p>Между PostgreSQL и несколькими 3x-ui нет общей распределённой транзакции. Я выбрал наблюдаемую согласованность: платёж фиксируется строго, доступ может короткое время оставаться в состоянии <code>pending</code>, а повторяемая операция доводит фактическую конфигурацию до желаемой. Коэффициент восстановления карточной суммы <code>0.97</code> — часть текущего договора с провайдером; при изменении комиссии я пересмотрю его.</p>
+          <p>Общей транзакции между PostgreSQL и несколькими 3x-ui нет. Платёж фиксируется в базе сразу, а доступ может короткое время оставаться в состоянии <code>pending</code>; повторяемая операция затем приводит фактическую конфигурацию к записанному желаемому состоянию. Коэффициент восстановления карточной суммы <code>0.97</code> — часть текущего договора с провайдером; при изменении комиссии я пересмотрю его.</p>
         </div>
 
         <h2>Измеримый результат</h2>
 
-        <p>Коммерческие показатели и пользовательские данные закрыты. Инженерный результат можно проверить по границам актуальной реализации:</p>
+        <p>Коммерческие показатели и пользовательские данные закрыты. По текущей реализации можно назвать технические величины:</p>
 
         <ul class="article-metrics">
           <li><strong>4</strong><span>логических направления 3x-ui в одном контуре управления</span></li>
@@ -268,7 +268,7 @@ RETURNING provisioning_generation;</code></pre>
           <li><strong>1</strong><span>агрегированная ссылка и QR скрывают устройство составной подписки</span></li>
         </ul>
 
-        <p>Каждый подтверждённый платёж получает источник, фактическую сумму и запись аудита; каждый управляемый узел — желаемые параметры, число попыток, аренду, поколение и последнюю ошибку. Благодаря этому я могу ответить не только на вопрос «работает ли сейчас», но и восстановить, почему система пришла в текущее состояние.</p>
+        <p>Для каждого подтверждённого платежа сохраняются источник, фактическая сумма и запись аудита; для управляемого узла — желаемые параметры, число попыток, аренда, поколение и последняя ошибка. По этим данным видно текущее состояние и можно восстановить последовательность действий, которая к нему привела.</p>
 
         <div class="article-sources">
           <span>Основание материала:</span>
@@ -282,7 +282,7 @@ RETURNING provisioning_generation;</code></pre>
           <strong>Not a VPN advertisement</strong>
           <p>This is an engineering review of an internal control panel. It does not offer a service or contain a connection link; the subject is software architecture only.</p>
         </aside>
-        <p class="article-lead">The initial task looked compact: accept a payment, create a 3x-ui client and send the connection details. In practice, there is no shared transaction across those actions. The payment provider, PostgreSQL, Telegram and each 3x-ui panel can respond at different times—or not respond at all.</p>
+        <p class="article-lead">The input was three actions: accept a payment, create a 3x-ui client and send the connection details. They cannot run as one transaction: the payment provider, PostgreSQL, Telegram and each 3x-ui panel respond independently and may not respond at all.</p>
 
         <figure class="rabbit-background-video" role="img" aria-label="Background animation of a rabbit working at a laptop">
           <div class="rabbit-background-media" aria-hidden="true">
@@ -290,7 +290,7 @@ RETURNING provisioning_generation;</code></pre>
           </div>
         </figure>
 
-        <p>Off-the-shelf payment modules did not fit this workflow. They commonly treated a webhook as the final truth, expected a fixed amount and knew nothing about applying one purchase to several nodes. I therefore decided to implement the YooMoney application boundary inside my future control panel: a dedicated handler verifies the operation, calculates the credited amount and records one confirmed result in the shared ledger.</p>
+        <p>Off-the-shelf payment modules did not fit this workflow: they trusted a single incoming notification, expected a fixed amount and did not account for applying one purchase across several nodes. I gave YooMoney a dedicated handler inside my future control panel. It verifies the operation, calculates the credited amount and records one confirmed result in the shared ledger.</p>
 
         <ul class="article-flow">
           <li><span>01</span><strong>Intent</strong><small>amount, product, opaque label</small></li>
@@ -305,17 +305,17 @@ RETURNING provisioning_generation;</code></pre>
 
         <p>The user-facing path had to stay simple: choose a product in Telegram, add funds conveniently and receive one link or QR code. A bundled product hides several clients on different 3x-ui targets, all sharing the same expiry and limits.</p>
 
-        <p>The system accepts an arbitrary top-up rather than only the exact subscription price. It must credit the amount actually paid, debit the product price separately and retain the remainder. Renewal means one calendar month, not an assumed 30 days. Administrators also need a view of every target, payment audit records and guarded manual controls.</p>
+        <p>Top-ups are not tied to a product price. The confirmed payment amount is credited first; purchasing the product is a separate debit, so the remainder stays on the balance. Expiry moves forward by a calendar month rather than by 30 fixed days, avoiding drift around shorter and longer months. The panel gives an operator one place to check target state and payment history, and to investigate a disputed operation when needed.</p>
 
-        <p>Traffic is measured in single-digit actions per minute, so I kept the deployment compact. The consistency requirements remain: a repeated notification must not duplicate credit, partial 3x-ui availability must not create half a bundle, and a manual panel edit must not remain invisible.</p>
+        <p>Traffic is measured in single-digit actions per minute, so the deployment remains compact. A repeated notification still must not duplicate credit, one unavailable 3x-ui target must not leave half a bundle, and a manual panel edit must not go unnoticed.</p>
 
         <h2>Why I implemented the payment boundary</h2>
 
         <p>YooMoney remains the payment provider. The custom component owns application semantics: it creates an opaque label without a Telegram ID, receives the notification, verifies its HMAC-SHA256 signature, type, currency and operation ID, and links it to a pending user operation.</p>
 
-        <p>The webhook is the fast path, not the only path. A user can request a check when delivery fails, while a background task compares pending payments through <code>operation-history</code> every minute. All three paths converge on the same handler and store the confirmation source. Incoming notifications have a separate audit trail covering source address, label, operation, signature outcome and application error.</p>
+        <p>An incoming notification normally confirms the payment. If it does not arrive, the user can request a check, while a background task compares pending payments through <code>operation-history</code> every minute. All three paths call the same handler and store the confirmation source. Incoming notifications have a separate audit trail covering source address, label, operation, signature outcome and application error.</p>
 
-        <p>Notification amount has another subtlety: it may be net of commission. For card top-ups the handler uses the event type and, when available, <code>operation-details</code> to identify the channel and reconstruct the gross amount. The expected top-up never replaces the actual payment; in an early version I fixed a path that credited at least the planned amount.</p>
+        <p>The amount in a notification may already have commission deducted. For card top-ups the handler uses the event type and, when available, <code>operation-details</code> to identify the channel and reconstruct the original amount. The expected top-up never replaces the actual payment; in an early version I fixed a path that credited at least the planned amount.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Gross amount reconstruction · simplified</span><div class="article-code-actions"><b>payments.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
@@ -335,7 +335,7 @@ RETURNING provisioning_generation;</code></pre>
 
         <p>Payment confirmation updates the transaction and balance atomically in PostgreSQL. The same transaction closes the pending top-up, records a promotion use and calculates referral credit. 3x-ui provisioning starts only after money and desired state are committed.</p>
 
-        <p>Duplicate protection is layered rather than reduced to one <code>if</code>. Both the provider-operation pair and the internal idempotency key are unique. The transaction row is locked with <code>FOR UPDATE</code>; a completed payment returns <code>already_processed</code>. Telegram updates use a similar short lease: a failed handler releases its claim for retry, while a completed update cannot run again.</p>
+        <p>Repeated processing is blocked at several levels. Both the provider-operation pair and the internal idempotency key are unique. The transaction row is locked with <code>FOR UPDATE</code>; a completed payment returns <code>already_processed</code>. Telegram updates use a similar short lease: a failed handler releases its claim for retry, while a completed update cannot run again.</p>
 
         <div class="article-code">
           <div class="article-code-head"><span>Apply one payment once · outline</span><div class="article-code-actions"><b>apply-payment.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
@@ -353,7 +353,7 @@ return tx.Commit()</code></pre>
 
         <h2>Desired state instead of a long transaction</h2>
 
-        <p>In the first implementation I changed 3x-ui inside a database transaction. Commit history shows why this was wrong: a network call holds locks, while a successful external mutation cannot be undone by rolling PostgreSQL back. A failure between the API response and <code>COMMIT</code> leaves the panel and database apart.</p>
+        <p>In the first implementation the 3x-ui call ran inside a database transaction. The network request held locks, while a successful change in the external panel could not be undone by rolling PostgreSQL back. A failure between the API response and <code>COMMIT</code> left the panel and database out of sync.</p>
 
         <p>The transaction now records only the desired node state: inbound, email, client ID, expiry, limits and operation generation. After commit, a handler claims the job with a five-minute lease, calls the selected 3x-ui adapter, and completes it only when the claim and generation still match. A stale result cannot overwrite newer intent.</p>
 
@@ -377,13 +377,13 @@ RETURNING provisioning_generation;</code></pre>
 
         <p>One image runs in two roles. <code>bot</code> handles Telegram, payment routes, combined subscriptions and immediate apply attempts. <code>worker</code> reconciles expiry, auto-renewal, unfinished provisioning and actual 3x-ui state. PostgreSQL is the shared coordination point; Nginx exposes only the bot's HTTP surface.</p>
 
-        <p>I deliberately omitted Redis and a distributed broker for this workload. With several replicas, heavier queues or a strict delivery deadline, I would revisit that boundary.</p>
+        <p>Redis and a separate broker were unnecessary at this load: PostgreSQL provides the queue with fewer services to operate. Several replicas, heavier queues or a strict delivery deadline would require revisiting that choice.</p>
 
         <h2>Controlling several 3x-ui targets</h2>
 
         <p>The current code knows four logical 3x-ui targets. Each has its own adapter and inbound; a bundled product stages several nodes with one expiry. The user receives one time-limited tokenised subscription instead of internal panel addresses.</p>
 
-        <p>3x-ui does not provide a stable API contract across versions. Client mutation methods, field shapes and VLESS parameters have changed. The adapter reads the inbound, finds a client by ID or email, attempts a patch and creates a client only after a confirmed not-found result. Public connection parameters are built from the actual inbound configuration, including TLS, REALITY, WebSocket, gRPC or XHTTP.</p>
+        <p>The 3x-ui API changed between versions: client mutation methods, field shapes and VLESS parameters differed. The adapter reads the inbound, finds a client by ID or email, attempts a patch and creates a client only after a confirmed not-found result. Public connection parameters are built from the actual inbound configuration, including TLS, REALITY, WebSocket, gRPC or XHTTP.</p>
 
         <h2>Failures and compromises found in history</h2>
 
@@ -408,12 +408,12 @@ RETURNING provisioning_generation;</code></pre>
 
         <div class="article-note">
           <strong>The unavoidable compromise</strong>
-          <p>PostgreSQL and several 3x-ui panels cannot share one distributed transaction. I chose observable consistency: payment is committed strictly, access may briefly remain <code>pending</code>, and a repeatable operation brings actual configuration to the desired state. The <code>0.97</code> card gross-up factor is part of the current provider contract; I will review it if that fee changes.</p>
+          <p>PostgreSQL and several 3x-ui panels cannot share one transaction. Payment is committed to the database immediately, while access may briefly remain <code>pending</code>; a repeatable operation then brings actual configuration to the recorded desired state. The <code>0.97</code> card gross-up factor is part of the current provider contract; I will review it if that fee changes.</p>
         </div>
 
         <h2>Measurable result</h2>
 
-        <p>Commercial figures and user data remain private. The engineering result can be verified from the current implementation boundaries:</p>
+        <p>Commercial figures and user data remain private. The current implementation provides the following technical figures:</p>
 
         <ul class="article-metrics">
           <li><strong>4</strong><span>logical 3x-ui targets under one control plane</span></li>
@@ -422,7 +422,7 @@ RETURNING provisioning_generation;</code></pre>
           <li><strong>1</strong><span>combined link and QR code hide the bundled subscription topology</span></li>
         </ul>
 
-        <p>Each confirmed payment stores its source, actual amount and audit record; each managed node stores desired parameters, attempt count, lease, generation and last error. This lets me explain not only whether the system works now, but how it reached its current state.</p>
+        <p>Each confirmed payment stores its source, actual amount and audit record; each managed node stores desired parameters, attempt count, lease, generation and last error. These records show the current state and the sequence of actions that produced it.</p>
 
         <div class="article-sources">
           <span>Material based on:</span>
