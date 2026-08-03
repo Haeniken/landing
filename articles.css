@@ -1210,6 +1210,30 @@ html[data-language="en"] .article-language.lang-en { display: block; }
 .astro-result-card figcaption > span { font-size: 18px; font-weight: 900; }
 .astro-result-card figcaption small { color: rgba(7,17,31,.62); font-size: 12px; line-height: 1.5; }
 .astro-result-horizon a { background: #09203d; }
+.astro-next-article {
+  position: relative; width: min(1120px, calc(100vw - (var(--pad) * 2))); display: grid;
+  grid-template-columns: minmax(0, 1fr) auto; gap: 42px; align-items: end; margin: 96px 50% 0; padding: 48px 52px;
+  transform: translateX(-50%); overflow: hidden; border: 1px solid rgba(115,213,218,.28); background: var(--ink); color: var(--white);
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+}
+.astro-next-article::before {
+  content: ""; position: absolute; top: 0; right: 0; left: 0; height: 2px;
+  background: linear-gradient(90deg, var(--cyan), var(--orange), transparent 78%);
+}
+.technical-article .astro-next-kicker {
+  margin: 0 0 16px; color: var(--orange); font: 900 9px/1.4 Consolas, "Courier New", monospace;
+  letter-spacing: .12em; text-transform: uppercase;
+}
+.technical-article .astro-next-article h2 { margin: 0 0 20px; color: var(--white); font-size: clamp(34px, 4.7vw, 62px); }
+.technical-article .astro-next-article div > p:last-child { max-width: 710px; margin: 0; color: rgba(247,250,247,.62); font-size: 15px; }
+.astro-next-article > a {
+  min-height: 52px; display: inline-flex; align-items: center; gap: 18px; padding: 0 20px;
+  border: 1px solid var(--orange); color: var(--white); font-size: 10px; font-weight: 900;
+  letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
+}
+.astro-next-article > a.lang-en { display: none; }
+html[data-language="en"] .astro-next-article > a.lang-ru { display: none; }
+html[data-language="en"] .astro-next-article > a.lang-en { display: inline-flex; }
 
 @keyframes astro-core-pulse { 0%, 100% { opacity: .24; transform: scale(.9); } 50% { opacity: .85; transform: scale(1.08); } }
 @keyframes network-scan {
@@ -1715,6 +1739,8 @@ footer > p:last-of-type { justify-self: end; }
   .astro-result-wide { grid-column: auto; }
   .astro-result-card figcaption { min-height: 0; padding: 17px 18px 19px; grid-template-columns: 34px 1fr; }
   .astro-result-card figcaption > span { font-size: 16px; }
+  .astro-next-article { grid-template-columns: 1fr; gap: 28px; margin-top: 70px; padding: 34px 26px 30px; }
+  .astro-next-article > a { width: 100%; justify-content: space-between; white-space: normal; }
   .article-cta { padding-top: 88px; padding-bottom: 88px; }
   .article-cta h2 { font-size: clamp(40px, 12vw, 60px); }
   .contact { min-height: 590px; }
