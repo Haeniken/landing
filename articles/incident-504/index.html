@@ -25,7 +25,7 @@
   <meta property="og:image:height" content="630">
   <meta property="og:image:alt" content="Карта диагностики ошибки 504 от обратного прокси до SQL">
   <meta property="article:published_time" content="2026-08-03T18:34:23+03:00">
-  <meta property="article:modified_time" content="2026-08-03T18:34:23+03:00">
+  <meta property="article:modified_time" content="2026-08-03T19:00:29+03:00">
   <meta property="article:author" content="https://haeniken.com/">
   <meta property="article:section" content="Диагностика инцидентов">
   <meta name="twitter:card" content="summary_large_image">
@@ -45,7 +45,7 @@
     "description": "Разбор ошибки 504: сопоставление журналов Nginx, Apache, PHP и MariaDB, поиск долгого SQL и выбор безопасного исправления.",
     "inLanguage": "ru",
     "datePublished": "2026-08-03T18:34:23+03:00",
-    "dateModified": "2026-08-03T18:34:23+03:00",
+    "dateModified": "2026-08-03T19:00:29+03:00",
     "mainEntityOfPage": "https://haeniken.com/articles/incident-504/",
     "image": "https://haeniken.com/assets/social/incident-504-preview.jpg",
     "keywords": ["504 Gateway Timeout", "Nginx", "Apache", "PHP session lock", "MariaDB", "slow query log", "EXPLAIN", "SRE"],
@@ -106,12 +106,12 @@
 
     <article class="technical-article incident-technical-article">
       <div class="article-language incident-article-intro lang lang-ru">
-        <p class="article-lead">Пользователь периодически получал 504 в административной части сайта. Главная страница при этом отвечала, а перезапуск служб мог уничтожить самые полезные следы. Поэтому разбор начался только с чтения журналов и измерения времени на каждой границе.</p>
+        <p class="article-lead">Пользователь периодически получал 504 в административной части сайта, хотя главная страница продолжала отвечать. Я сопоставил сохранённые журналы Nginx и Apache, затем проверил время выполнения запроса в PHP и MariaDB.</p>
 
         <section class="incident-sequence" aria-labelledby="incident-sequence-title-ru">
           <h2 id="incident-sequence-title-ru">Как я искал причину</h2>
           <ol>
-            <li><span>01 · Сохранил исходную картину</span><p>Зафиксировал время, адрес запроса и последовательность ответов. Службы перезапускать не стал: вместе с зависшим процессом исчезла бы связь между записями в разных журналах.</p></li>
+            <li><span>01 · Зафиксировал запрос</span><p>Записал время, адрес и последовательность ответов. Начал с пассивной проверки: нужные записи уже находились в журналах, а состояние выполняющегося запроса можно было посмотреть без вмешательства.</p></li>
             <li><span>02 · Проверил внешний путь</span><p>Начал с пограничного прокси и обычных страниц. Ошибок TLS, DNS и соединения с внутренним Nginx не было, главная открывалась. Запрос доходил до площадки, поэтому внешний участок я исключил.</p></li>
             <li><span>03 · Нашёл границу ожидания</span><p>Во внутреннем Nginx связанные ошибки появлялись ровно через 200 секунд с записью <code>upstream timed out</code>. Это был настроенный предел ожидания, а не доказательство того, что завис сам Nginx.</p></li>
             <li><span>04 · Сопоставил Nginx и Apache</span><p>По времени и адресу нашёл тот же запрос в журнале Apache. Клиент уже получил 504, а процесс Apache/PHP продолжал работать; целиком запрос занял около 65 минут. Nginx просто первым перестал ждать.</p></li>
@@ -124,12 +124,12 @@
       </div>
 
       <div class="article-language incident-article-intro lang lang-en">
-        <p class="article-lead">A user intermittently received 504 responses in an administrative interface. The public page still worked, and restarting services would have destroyed the most useful evidence. The investigation therefore began with read-only log analysis and timing at every boundary.</p>
+        <p class="article-lead">A user intermittently received 504 responses in an administrative interface while the public page remained available. I correlated the stored Nginx and Apache logs, then checked the request duration in PHP and MariaDB.</p>
 
         <section class="incident-sequence" aria-labelledby="incident-sequence-title-en">
           <h2 id="incident-sequence-title-en">How I narrowed it down</h2>
           <ol>
-            <li><span>01 · Preserve the original state</span><p>I recorded the time, request URI and response sequence. I did not restart the services: doing so would have removed the active process and broken the link between records in different logs.</p></li>
+            <li><span>01 · Record the request</span><p>I recorded the time, URI and response sequence. The relevant records were already stored in the logs, and the active request could be inspected without changing its state.</p></li>
             <li><span>02 · Check the external path</span><p>I started with the edge proxy and ordinary pages. There were no TLS, DNS or upstream connection errors, and the public page still opened. The request reached the site, so I ruled out the external path.</p></li>
             <li><span>03 · Locate the wait boundary</span><p>Every related error in the internal Nginx appeared after exactly 200 seconds with <code>upstream timed out</code>. This was a configured wait limit, not evidence that Nginx itself had stalled.</p></li>
             <li><span>04 · Correlate Nginx and Apache</span><p>I found the same URI in the Apache log by time. The client had already received a 504 while the Apache/PHP process kept running; the complete request took roughly 65 minutes. Nginx was simply the first component to stop waiting.</p></li>
@@ -249,7 +249,7 @@ ORDER BY c.last_name;</code></pre>
 
         <h2>Что карта отбрасывает</h2>
         <ol class="article-steps incident-decisions">
-          <li><strong>Перезапустить всё.</strong> Сайт мог ненадолго ответить быстрее, но пропала бы связь между первым запросом, блокировкой сессии и медленным SQL.</li>
+          <li><strong>Перезапустить всё.</strong> Это могло освободить занятый обработчик, но не объясняло причину и не меняло план медленного SQL-запроса.</li>
           <li><strong>Увеличить ожидание прокси.</strong> Пользователь ждал бы дольше, число занятых обработчиков росло бы, а запрос продолжал просматривать миллиарды строк.</li>
           <li><strong>Считать все 504 одним инцидентом.</strong> В общих журналах были другие тайм-ауты. К этому разбору относились только записи с совпадающими временем, сессией и цепочкой внутренних запросов.</li>
           <li><strong>Оставить ручной DDL.</strong> Постоянное изменение схемы относится к миграциям приложения; иначе следующая база или восстановление из шаблона вернёт старое поведение.</li>
@@ -312,7 +312,7 @@ ORDER BY c.last_name;</code></pre>
 
         <h2>What the map rules out</h2>
         <ol class="article-steps incident-decisions">
-          <li><strong>Restart everything.</strong> The site might recover briefly, but the link between the first request, the session lock and the slow query would be lost.</li>
+          <li><strong>Restart everything.</strong> That might release the occupied worker, but it would neither explain the cause nor change the slow query plan.</li>
           <li><strong>Increase the proxy timeout.</strong> Users would wait longer, occupied workers would accumulate and the query would still examine billions of rows.</li>
           <li><strong>Treat every 504 as one incident.</strong> Shared logs contained unrelated timeouts. Only events with matching timestamps, sessions and backend request chains belonged to this case.</li>
           <li><strong>Keep manual DDL.</strong> A durable schema change belongs in application migrations; otherwise the next tenant schema or restored template silently reintroduces the old behaviour.</li>
