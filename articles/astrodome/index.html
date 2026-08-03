@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Как устроен «Астрокупол» в Астросферуме: плотный профиль ICON-EU, преломлённые лучи, C_n², сиинг, τ₀, θ₀ и прогноз по всему небосводу.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/astrodome/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/astrodome/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/astrodome/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/astrodome/">
+  <meta property="og:title" content="«Астрокупол»: прогноз по всему небосводу">
+  <meta property="og:description" content="От 74 уровней ICON-EU и преломлённого луча до направленного сиинга, τ₀, облачной преграды и интерактивного купола.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/astrodome/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/social/astrodome-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/astrodome-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Astrosferum Astrodome — directional sky forecast">
+  <meta property="article:published_time" content="2026-08-03T19:53:23+03:00">
+  <meta property="article:modified_time" content="2026-08-03T19:53:23+03:00">
+  <meta property="article:author" content="https://haeniken.com/">
+  <meta property="article:section" content="Научно-техническое программное обеспечение">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="«Астрокупол»: прогноз по всему небосводу">
+  <meta name="twitter:description" content="Как исходные поля ICON-EU превращаются в направленные оценки условий от границы 10° до зенита.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/astrodome-preview.jpg">
+  <meta name="twitter:image:alt" content="Astrosferum Astrodome — directional sky forecast">
+  <title>«Астрокупол»: прогноз по всему небосводу — Sergey Haeniken</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/articles.min.css?v=20260803d">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "«Астрокупол»: прогноз по всему небосводу",
+    "description": "Технический разбор разрабатываемого Астрокупола: плотный профиль ICON-EU, восстановление исходных полей, рефракция, направленные атмосферные показатели и интерактивное представление результата.",
+    "inLanguage": "ru",
+    "datePublished": "2026-08-03T19:53:23+03:00",
+    "dateModified": "2026-08-03T19:53:23+03:00",
+    "mainEntityOfPage": "https://haeniken.com/articles/astrodome/",
+    "image": "https://haeniken.com/assets/social/astrodome-preview.jpg",
+    "keywords": ["Астросферум", "Астрокупол", "ICON-EU", "C_n²", "сиинг", "tau0", "theta0", "атмосферная рефракция", "астрономические наблюдения"],
+    "articleSection": "Научно-техническое программное обеспечение",
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": [
+      {"@type": "SoftwareApplication", "name": "Астросферум", "url": "https://astrosferum.com/"},
+      {"@type": "Thing", "name": "Numerical weather prediction"},
+      {"@type": "Thing", "name": "Astronomical seeing"}
+    ]
+  }
+  </script>
+</head>
+<body class="article-page astrodome-article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a><a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a><a class="lang lang-en" href="/en/articles/">Publications</a>
+      <a href="https://astrosferum.com/" target="_blank" rel="noreferrer">astrosferum.com</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label"><span class="lang lang-ru">Меню</span><span class="lang lang-en">Menu</span></span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/astrodome/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/astrodome/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero astrodome-article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal"><span class="status-light astrodome-work-light"></span><span class="lang lang-ru">В разработке · Астросферум</span><span class="lang lang-en">Work in progress · Astrosferum</span></p>
+        <h1 class="reveal">
+          <span class="lang lang-ru"><em>Астрокупол:</em><br>прогноз по всему<br>небосводу.</span>
+          <span class="lang lang-en"><em>Astrodome:</em><br>a forecast for the<br>whole sky.</span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Как из полного объёма ICON-EU получить 72 почасовых среза условий от расчётной границы 10° до зенита — без интерполяции готовых индексов.</span>
+          <span class="lang lang-en">Turning a full ICON-EU volume into 72 hourly views from the 10° calculation boundary to zenith, without interpolating derived scores.</span>
+        </p>
+        <div class="article-meta reveal"><span>Sergey Haeniken</span><span>ICON-EU · C<sub>n</sub>² · SEEING · τ₀ · WEBGL2</span><a href="https://astrosferum.com/" target="_blank" rel="noreferrer">astrosferum.com ↗</a></div>
+      </div>
+    </header>
+
+    <article class="technical-article astrodome-technical-article">
+      <div class="article-language astrodome-article-intro lang lang-ru">
+        <p class="article-lead">«Горизонт» сравнивает восемь направлений на высоте 10°. Этого хватает, чтобы выбрать свободную сторону неба, но не чтобы понять, где окажется объект выше и как условия изменятся по его пути. «Астрокупол» считает весь небосвод как отдельный набор направлений.</p>
+
+        <div class="article-note astrodome-status-note">
+          <strong>Состояние проекта</strong>
+          <p>Плотный источник данных, физический расчёт, очередь задач, серверная авторизация и интерфейс уже реализованы и развёрнуты для контролируемой проверки. Публичный доступ откроется после полного контрольного прогона, измерений нагрузки, проверки обычного прогноза под нагрузкой и наблюдательной валидации. Поэтому ниже описана работающая архитектура, но не объявлен готовый выпуск.</p>
+        </div>
+
+        <ul class="article-metrics astrodome-metrics">
+          <li><strong>129</strong><span>направлений в одном часовом срезе</span></li>
+          <li><strong>72</strong><span>последовательных почасовых срока</span></li>
+          <li><strong>9 288</strong><span>узло-часов в полном наборе</span></li>
+          <li><strong>10°</strong><span>внешняя граница расчёта, не горизонт</span></li>
+        </ul>
+      </div>
+
+      <div class="article-language astrodome-article-intro lang lang-en">
+        <p class="article-lead">Horizon compares eight directions at an altitude of 10°. That is enough to find an open part of the sky, but not to see what an object will encounter higher up or along its track. Astrodome calculates the whole sky as a discrete set of directions.</p>
+
+        <div class="article-note astrodome-status-note">
+          <strong>Project status</strong>
+          <p>The dense data source, science kernel, job queue, server-side authentication and interface are implemented and deployed for controlled verification. Public access follows a complete release run, workload measurements, non-regression checks for the ordinary forecast and observational validation. This article therefore describes working architecture without presenting it as a finished public release.</p>
+        </div>
+
+        <ul class="article-metrics astrodome-metrics">
+          <li><strong>129</strong><span>directions in each hourly frame</span></li>
+          <li><strong>72</strong><span>consecutive native hourly terms</span></li>
+          <li><strong>9,288</strong><span>node-hours in a complete dataset</span></li>
+          <li><strong>10°</strong><span>outer calculation boundary, not the horizon</span></li>
+        </ul>
+      </div>
+
+      <figure class="astrodome-background-video" role="img" aria-label="Зацикленная демонстрация рабочего интерфейса Астрокупола">
+        <div class="astrodome-background-media" aria-hidden="true">
+          <video data-lazy-background-video data-src-mobile="/assets/astrodome/astrodome-tour-720.mp4" data-src-desktop="/assets/astrodome/astrodome-tour-1280.mp4" data-poster="/assets/astrodome/astrodome-seeing-night-1200.webp" width="1280" height="720" muted loop playsinline preload="none"></video>
+        </div>
+        <div class="astrodome-video-hud" aria-hidden="true">
+          <span><span class="lang lang-ru">АСТРОКУПОЛ / РАБОЧИЙ ИНТЕРФЕЙС</span><span class="lang lang-en">ASTRODOME / WORKING UI</span></span>
+          <b><span class="lang lang-ru">24 КАДР/С · ЦИКЛ</span><span class="lang lang-en">24 FPS · LOOP</span></b>
+        </div>
+      </figure>
+
+      <figure class="astrodome-ray-figure" aria-labelledby="astrodome-ray-caption">
+        <div class="astrodome-ray-hud" aria-hidden="true">
+          <span><i></i><span class="lang lang-ru">Расчёт одного направления</span><span class="lang lang-en">One-direction calculation</span></span>
+          <strong><span class="lang lang-ru">ИСХОДНЫЕ ПОЛЯ → ПРЕЛОМЛЁННЫЙ ЛУЧ → ПОКАЗАТЕЛЬ</span><span class="lang lang-en">RAW FIELDS → REFRACTED PATH → LOCAL INDEX</span></strong>
+          <b><span class="lang lang-ru">БЕЗ СМЕШИВАНИЯ ИНДЕКСОВ</span><span class="lang lang-en">NO SCORE MIXING</span></b>
+        </div>
+        <div class="astrodome-ray-scroll">
+          <span class="astrodome-ray-scroll-hint"><span class="lang lang-ru">Проведите по схеме</span><span class="lang lang-en">Swipe the diagram</span> →</span>
+          <svg class="astrodome-ray-diagram" viewBox="0 0 1240 720" role="img" aria-label="Схема расчёта преломлённого луча через исходные поля атмосферы до отдельной ячейки Астрокупола">
+            <defs>
+              <pattern id="dome-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" class="astrodome-grid-line"></path></pattern>
+              <linearGradient id="dome-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17394b"></stop><stop offset=".58" stop-color="#0b1e2e"></stop><stop offset="1" stop-color="#050c16"></stop></linearGradient>
+              <radialGradient id="dome-ground" cx="50%" cy="0" r="100%"><stop offset="0" stop-color="#173f50"></stop><stop offset="1" stop-color="#050b14"></stop></radialGradient>
+              <filter id="dome-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMerge></filter>
+              <path id="dome-ray-path" d="M175 618C285 560 351 462 424 360C504 247 598 176 722 138"></path>
+            </defs>
+            <rect width="1240" height="720" rx="24" class="astrodome-ray-canvas"></rect>
+            <rect width="1240" height="720" rx="24" fill="url(#dome-grid)"></rect>
+
+            <g class="astrodome-atmosphere" aria-hidden="true">
+              <path d="M70 612C270 465 472 405 730 424" class="astrodome-layer astrodome-layer-low"></path>
+              <path d="M70 488C286 332 493 286 754 310" class="astrodome-layer astrodome-layer-mid"></path>
+              <path d="M94 344C320 194 525 171 782 209" class="astrodome-layer astrodome-layer-high"></path>
+              <path d="M144 214C346 102 556 93 807 131" class="astrodome-layer astrodome-layer-top"></path>
+              <text x="90" y="588" class="astrodome-layer-label">PBL · TKE · FOG</text>
+              <text x="102" y="457" class="astrodome-layer-label">P / T / QV / QC / QI / CLC</text>
+              <text x="126" y="314" class="astrodome-layer-label">U / V / W · SHEAR</text>
+              <text x="173" y="185" class="astrodome-layer-label">MODEL TOP</text>
+            </g>
+
+            <g class="astrodome-observer" transform="translate(102 589)" aria-hidden="true">
+              <circle cx="62" cy="32" r="58" fill="url(#dome-ground)" stroke="rgba(115,213,218,.46)"></circle>
+              <path d="M31 51L58 26L83 51M58 26L69 8M44 62H77" class="astrodome-telescope"></path>
+              <text x="62" y="91" text-anchor="middle" class="astrodome-node-title lang lang-ru">ТОЧКА</text><text x="62" y="91" text-anchor="middle" class="astrodome-node-title lang lang-en">SITE</text>
+            </g>
+
+            <g class="astrodome-ray" aria-hidden="true">
+              <use href="#dome-ray-path"></use>
+              <circle r="6" class="astrodome-ray-packet"><animateMotion dur="4.2s" repeatCount="indefinite"><mpath href="#dome-ray-path"></mpath></animateMotion></circle>
+              <circle r="4" class="astrodome-ray-packet astrodome-ray-packet-alt"><animateMotion dur="4.2s" begin="-1.4s" repeatCount="indefinite"><mpath href="#dome-ray-path"></mpath></animateMotion></circle>
+              <rect x="-10" y="-3" width="20" height="6" rx="3" class="astrodome-ray-packet astrodome-ray-packet-data"><animateMotion dur="4.2s" begin="-2.8s" repeatCount="indefinite"><mpath href="#dome-ray-path"></mpath></animateMotion></rect>
+            </g>
+
+            <g class="astrodome-integrals" transform="translate(770 74)">
+              <path d="M0 0H386L410 24V248H0Z" fill="url(#dome-panel)"></path>
+              <text x="28" y="42" class="astrodome-node-title lang lang-ru">ЧТО СОБИРАЕТ ЛУЧ</text><text x="28" y="42" class="astrodome-node-title lang lang-en">RAY INTEGRALS</text>
+              <text x="28" y="78" class="astrodome-integral-symbol">J</text><text x="76" y="78" class="astrodome-node-meta">∫ Cn² ds</text>
+              <text x="28" y="112" class="astrodome-integral-symbol">Jv</text><text x="76" y="112" class="astrodome-node-meta">∫ Cn² |V⊥|⁵⁄³ ds</text>
+              <text x="28" y="146" class="astrodome-integral-symbol">W</text><text x="76" y="146" class="astrodome-node-meta lang lang-ru">ВОДЯНОЙ ПАР ПО ЛУЧУ</text><text x="76" y="146" class="astrodome-node-meta lang lang-en">SLANT WATER VAPOUR</text>
+              <text x="28" y="180" class="astrodome-integral-symbol">τ</text><text x="76" y="180" class="astrodome-node-meta lang lang-ru">ОСЛАБЛЕНИЕ: ВОДА + ЛЁД</text><text x="76" y="180" class="astrodome-node-meta lang lang-en">LIQUID + ICE EXTINCTION</text>
+              <path d="M28 204H382" class="astrodome-node-divider"></path>
+              <text x="28" y="230" class="astrodome-node-status lang lang-ru">ОДИН ЛУЧ · ОДИН РЕЗУЛЬТАТ</text><text x="28" y="230" class="astrodome-node-status lang lang-en">ONE PATH · ONE RESULT</text>
+            </g>
+
+            <path d="M716 138C747 138 755 138 770 138" class="astrodome-process-link"></path>
+            <path d="M974 322V382" class="astrodome-process-link astrodome-process-link-orange"></path>
+
+            <g class="astrodome-result" transform="translate(790 382)">
+              <path d="M0 0H346L370 24V202H0Z" fill="url(#dome-panel)"></path>
+              <circle cx="78" cy="96" r="52" class="astrodome-score-ring"></circle>
+              <text x="78" y="94" text-anchor="middle" class="astrodome-score">8.5</text>
+              <text x="78" y="117" text-anchor="middle" class="astrodome-node-meta">OVERALL</text>
+              <text x="156" y="58" class="astrodome-node-title lang lang-ru">ЯЧЕЙКА 225° / 60°</text><text x="156" y="58" class="astrodome-node-title lang lang-en">CELL 225° / 60°</text>
+              <text x="156" y="94" class="astrodome-node-meta">SEEING 1.25″</text>
+              <text x="156" y="122" class="astrodome-node-meta">τ₀ 4.21 ms</text>
+              <text x="156" y="150" class="astrodome-node-meta lang lang-ru">ОБЛАКА 0.0%</text><text x="156" y="150" class="astrodome-node-meta lang lang-en">CLOUD 0.0%</text>
+              <text x="156" y="178" class="astrodome-node-status lang lang-ru">ИСХОДНОЕ ЗНАЧЕНИЕ</text><text x="156" y="178" class="astrodome-node-status lang lang-en">SOURCE NODE VALUE</text>
+            </g>
+
+            <g class="astrodome-no-mix" transform="translate(570 532)" aria-hidden="true">
+              <circle cx="0" cy="0" r="18"></circle><circle cx="104" cy="0" r="18"></circle>
+              <path d="M22 0H82"></path><path d="M45 -18L61 18"></path><path d="M61 -18L45 18"></path>
+              <text x="52" y="52" text-anchor="middle" class="astrodome-node-meta lang lang-ru">ИНДЕКСЫ НЕ СМЕШИВАЮТСЯ</text><text x="52" y="52" text-anchor="middle" class="astrodome-node-meta lang lang-en">NO DERIVED INTERPOLATION</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption id="astrodome-ray-caption"><span class="lang lang-ru">Сначала восстанавливаются исходные поля в месте прохождения луча. Затем по этой траектории заново считаются физические интегралы и показатели одной ячейки. Смешивать готовые значения соседних ячеек нельзя.</span><span class="lang lang-en">Source fields are reconstructed along the ray first. The physical integrals and metrics for one cell are then calculated from that path. Derived values from neighbouring cells are never blended.</span></figcaption>
+      </figure>
+
+      <div class="article-language astrodome-article-body lang lang-ru">
+        <h2>Не увеличенный «Горизонт»</h2>
+        <p>У «Горизонта» восемь азимутов и одна геометрическая высота. В «Астрокуполе» восемь колец расположены на 10, 20, 30, 40, 50, 60, 70 и 80°, в каждом по 16 азимутов с шагом 22,5°. Зенит считается один раз: у направления 90° нет отдельного азимута. Получается 129 узлов на один час и 9 288 узло-часов на весь набор.</p>
+        <p>Высоты ниже 10° намеренно не рассчитываются. Рядом с геометрическим горизонтом быстро растут длина пути, влияние рельефа и цена ошибки модели. Поэтому внешнее кольцо в интерфейсе подписано как граница расчёта, а не как линия горизонта.</p>
+
+        <h2>Почему понадобился полный профиль ICON-EU</h2>
+        <p>Обычный прогноз берёт сокращённый профиль: этого достаточно для почасовых графиков в одной точке. Луч, направленный под углом, пересекает много горизонтальных ячеек и вертикальных слоёв. Для него загружается полный объём: все 74 полных уровня, 75 полууровней геометрии и 19 приземных полей.</p>
+        <p>На полных уровнях хранятся давление, температура, удельная влажность, жидкая и ледяная вода, доля облачности и две горизонтальные составляющие ветра. Вертикальный ветер и энергия турбулентности остаются на своих полууровнях. У поверхности отдельно нужны давление, влажность и температура на двух метрах, видимость, глубина перемешанного слоя, ветер, порывы, накопленные осадки и столбовые величины воды и облачного конденсата.</p>
+        <p>Восстановление начинается с четырёх соседних колонок сетки ICON-EU. Сначала между ними и соседними сроками смешиваются только исходные метеорологические величины. Уже после этого в каждой точке луча вычисляются плотность воздуха, показатель преломления, облачное ослабление и турбулентность.</p>
+
+        <blockquote>Сиинг, τ₀, пропускание облаков и Overall не являются исходными полями модели. Если сначала посчитать их в узлах, а затем смешать, получится другое физическое решение.</blockquote>
+
+        <h2>Луч не проводится по линейке</h2>
+        <p>Температура, давление и влажность меняют показатель преломления воздуха. Поэтому расчётный луч немного изгибается. В реализации используется влажновоздушная формула Киддора, а траекторию интегрирует метод Дормана—Принса. Он одновременно следит за верхом модели, рельефом и переходами между ячейками исходной сетки.</p>
+        <p>Если траектория упирается в рельеф или численная проверка не сходится, ячейка помечается как недоступная. Значение не заменяется прямым лучом и не угадывается по соседям. Ошибка одной ячейки при этом не уничтожает остальные направления и часы.</p>
+
+        <h2>Что означают показатели</h2>
+        <div class="astrodome-terms">
+          <article><strong>C<sub>n</sub>²</strong><p>Сила мелкомасштабных колебаний показателя преломления в конкретном слое. Чем больше C<sub>n</sub>², тем сильнее этот участок воздуха искажает волновой фронт.</p></article>
+          <article><strong>Сиинг</strong><p>Расчётное угловое размытие точечного источника после прохождения всего пути, в секундах дуги. Меньшее значение означает более спокойное изображение.</p></article>
+          <article><strong>τ₀</strong><p>Атмосферное время когерентности: как долго искажённый волновой фронт остаётся примерно похожим на себя. Большое τ₀ даёт адаптивной оптике и короткой выдержке больше времени.</p></article>
+          <article><strong>θ₀</strong><p>Изопланатический угол: размер участка неба, внутри которого атмосферные искажения ещё достаточно сходны. Он особенно важен для коррекции по опорной звезде.</p></article>
+          <article><strong>Свободная атмосфера</strong><p>Сиинг выше приземного слоя. Он помогает отделить вклад нижней, часто локальной турбулентности от того, что происходит выше площадки.</p></article>
+          <article><strong>Доля приземного слоя</strong><p>Часть общего интеграла турбулентности, собранная рядом с поверхностью. Это не процент «плохого воздуха», а разделение одного физического вклада по высоте.</p></article>
+          <article><strong>PWV по лучу</strong><p>Масса водяного пара в наклонном столбе, численно равная миллиметрам жидкой воды после условной конденсации. Это не вероятность дождя.</p></article>
+          <article><strong>Overall</strong><p>Сводная инженерная оценка от 1 до 10. В интерфейсе рядом показаны отдельные штрафы, поэтому число можно разобрать на турбулентность, облака, ветер, туман и осадки.</p></article>
+        </div>
+        <p>Дополнительно считаются воздушная масса, оптическая толща жидкой и ледяной части облака, туман, прозрачность и сдвиг ветра. Воздушная масса здесь получается из фактической длины и состояния пути, а облачная преграда — из водности, льда, доли покрытия и взаимного перекрытия слоёв, а не из одного процента общей облачности.</p>
+
+        <h2>GEOS-CF — дополнение, а не второй прогноз</h2>
+        <p>NASA GEOS-CF используется только для дополнительной спектральной оценки Reference V. Из него приходят семь составляющих AOD на 550 нм — чёрный углерод, пыль, органический углерод, вторичный органический аэрозоль, морская соль, нитрат и сульфат — и общий столб озона.</p>
+        <p>Температура, давление, влажность и ветер из NASA в расчёт не подмешиваются. Если цикл GEOS-CF устарел или неполон, пропадает только дополнительная оценка Reference V. Основной прогноз ICON-EU, направленные показатели и Overall продолжают работать.</p>
+      </div>
+
+      <div class="article-language astrodome-article-body lang lang-en">
+        <h2>More than an enlarged Horizon view</h2>
+        <p>Horizon has eight azimuths at one geometric altitude. Astrodome uses eight rings at 10, 20, 30, 40, 50, 60, 70 and 80°, each with 16 azimuths spaced by 22.5°. Zenith is calculated once because a 90° direction has no distinct azimuth. The result is 129 nodes per hour and 9,288 node-hours in a complete dataset.</p>
+        <p>Altitudes below 10° are deliberately outside the product. Path length, terrain influence and model uncertainty rise rapidly near the geometric horizon. The outer ring is therefore labelled as a calculation boundary rather than the horizon.</p>
+
+        <h2>Why the full ICON-EU profile is needed</h2>
+        <p>The ordinary forecast reads a reduced profile, which is sufficient for hourly charts at one location. A slanted ray crosses many horizontal cells and vertical layers. Astrodome therefore loads the full volume: all 74 full levels, 75 geometric half levels and 19 surface fields.</p>
+        <p>The full levels carry pressure, temperature, specific humidity, liquid and ice water, cloud fraction and two horizontal wind components. Vertical wind and turbulence kinetic energy remain on their native half levels. Surface inputs separately cover pressure, two-metre humidity and temperature, visibility, mixed-layer depth, wind, gusts, accumulated precipitation and column water and condensate.</p>
+        <p>Reconstruction starts from four neighbouring ICON-EU columns. Only source meteorological variables are blended in space and between native times. Air density, refractive index, cloud extinction and turbulence are then computed at every point along the ray.</p>
+
+        <blockquote>Seeing, τ₀, cloud transmission and Overall are not model inputs. Calculating them at grid nodes and blending the answers would produce a different physical result.</blockquote>
+
+        <h2>The ray is not drawn with a ruler</h2>
+        <p>Temperature, pressure and humidity change the refractive index of air, so the calculated ray bends slightly. The implementation uses Ciddor's moist-air refractivity and a Dormand–Prince integrator that tracks the model top, terrain and source-grid boundaries at the same time.</p>
+        <p>If the path meets terrain or the numerical checks do not converge, that cell is marked unavailable. It is not replaced by a straight ray or guessed from its neighbours. One failed cell does not discard the remaining directions and forecast hours.</p>
+
+        <h2>What the diagnostics mean</h2>
+        <div class="astrodome-terms">
+          <article><strong>C<sub>n</sub>²</strong><p>The strength of small-scale refractive-index fluctuations in a layer. A larger value means that part of the atmosphere distorts the wavefront more strongly.</p></article>
+          <article><strong>Seeing</strong><p>The calculated angular blur of a point source after the complete path, in arcseconds. Smaller values mean a steadier image.</p></article>
+          <article><strong>τ₀</strong><p>Atmospheric coherence time: how long the distorted wavefront remains roughly similar. A larger τ₀ gives adaptive optics and short exposures more time to react.</p></article>
+          <article><strong>θ₀</strong><p>Isoplanatic angle: the area of sky over which atmospheric distortion remains sufficiently alike. It matters when correction is referenced to a guide star.</p></article>
+          <article><strong>Free atmosphere</strong><p>Seeing above the ground layer. It separates lower, often local turbulence from what remains higher over the observing site.</p></article>
+          <article><strong>Ground-layer fraction</strong><p>The share of the turbulence integral collected near the surface. It divides one physical contribution by altitude; it is not a percentage of “bad air”.</p></article>
+          <article><strong>Slant PWV</strong><p>Water-vapour mass along the slanted column, numerically equal to millimetres of liquid water after hypothetical condensation. It is not a rain probability.</p></article>
+          <article><strong>Overall</strong><p>A bounded engineering score from 1 to 10. The interface exposes each penalty, so the value can be traced to turbulence, cloud, wind, fog or precipitation.</p></article>
+        </div>
+        <p>Air mass, liquid and ice cloud optical depth, fog, transparency and wind shear are calculated as well. Air mass follows the actual path and atmospheric state, while cloud obstruction uses condensate, ice, coverage and layer overlap rather than a single total-cloud percentage.</p>
+
+        <h2>GEOS-CF is an addition, not a second weather model</h2>
+        <p>NASA GEOS-CF is used only for the supplementary Reference V spectral estimate. It contributes seven AOD components at 550 nm—black carbon, dust, organic carbon, secondary organic aerosol, sea salt, nitrate and sulphate—plus total column ozone.</p>
+        <p>Temperature, pressure, humidity and wind are not taken from NASA. If GEOS-CF is stale or incomplete, only the supplementary Reference V estimate disappears. The main ICON-EU forecast, directional diagnostics and Overall continue to work.</p>
+      </div>
+
+      <section class="astrodome-interface" aria-labelledby="astrodome-interface-title">
+        <p class="kicker"><span class="lang lang-ru">Рабочий интерфейс</span><span class="lang lang-en">Working interface</span></p>
+        <h2 id="astrodome-interface-title"><span class="lang lang-ru">Один набор данных,<br>два способа просмотра.</span><span class="lang lang-en">One dataset,<br>two ways to inspect it.</span></h2>
+        <p class="astrodome-interface-lead"><span class="lang lang-ru">Объёмный вид помогает ориентироваться внутри небосвода. Плоская карта быстрее показывает рисунок по азимутам и высотам. Выбранная ячейка и численные значения в обоих режимах остаются теми же.</span><span class="lang lang-en">The 3D view provides spatial orientation inside the sky, while the flat map makes azimuth and altitude patterns easier to compare. Both modes preserve the same selected cell and source-node values.</span></p>
+        <div class="astrodome-screens">
+          <figure>
+            <picture>
+              <source srcset="/assets/astrodome/astrodome-3d-720.webp 720w, /assets/astrodome/astrodome-3d-1200.webp 1200w, /assets/astrodome/astrodome-3d-1680.webp 1680w" sizes="(max-width: 760px) calc(100vw - 24px), 1200px">
+              <img src="/assets/astrodome/astrodome-3d-1200.webp" width="1680" height="945" loading="lazy" decoding="async" alt="Объёмная визуализация направленного прогноза в Астрокуполе">
+            </picture>
+            <figcaption><strong>3D / WEBGL2</strong><span class="lang lang-ru">Вид изнутри купола с выбором отдельной ячейки.</span><span class="lang lang-en">View from inside the dome with cell selection.</span></figcaption>
+          </figure>
+          <figure>
+            <picture>
+              <source srcset="/assets/astrodome/astrodome-2d-720.webp 720w, /assets/astrodome/astrodome-2d-1200.webp 1200w, /assets/astrodome/astrodome-2d-1680.webp 1680w" sizes="(max-width: 760px) calc(100vw - 24px), 1200px">
+              <img src="/assets/astrodome/astrodome-2d-1200.webp" width="1680" height="945" loading="lazy" decoding="async" alt="Плоская карта направленного прогноза в Астрокуполе">
+            </picture>
+            <figcaption><strong>2D / CANVAS</strong><span class="lang lang-ru">Все азимуты и высоты на одной полярной карте.</span><span class="lang lang-en">All azimuths and altitudes on one polar map.</span></figcaption>
+          </figure>
+          <figure class="astrodome-screen-wide">
+            <picture>
+              <source srcset="/assets/astrodome/astrodome-seeing-night-720.webp 720w, /assets/astrodome/astrodome-seeing-night-1200.webp 1200w, /assets/astrodome/astrodome-seeing-night-1680.webp 1680w" sizes="(max-width: 760px) calc(100vw - 24px), 1200px">
+              <img src="/assets/astrodome/astrodome-seeing-night-1200.webp" width="1680" height="945" loading="lazy" decoding="async" alt="Наклонный сиинг на 500 нм в Астрокуполе во время астрономической ночи">
+            </picture>
+            <figcaption><strong>SEEING / 500 NM</strong><span class="lang lang-ru">Плоский вид в астрономическую ночь: каждая ячейка содержит отдельно рассчитанный наклонный сиинг.</span><span class="lang lang-en">Astronomical-night flat view: every cell contains its independently calculated slant seeing value.</span></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <div class="article-language astrodome-article-tail lang lang-ru">
+        <h2>Тяжёлый расчёт вынесен из обычного прогноза</h2>
+        <p>Один купол значительно тяжелее одного почасового графика. «Горизонт» и «Астрокупол» используют общую ограниченную очередь, а совпадающие запросы получают один результат. Отдельный рабочий процесс читает модель только для чтения и не может менять текущий цикл. Его остановка, нехватка памяти или превышение времени переводят конкретную задачу в ошибку, но не останавливают синхронизацию ICON и обычные ответы Telegram/VK.</p>
+        <p>Готовый набор публикуется атомарно как сжатый JSON. В базе остаются только владелец, контрольная сумма, имя файла и срок хранения. Визуализация доступна пользователю 96 часов; незавершённый или неудачный повтор не заменяет предыдущий готовый результат.</p>
+
+        <h2>Браузер тоже проверяет данные</h2>
+        <p>Перед отрисовкой клиент проверяет число и порядок узлов, версии геометрии, контрольную сумму описателя, время кадров и допустимость чисел. Основной режим использует WebGL2, запасной — Canvas 2D. Для клавиатуры и экранного диктора есть табличное представление. Декоративная сетка, компас и звёздный фон не участвуют в расчёте и не меняют цвет ячейки.</p>
+
+        <h2>Что ещё нужно проверить</h2>
+        <ul class="article-checklist astrodome-checklist">
+          <li>завершить полный контрольный прогон текущей версии на одном неизменяемом цикле ICON-EU;</li>
+          <li>измерить холодный и повторный расчёт по процессору, памяти, диску и размеру сжатого набора;</li>
+          <li>проверить задержку обычного прогноза и «Горизонта», пока направленный рабочий процесс занят;</li>
+          <li>пройти сценарии остановки, нехватки памяти, отката, авторизации и ограничений между пограничным и внутренним сервером;</li>
+          <li>подобрать коэффициенты по наблюдениям и затем проверить их на отдельном наборе; для сиинга планирую использовать в том числе публичные ряды DIMM обсерваторий;</li>
+          <li>сопоставить облачность, водяной пар, видимость и осадки с независимыми наблюдениями.</li>
+        </ul>
+
+        <div class="article-note astrodome-result-note">
+          <strong>Практический результат</strong>
+          <p>«Астрокупол» превращает один цикл ICON-EU в проверяемый направленный набор: 72 часа, 129 независимых направлений на каждый срок и явные причины ограничения для каждой ячейки. Это модельная оценка условий, а не измерение атмосферы над площадкой.</p>
+        </div>
+
+        <div class="article-sources">
+          <a href="https://astrosferum.com/" target="_blank" rel="noreferrer">Астросферум ↗</a>
+          <a href="https://www.dwd.de/EN/ourservices/nwp_forecast_data/nwp_forecast_data.html" target="_blank" rel="noreferrer">DWD Open Data ↗</a>
+          <a href="https://doi.org/10.1364/AO.35.001566" target="_blank" rel="noreferrer">Ciddor, 1996 ↗</a>
+          <a href="https://doi.org/10.1364/JOSA.56.001372" target="_blank" rel="noreferrer">Fried, 1966 ↗</a>
+        </div>
+      </div>
+
+      <div class="article-language astrodome-article-tail lang lang-en">
+        <h2>Heavy work is isolated from the ordinary forecast</h2>
+        <p>One dome is far more expensive than one hourly chart. Horizon and Astrodome share a bounded queue, and identical requests share one result. A separate worker reads the model store in read-only mode and cannot change the current run. A crash, memory limit or timeout fails that directional job without stopping ICON synchronisation or ordinary Telegram/VK forecasts.</p>
+        <p>A completed dataset is atomically published as compressed JSON. The database keeps only its owner, digest, exact filename and expiry. A visualization remains available to its user for 96 hours; a queued, failed or cancelled recalculation does not replace the previous successful result.</p>
+
+        <h2>The browser validates the dataset too</h2>
+        <p>Before rendering, the client checks node count and order, geometry versions, descriptor digest, frame times and numeric validity. WebGL2 is the primary view and Canvas 2D is the fallback. A tabular representation supports keyboard and screen-reader access. The decorative grid, compass and stars never alter a cell's value or colour.</p>
+
+        <h2>What remains to be verified</h2>
+        <ul class="article-checklist astrodome-checklist">
+          <li>complete a full release run of the current version against one immutable ICON-EU cycle;</li>
+          <li>measure cold and warm execution for CPU, memory, disk and compressed payload size;</li>
+          <li>verify ordinary forecast and Horizon latency while the directional worker is occupied;</li>
+          <li>exercise crash, memory, rollback, authentication and edge-to-origin restriction scenarios;</li>
+          <li>fit coefficients against observations and validate them on a separate dataset; public observatory DIMM series are among the planned seeing references;</li>
+          <li>compare cloud, water vapour, visibility and precipitation against independent observations.</li>
+        </ul>
+
+        <div class="article-note astrodome-result-note">
+          <strong>Practical result</strong>
+          <p>Astrodome turns one ICON-EU run into a traceable directional dataset: 72 hours, 129 independently calculated directions per term and explicit limiting factors for every cell. It remains a model estimate, not a measurement of the atmosphere above the site.</p>
+        </div>
+
+        <div class="article-sources">
+          <a href="https://astrosferum.com/" target="_blank" rel="noreferrer">Astrosferum ↗</a>
+          <a href="https://www.dwd.de/EN/ourservices/nwp_forecast_data/nwp_forecast_data.html" target="_blank" rel="noreferrer">DWD Open Data ↗</a>
+          <a href="https://doi.org/10.1364/AO.35.001566" target="_blank" rel="noreferrer">Ciddor, 1996 ↗</a>
+          <a href="https://doi.org/10.1364/JOSA.56.001372" target="_blank" rel="noreferrer">Fried, 1966 ↗</a>
+        </div>
+      </div>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К другим<br>публикациям.</span><span class="lang lang-en">Read more<br>technical notes.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/articles/">Все публикации <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/articles/">All publications <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург · удалённо</span><span class="lang lang-en">Saint Petersburg · remote</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i><i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i><i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i><i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i><i class="energia-plume energia-plume-outer"></i><i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260803a" defer></script>
+  <script src="/telemetry.min.js?v=20260803b" defer></script>
+</body>
+</html>

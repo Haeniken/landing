@@ -1036,6 +1036,146 @@ html[data-language="en"] .article-language.lang-en { display: block; }
 .incident-result { border-color: rgba(121,223,156,.42); background: linear-gradient(110deg, rgba(121,223,156,.1), rgba(115,213,218,.06) 70%, transparent); }
 @keyframes decision-core-pulse { 0%, 100% { opacity: .25; transform: scale(.9); } 50% { opacity: .9; transform: scale(1.08); } }
 
+.astrodome-article-hero {
+  background:
+    linear-gradient(118deg, transparent 0 55%, rgba(115,213,218,.045) 55.1% 55.25%, transparent 55.35%),
+    radial-gradient(circle at 80% 26%, rgba(115,213,218,.2), transparent 24%),
+    radial-gradient(circle at 18% 82%, rgba(255,118,87,.1), transparent 24%),
+    var(--ink);
+}
+.astrodome-work-light {
+  position: relative; background: #f2c264;
+  box-shadow: 0 0 0 5px rgba(242,194,100,.1), 0 0 16px rgba(242,194,100,.42);
+}
+.astrodome-work-light::after {
+  content: ""; position: absolute; inset: -7px; border: 1px solid rgba(242,194,100,.5); border-radius: 50%;
+  transform: scale(.65); animation: astrodome-work-pulse 2.8s ease-out infinite;
+}
+.astrodome-technical-article { max-width: 1040px; }
+.astrodome-status-note {
+  border-color: rgba(242,194,100,.45);
+  background: linear-gradient(110deg, rgba(242,194,100,.12), rgba(115,213,218,.05) 70%, transparent);
+}
+.astrodome-status-note strong { color: #936312; }
+.astrodome-metrics strong { font-size: clamp(39px, 4.4vw, 56px); }
+.astrodome-metrics li:nth-child(3) strong { letter-spacing: -.06em; }
+.astrodome-background-video {
+  position: relative; width: min(1120px, calc(100vw - (var(--pad) * 2))); aspect-ratio: 16 / 9;
+  margin: 72px 50% 92px; transform: translateX(-50%); overflow: hidden; background: var(--ink); isolation: isolate;
+}
+.astrodome-background-media { position: absolute; inset: 0; }
+.astrodome-background-media video { display: block; width: 100%; height: 100%; object-fit: cover; background: var(--ink); }
+.astrodome-background-video::before {
+  content: ""; position: absolute; z-index: 2; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, var(--paper) 0, rgba(236,241,237,.88) 2%, transparent 11%, transparent 89%, rgba(236,241,237,.88) 98%, var(--paper) 100%),
+    linear-gradient(180deg, var(--paper) 0, rgba(236,241,237,.84) 2.5%, transparent 12%, transparent 88%, rgba(236,241,237,.84) 97.5%, var(--paper) 100%);
+}
+.astrodome-background-video::after {
+  content: ""; position: absolute; z-index: 3; inset: 0; pointer-events: none;
+  border: 1px solid rgba(115,213,218,.16); box-shadow: inset 0 0 70px rgba(7,17,31,.18);
+  -webkit-mask-image: radial-gradient(ellipse at center, transparent 46%, #000 92%); mask-image: radial-gradient(ellipse at center, transparent 46%, #000 92%);
+}
+.astrodome-video-hud {
+  position: absolute; z-index: 4; right: 7%; bottom: 8%; left: 7%; display: flex; justify-content: space-between; gap: 20px;
+  color: rgba(247,250,247,.64); font: 800 8px/1.2 Consolas, monospace; letter-spacing: .1em; text-transform: uppercase;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,.8));
+}
+.astrodome-video-hud b { color: var(--cyan); font: inherit; }
+.astrodome-ray-figure {
+  position: relative; width: min(1240px, calc(100vw - (var(--pad) * 2))); margin: 84px 50% 104px;
+  transform: translateX(-50%); overflow: hidden; border: 1px solid rgba(115,213,218,.28); border-radius: 24px;
+  background: linear-gradient(145deg, rgba(247,250,247,.98), rgba(225,239,238,.7));
+  box-shadow: 0 30px 76px rgba(7,17,31,.13); isolation: isolate;
+}
+.astrodome-ray-figure::before, .astrodome-ray-figure::after {
+  content: ""; position: absolute; z-index: 5; width: 76px; height: 76px; pointer-events: none;
+  border-color: rgba(255,118,87,.78); border-style: solid;
+}
+.astrodome-ray-figure::before { top: 14px; left: 14px; border-width: 1px 0 0 1px; border-radius: 11px 0 0; }
+.astrodome-ray-figure::after { right: 14px; bottom: 79px; border-width: 0 1px 1px 0; border-radius: 0 0 11px; }
+.astrodome-ray-hud {
+  position: absolute; z-index: 6; top: 18px; right: 22px; left: 22px; display: grid;
+  grid-template-columns: 1fr auto auto; align-items: center; gap: 24px; pointer-events: none;
+  color: rgba(7,17,31,.58); font: 800 9px/1.3 Consolas, "Courier New", monospace;
+  letter-spacing: .1em; text-transform: uppercase;
+}
+.astrodome-ray-hud > span { display: inline-flex; align-items: center; gap: 9px; }
+.astrodome-ray-hud i { width: 6px; height: 6px; border-radius: 50%; background: #79df9c; box-shadow: 0 0 10px rgba(121,223,156,.68); }
+.astrodome-ray-hud strong { color: #126a72; font: inherit; }
+.astrodome-ray-hud b { color: var(--orange); font: inherit; }
+.astrodome-ray-scroll { overflow: hidden; }
+.astrodome-ray-scroll-hint { display: none; }
+.astrodome-ray-diagram { display: block; width: 100%; height: auto; }
+.astrodome-ray-canvas { fill: rgba(237,243,239,.2); }
+.astrodome-grid-line { fill: none; stroke: rgba(31,123,132,.095); stroke-width: 1; }
+.astrodome-layer { fill: none; stroke-width: 32; stroke-linecap: round; opacity: .42; }
+.astrodome-layer-low { stroke: rgba(255,118,87,.15); }
+.astrodome-layer-mid { stroke: rgba(115,213,218,.15); }
+.astrodome-layer-high { stroke: rgba(52,120,150,.13); }
+.astrodome-layer-top { stroke: rgba(7,17,31,.07); }
+.astrodome-layer-label { fill: rgba(7,17,31,.48); font: 800 9px/1 Consolas, monospace; letter-spacing: .08em; }
+.astrodome-telescope { fill: none; stroke: var(--cyan); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.astrodome-ray use { fill: none; stroke: rgba(255,118,87,.86); stroke-width: 3; filter: drop-shadow(0 0 5px rgba(255,118,87,.48)); }
+.astrodome-ray-packet { fill: #fff7d7; stroke: #b64b2f; stroke-width: 1; filter: url(#dome-glow); }
+.astrodome-ray-packet-alt { fill: #c9fdff; stroke: #075f6b; }
+.astrodome-ray-packet-data { fill: var(--orange); stroke: #7f2a1b; }
+.astrodome-integrals > path, .astrodome-result > path { stroke: rgba(115,213,218,.48); stroke-width: 1.25; }
+.astrodome-node-title { fill: var(--white); font: 900 11px/1 Inter, "Segoe UI", sans-serif; letter-spacing: .05em; }
+.astrodome-node-meta { fill: rgba(247,250,247,.6); font: 700 9px/1 Consolas, "Courier New", monospace; letter-spacing: .035em; }
+.astrodome-node-status { fill: #79df9c; font: 800 8px/1 Consolas, monospace; letter-spacing: .08em; }
+.astrodome-node-divider { stroke: rgba(115,213,218,.2); }
+.astrodome-integral-symbol { fill: var(--cyan); font: 900 17px/1 Inter, sans-serif; }
+.astrodome-process-link { fill: none; stroke: rgba(22,118,125,.7); stroke-width: 2; stroke-dasharray: 4 7; }
+.astrodome-process-link-orange { stroke: rgba(255,118,87,.8); }
+.astrodome-score-ring { fill: rgba(115,213,218,.06); stroke: var(--cyan); stroke-width: 1.4; filter: drop-shadow(0 0 8px rgba(115,213,218,.18)); }
+.astrodome-score { fill: var(--white); font: 900 38px/1 Inter, sans-serif; letter-spacing: -.05em; }
+.astrodome-no-mix circle { fill: rgba(7,17,31,.9); stroke: rgba(115,213,218,.58); }
+.astrodome-no-mix path { fill: none; stroke: rgba(255,118,87,.82); stroke-width: 2; stroke-dasharray: 4 5; }
+.astrodome-no-mix text { fill: rgba(7,17,31,.58); }
+.astrodome-ray-figure figcaption {
+  position: relative; z-index: 5; padding: 20px 24px 22px; border-top: 1px solid rgba(115,213,218,.2);
+  background: rgba(247,250,247,.85); color: rgba(7,17,31,.72); font-size: 12px; line-height: 1.55;
+}
+.astrodome-terms {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 38px 0 48px;
+  border-top: 1px solid rgba(31,123,132,.22); border-left: 1px solid rgba(31,123,132,.22);
+}
+.astrodome-terms article {
+  min-height: 190px; padding: 28px 30px; border-right: 1px solid rgba(31,123,132,.22);
+  border-bottom: 1px solid rgba(31,123,132,.22); background: linear-gradient(145deg, rgba(115,213,218,.075), rgba(255,255,255,.12));
+}
+.astrodome-terms strong { display: block; margin-bottom: 15px; color: #a63420; font-size: 23px; letter-spacing: -.025em; }
+.astrodome-terms p { margin: 0; color: rgba(7,17,31,.7); font-size: 14px; line-height: 1.62; }
+.astrodome-interface {
+  width: min(1320px, calc(100vw - (var(--pad) * 2))); margin: 96px 50% 110px; padding-top: 82px;
+  transform: translateX(-50%); border-top: 1px solid var(--line-light);
+}
+.astrodome-interface > .kicker { color: #a63420; }
+.astrodome-interface > h2 { max-width: 920px; margin-top: 18px; font-size: clamp(46px, 6.5vw, 90px); }
+.astrodome-interface-lead { max-width: 760px; color: rgba(7,17,31,.67); }
+.astrodome-screens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 54px; }
+.astrodome-screens figure {
+  margin: 0; overflow: hidden; border: 1px solid rgba(31,123,132,.25); background: rgba(255,255,255,.52);
+  box-shadow: 0 24px 64px rgba(7,17,31,.1); clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%);
+}
+.astrodome-screens picture, .astrodome-screens img { display: block; width: 100%; }
+.astrodome-screens picture { overflow: hidden; background: var(--ink); }
+.astrodome-screens img { height: auto; transition: transform .45s ease; }
+.astrodome-screens figure:hover img { transform: scale(1.012); }
+.astrodome-screens figcaption {
+  display: grid; grid-template-columns: auto 1fr; gap: 16px; min-height: 82px; align-items: start; padding: 20px 22px;
+  color: rgba(7,17,31,.68); font-size: 13px; line-height: 1.55;
+}
+.astrodome-screens figcaption strong { color: #a63420; font: 900 10px/1.55 Consolas, monospace; letter-spacing: .08em; }
+.astrodome-screen-wide { grid-column: 1 / -1; }
+.astrodome-result-note { border-color: rgba(121,223,156,.42); background: linear-gradient(110deg, rgba(121,223,156,.1), rgba(115,213,218,.06) 70%, transparent); }
+
+@keyframes astrodome-work-pulse {
+  0% { opacity: .8; transform: scale(.55); }
+  70%, 100% { opacity: 0; transform: scale(1.45); }
+}
+
 .astro-results {
   width: min(1240px, calc(100vw - (var(--pad) * 2))); margin: 70px 50% 0; transform: translateX(-50%);
   padding-top: 84px; border-top: 1px solid var(--line-light);
@@ -1531,6 +1671,32 @@ footer > p:last-of-type { justify-self: end; }
   .incident-sequence ol { grid-template-columns: 1fr; }
   .incident-sequence li { min-height: 0; padding: 25px 22px 27px; }
   .incident-sequence li::before { left: 21px; }
+  .astrodome-article-hero h1 { font-size: clamp(37px, 10.8vw, 49px); }
+  .astrodome-background-video { width: calc(100vw - 20px); margin-top: 44px; margin-bottom: 62px; }
+  .astrodome-video-hud { right: 8%; bottom: 9%; left: 8%; font-size: 7px; }
+  .astrodome-ray-figure { width: calc(100vw - 20px); margin-top: 52px; margin-bottom: 70px; border-radius: 16px; }
+  .astrodome-ray-figure::before, .astrodome-ray-figure::after { display: none; }
+  .astrodome-ray-hud {
+    position: relative; top: auto; right: auto; left: auto; grid-template-columns: 1fr auto; gap: 7px 14px;
+    padding: 14px 16px; border-bottom: 1px solid rgba(115,213,218,.18); font-size: 8px;
+  }
+  .astrodome-ray-hud strong { grid-column: 1 / -1; grid-row: 2; }
+  .astrodome-ray-hud b { grid-column: 2; grid-row: 1; }
+  .astrodome-ray-scroll { position: relative; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+  .astrodome-ray-scroll-hint {
+    position: absolute; z-index: 4; top: 12px; left: 16px; display: block; padding: 5px 8px;
+    border: 1px solid rgba(115,213,218,.22); background: rgba(7,17,31,.8); color: rgba(247,250,247,.72);
+    font: 800 8px/1.2 Consolas, monospace; letter-spacing: .06em; text-transform: uppercase; pointer-events: none;
+  }
+  .astrodome-ray-diagram { width: 900px; max-width: none; }
+  .astrodome-ray-figure figcaption { padding: 16px 18px; }
+  .astrodome-terms { grid-template-columns: 1fr; }
+  .astrodome-terms article { min-height: 0; padding: 24px 22px; }
+  .astrodome-interface { width: calc(100vw - 20px); margin-top: 66px; margin-bottom: 78px; padding-top: 64px; }
+  .astrodome-interface > h2 { font-size: clamp(38px, 11.8vw, 55px); }
+  .astrodome-screens { grid-template-columns: 1fr; gap: 18px; margin-top: 38px; }
+  .astrodome-screen-wide { grid-column: auto; }
+  .astrodome-screens figcaption { grid-template-columns: 1fr; gap: 6px; min-height: 0; padding: 17px 18px 19px; }
   .astro-results { width: calc(100vw - 20px); margin-top: 40px; padding-top: 68px; }
   .astro-results > h2 { font-size: clamp(40px, 12vw, 58px); }
   .astro-results-lead { padding-right: 10px; }
@@ -1571,6 +1737,8 @@ footer > p:last-of-type { justify-self: end; }
   .astro-core-halo { animation: none; }
   .decision-core-ring { animation: none; opacity: .55; transform: none; }
   .decision-packets { display: none; }
+  .astrodome-ray-packet { display: none; }
+  .astrodome-work-light::after { animation: none; opacity: .55; transform: scale(1); }
   .service-health.is-ok .service-health-light,
   .service-health.is-ok .service-health-light::after { animation: none !important; opacity: 1; transform: none; }
 }

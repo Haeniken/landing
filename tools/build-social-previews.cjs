@@ -36,6 +36,13 @@ const cards = [
     alt: "Astrosferum — forecast for an astronomer",
   },
   {
+    output: "public/social/astrodome-preview.jpg",
+    image: "public/astrodome/astrodome-seeing-night-1680.webp",
+    kind: "article",
+    title: ["ASTRODOME", "FULL-SKY", "FORECAST"],
+    alt: "Astrosferum Astrodome directional sky forecast",
+  },
+  {
     output: "public/social/network-ha-preview.jpg",
     image: "design/social/network-ha-visual-source.png",
     kind: "article",
@@ -197,7 +204,17 @@ async function build(card) {
   console.log(`${card.output}: ${metadata.width}x${metadata.height} — ${card.alt}`);
 }
 
-Promise.all(cards.map(build)).catch((error) => {
+const requested = new Set(process.argv.slice(2));
+const selectedCards = requested.size === 0
+  ? cards
+  : cards.filter((card) => requested.has(path.basename(card.output, path.extname(card.output))));
+
+if (requested.size > 0 && selectedCards.length !== requested.size) {
+  const known = cards.map((card) => path.basename(card.output, path.extname(card.output))).join(", ");
+  throw new Error(`Unknown preview name. Available values: ${known}`);
+}
+
+Promise.all(selectedCards.map(build)).catch((error) => {
   console.error(error);
   process.exitCode = 1;
 });

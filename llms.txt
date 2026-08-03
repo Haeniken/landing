@@ -17,6 +17,8 @@
 - [Engineering decision map: from 504 to a slow SQL query — English](https://haeniken.com/en/articles/incident-504/): English version of the incident-analysis article.
 - [Forecast for astronomers: models and calculations in Astrosferum](https://haeniken.com/articles/astrosferum/): Russian article about the service architecture, atomic DWD ICON updates, forecast calculations and the eight-direction Horizon analysis.
 - [Forecast for astronomers: models and calculations in Astrosferum — English](https://haeniken.com/en/articles/astrosferum/): English version covering the same architecture, calculations, output examples and Horizon method.
+- [Astrodome: a forecast for the whole sky](https://haeniken.com/articles/astrodome/): Russian technical article about the work-in-progress full-sky product, dense ICON-EU profiles, refracted rays and directional atmospheric diagnostics.
+- [Astrodome: a forecast for the whole sky — English](https://haeniken.com/en/articles/astrodome/): English version of the Astrodome architecture and scientific-method article.
 - [RabbitHole VPN control panel: payments and actual 3x-ui state](https://haeniken.com/articles/rabbithole-vpn/): Russian technical case study of an internal control panel, idempotent payment handling, provisioning and state reconciliation. It is not a service offer and contains no connection link.
 - [RabbitHole VPN control panel — English](https://haeniken.com/en/articles/rabbithole-vpn/): English version of the private control-panel architecture and failure-recovery case study.
 
@@ -31,6 +33,7 @@
 - [ORCID](https://orcid.org/0009-0005-5804-5011): author identifier.
 - [Telegram](https://t.me/haeniken): public contact.
 - [Astrosferum bot](https://t.me/astrosferum_bot): public interface to the astronomy forecast project.
+- [Astrosferum](https://astrosferum.com/): project website and authenticated Astrodome interface.
 
 ## Crawling notes
 
