@@ -1057,6 +1057,16 @@ html[data-language="en"] .article-language.lang-en { display: block; }
   background: linear-gradient(110deg, rgba(242,194,100,.12), rgba(115,213,218,.05) 70%, transparent);
 }
 .astrodome-status-note strong { color: #936312; }
+.astrodome-context {
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px 22px; align-items: baseline;
+  margin: 0 0 38px; padding: 15px 18px; border: 1px solid rgba(31,123,132,.22); border-left: 3px solid #16767d;
+  background: linear-gradient(100deg, rgba(115,213,218,.11), rgba(255,255,255,.18));
+}
+.astrodome-context strong {
+  color: #126a72; font: 900 10px/1.5 Consolas, "Courier New", monospace; letter-spacing: .1em; text-transform: uppercase;
+}
+.technical-article .astrodome-context p { margin: 0; color: rgba(7,17,31,.68); font-size: 14px; line-height: 1.6; }
+.astrodome-context a { color: var(--ink); font-weight: 800; border-bottom: 1px solid var(--orange); }
 .astrodome-metrics strong { font-size: clamp(39px, 4.4vw, 56px); }
 .astrodome-metrics li:nth-child(3) strong { letter-spacing: -.06em; }
 .astrodome-background-video {
@@ -1672,6 +1682,7 @@ footer > p:last-of-type { justify-self: end; }
   .incident-sequence li { min-height: 0; padding: 25px 22px 27px; }
   .incident-sequence li::before { left: 21px; }
   .astrodome-article-hero h1 { font-size: clamp(37px, 10.8vw, 49px); }
+  .astrodome-context { grid-template-columns: 1fr; gap: 7px; padding: 16px 17px; }
   .astrodome-background-video { width: calc(100vw - 20px); margin-top: 44px; margin-bottom: 62px; }
   .astrodome-video-hud { right: 8%; bottom: 9%; left: 8%; font-size: 7px; }
   .astrodome-ray-figure { width: calc(100vw - 20px); margin-top: 52px; margin-bottom: 70px; border-radius: 16px; }
