@@ -49,6 +49,13 @@ const cards = [
     title: ["PAYMENTS &", "SUBSCRIPTIONS", "3X-UI STATE"],
     alt: "Payments, subscriptions and 3x-ui state",
   },
+  {
+    output: "public/social/incident-504-preview.jpg",
+    image: "design/social/incident-504-visual-source.svg",
+    kind: "article",
+    title: ["504 TIMEOUT", "DECISION", "MAP"],
+    alt: "Engineering decision map from 504 to a slow SQL query",
+  },
 ];
 
 function escapeXml(value) {

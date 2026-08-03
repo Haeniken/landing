@@ -13,6 +13,8 @@
 - [Publications in English](https://haeniken.com/en/articles/): English publication index.
 - [BGP and BFD in a small production network](https://haeniken.com/articles/network-ha/): Russian practical article about primary WireGuard, backup IPsec, FRR path selection, BFD, monitoring and an operational runbook.
 - [BGP and BFD in a small production network — English](https://haeniken.com/en/articles/network-ha/): English version of the resilient-network article.
+- [Engineering decision map: from 504 to a slow SQL query](https://haeniken.com/articles/incident-504/): Russian incident-analysis article tracing a gateway timeout through Nginx, Apache, PHP session locking and MariaDB query planning.
+- [Engineering decision map: from 504 to a slow SQL query — English](https://haeniken.com/en/articles/incident-504/): English version of the incident-analysis article.
 - [Forecast for astronomers: models and calculations in Astrosferum](https://haeniken.com/articles/astrosferum/): Russian article about the service architecture, atomic DWD ICON updates, forecast calculations and the eight-direction Horizon analysis.
 - [Forecast for astronomers: models and calculations in Astrosferum — English](https://haeniken.com/en/articles/astrosferum/): English version covering the same architecture, calculations, output examples and Horizon method.
 - [RabbitHole VPN control panel: payments and actual 3x-ui state](https://haeniken.com/articles/rabbithole-vpn/): Russian technical case study of an internal control panel, idempotent payment handling, provisioning and state reconciliation. It is not a service offer and contains no connection link.

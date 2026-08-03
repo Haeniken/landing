@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="630" viewBox="0 0 900 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset=".58" stop-color="#10283a"/><stop offset="1" stop-color="#050b14"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#173d50"/><stop offset=".65" stop-color="#0a1c2b"/><stop offset="1" stop-color="#050b14"/></linearGradient>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse"><path d="M38 0H0V38" fill="none" stroke="#73d5da" stroke-opacity=".09"/><circle r="1.2" fill="#73d5da" fill-opacity=".18"/></pattern>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="900" height="630" fill="url(#bg)"/>
+  <rect width="900" height="630" fill="url(#grid)"/>
+  <g fill="none" stroke="#73d5da" stroke-opacity=".18"><ellipse cx="470" cy="316" rx="390" ry="245"/><ellipse cx="470" cy="316" rx="276" ry="170"/><circle cx="470" cy="316" r="96"/></g>
+  <g stroke="#73d5da" stroke-width="3" fill="none" opacity=".72"><path d="M76 180H218"/><path d="M332 180H420"/><path d="M558 180H624"/></g>
+  <g fill="#c9fdff" filter="url(#glow)"><circle cx="140" cy="180" r="5"/><rect x="370" y="176" width="20" height="8" rx="3"/><circle cx="590" cy="180" r="5"/></g>
+  <path d="M545 246C540 348 304 348 290 246" fill="none" stroke="#ff7657" stroke-width="4" stroke-dasharray="9 11"/>
+  <circle cx="416" cy="319" r="7" fill="#ff7657" filter="url(#glow)"/>
+  <g>
+    <path d="M24 112H172L192 132V246H24Z" fill="url(#panel)" stroke="#73d5da" stroke-opacity=".55"/>
+    <path d="M218 112H368L388 132V246H218Z" fill="url(#panel)" stroke="#73d5da" stroke-opacity=".55"/>
+    <path d="M420 112H570L590 132V246H420Z" fill="url(#panel)" stroke="#ff7657" stroke-opacity=".78"/>
+    <path d="M624 112H752L772 132V246H624Z" fill="url(#panel)" stroke="#ff7657" stroke-opacity=".78"/>
+  </g>
+  <g font-family="DejaVu Sans, sans-serif" font-weight="900" text-anchor="middle">
+    <text x="108" y="170" fill="#f7faf7" font-size="31">EDGE</text>
+    <text x="303" y="170" fill="#f7faf7" font-size="31">NGINX</text>
+    <text x="505" y="170" fill="#f7faf7" font-size="27">PHP</text>
+    <text x="698" y="170" fill="#f7faf7" font-size="26">SQL</text>
+    <text x="303" y="218" fill="#ff7657" font-size="30">504</text>
+  </g>
+  <g transform="translate(270 392)">
+    <circle cx="180" cy="72" r="94" fill="#07111f" stroke="#73d5da" stroke-opacity=".55"/>
+    <circle cx="180" cy="72" r="116" fill="none" stroke="#73d5da" stroke-opacity=".22"/>
+    <path d="M120 48H240M120 82H240" stroke="#73d5da" stroke-opacity=".25"/>
+    <text x="180" y="35" fill="#ff7657" font-family="DejaVu Sans, sans-serif" font-size="44" font-weight="900" text-anchor="middle">RCA</text>
+    <text x="180" y="106" fill="#f7faf7" font-family="DejaVu Sans, sans-serif" font-size="30" font-weight="900" text-anchor="middle">PLAN</text>
+  </g>
+  <path d="M34 558C186 480 302 600 520 510S748 492 866 438" fill="none" stroke="#73d5da" stroke-opacity=".42" stroke-width="2"/>
+  <circle cx="192" cy="532" r="5" fill="#73d5da"/><circle cx="618" cy="478" r="5" fill="#ff7657"/>
+</svg>

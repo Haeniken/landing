@@ -39,7 +39,7 @@ tools/write-release-info.sh /path/to/site/release.json "$(git rev-parse --short=
 node --check script.js
 node --check lab/lab.js
 npx @biomejs/biome lint script.js lab/lab.js
-npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html articles/network-ha/index.html articles/rabbithole-vpn/index.html errors/*.html
+npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html articles/network-ha/index.html articles/rabbithole-vpn/index.html articles/incident-504/index.html errors/*.html
 
 cd leaderboard-api
 go test -race ./...

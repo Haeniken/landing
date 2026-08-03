@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Разбор 504: как по времени ответов Nginx, Apache, PHP и MariaDB найти долгий SQL, отделить последствия блокировки сессии и выбрать исправление.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/incident-504/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/incident-504/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/incident-504/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/incident-504/">
+  <meta property="og:title" content="Карта инженерных решений: от 504 до долгого SQL">
+  <meta property="og:description" content="Как проследить тайм-аут через прокси, Apache, PHP и MariaDB, найти первичный запрос и не принять следствие за причину.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/incident-504/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/social/incident-504-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/incident-504-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Карта диагностики ошибки 504 от обратного прокси до SQL">
+  <meta property="article:published_time" content="2026-08-03T18:34:23+03:00">
+  <meta property="article:modified_time" content="2026-08-03T18:34:23+03:00">
+  <meta property="article:author" content="https://haeniken.com/">
+  <meta property="article:section" content="Диагностика инцидентов">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Карта инженерных решений: от 504 до долгого SQL">
+  <meta name="twitter:description" content="Разбор 504: граница тайм-аута, очередь PHP-сессии, slow log, EXPLAIN и выбор постоянного исправления.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/incident-504-preview.jpg">
+  <meta name="twitter:image:alt" content="Карта диагностики ошибки 504 от обратного прокси до SQL">
+  <title>Карта инженерных решений: от 504 до долгого SQL — Sergey Haeniken</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/articles.min.css?v=20260803c">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Карта инженерных решений: от 504 до долгого SQL",
+    "description": "Разбор ошибки 504: сопоставление журналов Nginx, Apache, PHP и MariaDB, поиск долгого SQL и выбор безопасного исправления.",
+    "inLanguage": "ru",
+    "datePublished": "2026-08-03T18:34:23+03:00",
+    "dateModified": "2026-08-03T18:34:23+03:00",
+    "mainEntityOfPage": "https://haeniken.com/articles/incident-504/",
+    "image": "https://haeniken.com/assets/social/incident-504-preview.jpg",
+    "keywords": ["504 Gateway Timeout", "Nginx", "Apache", "PHP session lock", "MariaDB", "slow query log", "EXPLAIN", "SRE"],
+    "articleSection": "Диагностика инцидентов",
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": [
+      {"@type": "Thing", "name": "HTTP 504 Gateway Timeout"},
+      {"@type": "Thing", "name": "Site reliability engineering"},
+      {"@type": "Thing", "name": "SQL query optimisation"}
+    ]
+  }
+  </script>
+</head>
+<body class="article-page incident-article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a><a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a><a class="lang lang-en" href="/en/articles/">Publications</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label"><span class="lang lang-ru">Меню</span><span class="lang lang-en">Menu</span></span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/incident-504/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/incident-504/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero incident-article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal"><span class="status-light"></span><span class="lang lang-ru">Техническая заметка · разбор инцидента</span><span class="lang lang-en">Technical note · incident analysis</span></p>
+        <h1 class="reveal">
+          <span class="lang lang-ru">Карта решений:<br>от 504 до <em>SQL.</em></span>
+          <span class="lang lang-en">Decision map:<br>from 504 to <em>SQL.</em></span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Как по времени и журналам пройти цепочку из двух прокси, Apache, PHP и MariaDB, найти первый зависший запрос и не лечить тайм-аут увеличением тайм-аута.</span>
+          <span class="lang lang-en">Tracing a timeout through two proxies, Apache, PHP and MariaDB, finding the first blocked request and avoiding the tempting fix of simply waiting longer.</span>
+        </p>
+        <div class="article-meta reveal"><span>Sergey Haeniken</span><span>Nginx · Apache · PHP · MariaDB · RCA</span></div>
+      </div>
+    </header>
+
+    <article class="technical-article incident-technical-article">
+      <div class="article-language incident-article-intro lang lang-ru">
+        <p class="article-lead">Пользователь периодически получал 504 в административной части сайта. Главная страница при этом отвечала, а перезапуск служб мог уничтожить самые полезные следы. Поэтому разбор начался только с чтения журналов и измерения времени на каждой границе.</p>
+
+        <section class="incident-sequence" aria-labelledby="incident-sequence-title-ru">
+          <h2 id="incident-sequence-title-ru">Как я искал причину</h2>
+          <ol>
+            <li><span>01 · Сохранил исходную картину</span><p>Зафиксировал время, адрес запроса и последовательность ответов. Службы перезапускать не стал: вместе с зависшим процессом исчезла бы связь между записями в разных журналах.</p></li>
+            <li><span>02 · Проверил внешний путь</span><p>Начал с пограничного прокси и обычных страниц. Ошибок TLS, DNS и соединения с внутренним Nginx не было, главная открывалась. Запрос доходил до площадки, поэтому внешний участок я исключил.</p></li>
+            <li><span>03 · Нашёл границу ожидания</span><p>Во внутреннем Nginx связанные ошибки появлялись ровно через 200 секунд с записью <code>upstream timed out</code>. Это был настроенный предел ожидания, а не доказательство того, что завис сам Nginx.</p></li>
+            <li><span>04 · Сопоставил Nginx и Apache</span><p>По времени и адресу нашёл тот же запрос в журнале Apache. Клиент уже получил 504, а процесс Apache/PHP продолжал работать; целиком запрос занял около 65 минут. Nginx просто первым перестал ждать.</p></li>
+            <li><span>05 · Разделил запросы по сессиям</span><p>Соседние страницы из того же браузера стояли в очереди, хотя главная и другие сессии отвечали. После отчёта простые запросы закончились почти одновременно. Так обнаружилась блокировка PHP-сессии: она объясняла каскад ошибок, но не начинала его.</p></li>
+            <li><span>06 · Перешёл к MariaDB</span><p>Затем проверил список процессов и журнал медленных запросов. Один запрос отчёта вернул около 50 тысяч строк, просмотрев более 5 миллиардов. Здесь уже была причина долгой работы, а не очередное следствие.</p></li>
+            <li><span>07 · Проверил план доступа</span><p><code>EXPLAIN</code> показал повторный проход по первичному ключу: существующий индекс по клиенту оптимизатор не выбирал. Тестовый составной индекс сам по себе план не изменил, а <code>FORCE INDEX</code> переключил его на точечный поиск.</p></li>
+            <li><span>08 · Выбрал постоянное исправление</span><p>После этого увеличивать тайм-аут уже не имело смысла. Ручной индекс тоже нельзя было оставлять как скрытую часть схемы. Исправление запроса, миграция и проверка плана должны выйти одним релизом.</p></li>
+          </ol>
+        </section>
+      </div>
+
+      <div class="article-language incident-article-intro lang lang-en">
+        <p class="article-lead">A user intermittently received 504 responses in an administrative interface. The public page still worked, and restarting services would have destroyed the most useful evidence. The investigation therefore began with read-only log analysis and timing at every boundary.</p>
+
+        <section class="incident-sequence" aria-labelledby="incident-sequence-title-en">
+          <h2 id="incident-sequence-title-en">How I narrowed it down</h2>
+          <ol>
+            <li><span>01 · Preserve the original state</span><p>I recorded the time, request URI and response sequence. I did not restart the services: doing so would have removed the active process and broken the link between records in different logs.</p></li>
+            <li><span>02 · Check the external path</span><p>I started with the edge proxy and ordinary pages. There were no TLS, DNS or upstream connection errors, and the public page still opened. The request reached the site, so I ruled out the external path.</p></li>
+            <li><span>03 · Locate the wait boundary</span><p>Every related error in the internal Nginx appeared after exactly 200 seconds with <code>upstream timed out</code>. This was a configured wait limit, not evidence that Nginx itself had stalled.</p></li>
+            <li><span>04 · Correlate Nginx and Apache</span><p>I found the same URI in the Apache log by time. The client had already received a 504 while the Apache/PHP process kept running; the complete request took roughly 65 minutes. Nginx was simply the first component to stop waiting.</p></li>
+            <li><span>05 · Separate user sessions</span><p>Neighbouring pages from the same browser queued while the public page and other sessions still responded. The simple requests finished almost together after the report. That exposed the PHP session lock: it explained the cascade, but did not start it.</p></li>
+            <li><span>06 · Move to MariaDB</span><p>I then checked the process list and slow log. One report query returned about 50 thousand rows after examining more than 5 billion. This was the source of the long-running work rather than another downstream symptom.</p></li>
+            <li><span>07 · Verify the access plan</span><p><code>EXPLAIN</code> showed repeated primary-key walks while the existing customer index was ignored. A test composite index did not change the plan on its own, but <code>FORCE INDEX</code> switched it to keyed lookups.</p></li>
+            <li><span>08 · Choose the permanent fix</span><p>At that point, extending the timeout no longer made sense. A hand-made index could not remain hidden production state either. The query change, migration and plan verification needed to ship in one release.</p></li>
+          </ol>
+        </section>
+      </div>
+
+      <figure class="decision-map-figure" id="decision-map">
+        <div class="decision-map-hud" aria-hidden="true">
+          <span><i></i><span class="lang lang-ru">Карта инженерных решений</span><span class="lang lang-en">Engineering decision map</span></span>
+          <strong>HTTP 504 → SESSION LOCK → SQL PLAN</strong>
+          <b>READ ONLY / RCA</b>
+        </div>
+        <div class="decision-map-scroll">
+          <span class="decision-map-scroll-hint"><span class="lang lang-ru">Проведите по схеме</span><span class="lang lang-en">Swipe the map</span> →</span>
+          <svg class="decision-map" viewBox="0 0 1200 760" role="img" aria-label="Карта диагностики ошибки 504 от обратного прокси через Apache и PHP до медленного SQL-запроса">
+            <defs>
+              <pattern id="decision-grid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" class="decision-grid-line"></path></pattern>
+              <linearGradient id="decision-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17394b"></stop><stop offset=".55" stop-color="#0b1e2e"></stop><stop offset="1" stop-color="#050c16"></stop></linearGradient>
+              <radialGradient id="decision-core" cx="50%" cy="45%" r="64%"><stop offset="0" stop-color="#173f50"></stop><stop offset=".72" stop-color="#0a1a2a"></stop><stop offset="1" stop-color="#050b14"></stop></radialGradient>
+              <filter id="decision-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="blur"></feGaussianBlur><feMerge><feMergeNode in="blur"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+              <marker id="decision-arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#73d5da"></path></marker>
+              <marker id="decision-arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#ff7657"></path></marker>
+            </defs>
+
+            <rect width="1200" height="760" rx="24" class="decision-canvas"></rect>
+            <rect width="1200" height="760" rx="24" fill="url(#decision-grid)"></rect>
+            <g class="decision-orbits" aria-hidden="true"><ellipse cx="600" cy="378" rx="548" ry="300"></ellipse><ellipse cx="600" cy="378" rx="404" ry="220"></ellipse><circle cx="600" cy="378" r="128"></circle></g>
+
+            <g class="decision-pipeline" aria-hidden="true">
+              <path id="decision-client-edge" d="M150 152H270"></path>
+              <path id="decision-edge-nginx" d="M410 152H510"></path>
+              <path id="decision-nginx-php" d="M650 152H750"></path>
+              <path id="decision-php-db" d="M890 152H1000"></path>
+              <path class="decision-timeout-return" d="M578 205C560 258 344 260 335 203"></path>
+            </g>
+
+            <g class="decision-packets" aria-hidden="true">
+              <circle r="4" class="decision-packet decision-packet-cyan"><animateMotion dur="4.8s" repeatCount="indefinite" path="M150 152H270"></animateMotion></circle>
+              <rect x="-9" y="-3" width="18" height="6" rx="2" class="decision-packet decision-packet-cyan"><animateMotion dur="4.8s" begin="-1.2s" repeatCount="indefinite" path="M410 152H510"></animateMotion></rect>
+              <rect x="-9" y="-3" width="18" height="6" rx="2" class="decision-packet decision-packet-orange"><animateMotion dur="4.8s" begin="-2.4s" repeatCount="indefinite" path="M650 152H750"></animateMotion></rect>
+              <circle r="4" class="decision-packet decision-packet-orange"><animateMotion dur="4.8s" begin="-3.6s" repeatCount="indefinite" path="M890 152H1000"></animateMotion></circle>
+              <circle r="5" class="decision-packet decision-packet-error"><animateMotion dur="6.4s" begin="-2s" repeatCount="indefinite" path="M578 205C560 258 344 260 335 203"></animateMotion></circle>
+            </g>
+
+            <g class="decision-system-node" transform="translate(40 103)"><path d="M0 0H110L128 18V98H0Z" fill="url(#decision-panel)"></path><text x="18" y="35" class="decision-node-title lang lang-ru">КЛИЕНТ</text><text x="18" y="35" class="decision-node-title lang lang-en">CLIENT</text><text x="18" y="58" class="decision-node-meta">GET /ADMIN/REPORT</text><text x="18" y="79" class="decision-node-state">WAITING</text></g>
+            <g class="decision-system-node" transform="translate(270 103)"><path d="M0 0H122L140 18V98H0Z" fill="url(#decision-panel)"></path><text x="18" y="35" class="decision-node-title lang lang-ru">ВНЕШНИЙ ПРОКСИ</text><text x="18" y="35" class="decision-node-title lang lang-en">EDGE PROXY</text><text x="18" y="58" class="decision-node-meta">TLS · ROUTING</text><text x="18" y="79" class="decision-node-state">PASS</text></g>
+            <g class="decision-system-node decision-node-alert" transform="translate(510 103)"><path d="M0 0H122L140 18V98H0Z" fill="url(#decision-panel)"></path><text x="18" y="35" class="decision-node-title">NGINX</text><text x="18" y="58" class="decision-node-meta">READ TIMEOUT</text><text x="18" y="79" class="decision-node-error">504 · 200 s</text></g>
+            <g class="decision-system-node" transform="translate(750 103)"><path d="M0 0H122L140 18V98H0Z" fill="url(#decision-panel)"></path><text x="18" y="35" class="decision-node-title">APACHE / PHP</text><text x="18" y="58" class="decision-node-meta">SESSION LOCK</text><text x="18" y="79" class="decision-node-warn">REQUEST ACTIVE</text></g>
+            <g class="decision-system-node decision-node-alert" transform="translate(1000 103)"><path d="M0 0H142L160 18V98H0Z" fill="url(#decision-panel)"></path><text x="18" y="35" class="decision-node-title">MARIADB</text><text x="18" y="58" class="decision-node-meta">CORRELATED SQL</text><text x="18" y="79" class="decision-node-error">LONG QUERY</text></g>
+
+            <g class="decision-branch-lines" aria-hidden="true">
+              <path d="M600 294V342" marker-end="url(#decision-arrow-cyan)"></path>
+              <path d="M600 432V476"></path>
+              <path d="M600 476C430 476 290 496 220 530" marker-end="url(#decision-arrow-orange)"></path>
+              <path d="M600 476V530" marker-end="url(#decision-arrow-orange)"></path>
+              <path d="M600 476C770 476 910 496 980 530" marker-end="url(#decision-arrow-cyan)"></path>
+            </g>
+
+            <g class="decision-core" transform="translate(600 378)"><circle r="92" fill="url(#decision-core)"></circle><circle r="110" class="decision-core-ring"></circle><text y="-25" text-anchor="middle" class="decision-core-code">504</text><text y="8" text-anchor="middle" class="decision-core-title">RCA</text><text y="38" text-anchor="middle" class="decision-core-meta lang lang-ru">СОПОСТАВИТЬ ВРЕМЯ</text><text y="38" text-anchor="middle" class="decision-core-meta lang lang-en">CORRELATE TIMING</text></g>
+
+            <g class="decision-evidence" transform="translate(430 268)"><rect width="340" height="64" rx="7"></rect><text x="18" y="26" class="decision-evidence-title lang lang-ru">BACKEND ЖИВЁТ ДОЛЬШЕ ТАЙМ-АУТА</text><text x="18" y="26" class="decision-evidence-title lang lang-en">BACKEND OUTLIVES THE TIMEOUT</text><text x="18" y="47" class="decision-node-meta lang lang-ru">504 — ГРАНИЦА ОЖИДАНИЯ, НЕ МЕСТО СБОЯ</text><text x="18" y="47" class="decision-node-meta lang lang-en">504 MARKS A WAIT BOUNDARY, NOT THE FAULT</text></g>
+
+            <g class="decision-option decision-option-reject" transform="translate(65 530)"><path d="M0 0H274L294 20V132H0Z"></path><text x="22" y="34" class="decision-option-mark">×</text><text x="58" y="34" class="decision-option-title lang lang-ru">УВЕЛИЧИТЬ ТАЙМ-АУТ</text><text x="58" y="34" class="decision-option-title lang lang-en">INCREASE TIMEOUT</text><text x="22" y="69" class="decision-option-copy lang lang-ru">НЕ ИСПРАВЛЯЕТ SQL</text><text x="22" y="69" class="decision-option-copy lang lang-en">DOES NOT FIX SQL</text><text x="22" y="94" class="decision-option-copy lang lang-ru">УДЛИНЯЕТ ОЧЕРЕДЬ</text><text x="22" y="94" class="decision-option-copy lang lang-en">EXTENDS THE QUEUE</text><text x="22" y="117" class="decision-option-status">REJECTED</text></g>
+            <g class="decision-option decision-option-tactical" transform="translate(453 530)"><path d="M0 0H274L294 20V132H0Z"></path><text x="22" y="34" class="decision-option-mark">!</text><text x="58" y="34" class="decision-option-title lang lang-ru">ИНДЕКС / ПОДСКАЗКА</text><text x="58" y="34" class="decision-option-title lang lang-en">INDEX / HINT</text><text x="22" y="69" class="decision-option-copy lang lang-ru">ПРОВЕРИТЬ EXPLAIN</text><text x="22" y="69" class="decision-option-copy lang lang-en">VERIFY WITH EXPLAIN</text><text x="22" y="94" class="decision-option-copy lang lang-ru">ТОЛЬКО ЧЕРЕЗ МИГРАЦИЮ</text><text x="22" y="94" class="decision-option-copy lang lang-en">SHIP THROUGH MIGRATION</text><text x="22" y="117" class="decision-option-status">TACTICAL</text></g>
+            <g class="decision-option decision-option-accept" transform="translate(841 530)"><path d="M0 0H274L294 20V132H0Z"></path><text x="22" y="34" class="decision-option-mark">✓</text><text x="58" y="34" class="decision-option-title lang lang-ru">ИСПРАВИТЬ ЗАПРОС</text><text x="58" y="34" class="decision-option-title lang lang-en">FIX THE QUERY</text><text x="22" y="69" class="decision-option-copy lang lang-ru">УБРАТЬ N+1-ПОИСК</text><text x="22" y="69" class="decision-option-copy lang lang-en">REMOVE N+1 LOOKUP</text><text x="22" y="94" class="decision-option-copy lang lang-ru">ЗАКРЕПИТЬ ПЛАН ТЕСТОМ</text><text x="22" y="94" class="decision-option-copy lang lang-en">REGRESSION-TEST THE PLAN</text><text x="22" y="117" class="decision-option-status">PREFERRED</text></g>
+
+            <g class="decision-legend" transform="translate(70 708)" aria-hidden="true"><circle cx="0" cy="0" r="4"></circle><text x="14" y="4">OBSERVATION</text><circle cx="158" cy="0" r="4" class="decision-legend-orange"></circle><text x="172" y="4">DECISION</text><path d="M286 0H326"></path><text x="340" y="4">REQUEST PATH</text></g>
+          </svg>
+        </div>
+        <figcaption><span class="lang lang-ru">Карта отделяет место, где истекло ожидание, от места, где продолжалась работа. Движущиеся метки показывают запрос к базе и ответ 504, который возвращается раньше завершения SQL.</span><span class="lang lang-en">The map separates the expired wait boundary from the component that remained busy. Moving markers show the database request and the 504 response returning before the SQL query completes.</span></figcaption>
+      </figure>
+
+      <div class="article-language incident-article-body lang lang-ru">
+        <h2>Сначала — граница тайм-аута</h2>
+        <p>Во внешнем прокси не было ошибок соединения, а внутренний Nginx каждый раз обрывал ожидание через одинаковый промежуток. В журнале стояло <code>upstream timed out</code>; TLS, DNS и передача запроса между площадками к этому моменту уже отработали.</p>
+        <p>Apache завершал тот же запрос значительно позже. Один отчёт работал около часа, тогда как Nginx ждал ответ 200 секунд. Поэтому 504 возникал на Nginx, но причиной не был сам Nginx: он лишь первым достиг своего предела ожидания.</p>
+
+        <ul class="article-metrics incident-metrics">
+          <li><strong>200<span>с</span></strong><span>граница ожидания Nginx до первого 504</span></li>
+          <li><strong>≈65<span>мин</span></strong><span>время первого запроса в Apache и MariaDB</span></li>
+          <li><strong>≈50<span>тыс.</span></strong><span>строк вернул запрос отчёта</span></li>
+          <li><strong>&gt;5<span>млрд</span></strong><span>строк просмотрено по slow log</span></li>
+        </ul>
+
+        <h2>Почему тайм-аут получили даже простые запросы</h2>
+        <p>Первый тяжёлый запрос удерживал PHP-сессию. Следующие обращения того же браузера вставали за её блокировкой: проверка состояния, переход на соседнюю страницу и даже запрос значка сайта. Когда долгий отчёт завершился, накопившиеся обращения закончились почти одновременно.</p>
+        <p>Это объяснило странную картину в журналах. Простые адреса не были медленными сами по себе; они принадлежали одной пользовательской сессии и ждали освобождения блокировки. Публичные страницы и запросы других посетителей могли продолжать работать.</p>
+
+        <h2>Запрос, который держал цепочку</h2>
+        <p>Отчёт выбирал клиентов и для каждого отдельно искал последний заказ. В упрощённом виде запрос выглядел так:</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Форма проблемного запроса</span><div class="article-code-actions"><b>report.sql</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="sql">SELECT c.*,
+       (
+         SELECT o.created_at
+         FROM orders o
+         WHERE o.customer_id = c.id
+         ORDER BY o.id DESC
+         LIMIT 1
+       ) AS last_order_at
+FROM customers c
+WHERE c.is_active = 1 OR c.order_count &gt; 0
+ORDER BY c.last_name;</code></pre>
+        </div>
+
+        <p>На старой версии MariaDB коррелированный подзапрос повторял поиск для десятков тысяч клиентов. Журнал медленных запросов показал полное сканирование и сортировку на диске. Одиночный индекс по <code>customer_id</code> уже существовал, но оптимизатор выбирал первичный ключ и проходил по нему снова и снова.</p>
+
+        <h2>Индекс без плана — ещё не исправление</h2>
+        <p>Составной индекс <code>(customer_id, id, created_at)</code> подходил для поиска последней записи и мог покрыть подзапрос. Но контрольный <code>EXPLAIN</code> показал, что старая MariaDB не выбирает его автоматически. Подсказка <code>FORCE INDEX</code> меняла план на точечный поиск, однако связывала код с наличием индекса во всех новых и существующих схемах.</p>
+        <p>Постоянное исправление должно попасть в один релиз: миграция создаёт индекс, код использует проверенный план либо уходит от коррелированного поиска, а тесты проверяют и результат, и план. Временный индекс, созданный при проверке, не оставлялся как незадокументированная часть производственной схемы.</p>
+
+        <h2>Что карта отбрасывает</h2>
+        <ol class="article-steps incident-decisions">
+          <li><strong>Перезапустить всё.</strong> Сайт мог ненадолго ответить быстрее, но пропала бы связь между первым запросом, блокировкой сессии и медленным SQL.</li>
+          <li><strong>Увеличить ожидание прокси.</strong> Пользователь ждал бы дольше, число занятых обработчиков росло бы, а запрос продолжал просматривать миллиарды строк.</li>
+          <li><strong>Считать все 504 одним инцидентом.</strong> В общих журналах были другие тайм-ауты. К этому разбору относились только записи с совпадающими временем, сессией и цепочкой внутренних запросов.</li>
+          <li><strong>Оставить ручной DDL.</strong> Постоянное изменение схемы относится к миграциям приложения; иначе следующая база или восстановление из шаблона вернёт старое поведение.</li>
+        </ol>
+
+        <h2>Порядок проверки после исправления</h2>
+        <ul class="article-checklist">
+          <li>открыть тот же отчёт на данных сопоставимого объёма;</li>
+          <li>сверить <code>EXPLAIN</code>: точечный доступ по составному индексу вместо прохода по первичному ключу;</li>
+          <li>убедиться, что запрос не появляется в slow log и не удерживает PHP-сессию;</li>
+          <li>проверить отсутствие новых <code>upstream timed out</code> и рост занятых обработчиков;</li>
+          <li>закрепить порог времени отчёта и число просмотренных строк в наблюдаемости.</li>
+        </ul>
+
+        <div class="article-note incident-result">
+          <strong>Результат разбора</strong>
+          <p>504 был привязан к конкретной цепочке: долгий коррелированный SQL продолжал работать после 200-секундного тайм-аута Nginx, а блокировка PHP-сессии ставила за ним остальные запросы браузера. Постоянное исправление находится в запросе и миграции; увеличение тайм-аута в него не входит.</p>
+        </div>
+      </div>
+
+      <div class="article-language incident-article-body lang lang-en">
+        <h2>Start with the timeout boundary</h2>
+        <p>The edge proxy showed no connection failures, while the internal Nginx ended every wait after the same interval. Its log contained <code>upstream timed out</code>; TLS, DNS and request forwarding between the two proxies had already completed.</p>
+        <p>Apache finished the same request much later. One report ran for roughly an hour, while Nginx waited 200 seconds. The 504 was emitted by Nginx, but Nginx was not the root cause: it was simply the first component to reach its configured limit.</p>
+
+        <ul class="article-metrics incident-metrics">
+          <li><strong>200<span>s</span></strong><span>Nginx wait boundary before the first 504</span></li>
+          <li><strong>≈65<span>min</span></strong><span>lifetime of the first request in Apache and MariaDB</span></li>
+          <li><strong>≈50<span>k</span></strong><span>rows returned by the report query</span></li>
+          <li><strong>&gt;5<span>bn</span></strong><span>rows examined according to the slow log</span></li>
+        </ul>
+
+        <h2>Why even trivial requests timed out</h2>
+        <p>The first expensive request held the PHP session. Later requests from the same browser queued behind that lock: status checks, neighbouring pages and even the favicon. When the report finally ended, the accumulated requests completed almost together.</p>
+        <p>This explained the misleading log pattern. The simple URLs were not inherently slow; they belonged to one user session and waited for its lock. Public pages and other visitors could continue to work.</p>
+
+        <h2>The query that held the chain</h2>
+        <p>The report loaded customers and performed a separate lookup for each customer's latest order. In simplified form, the query looked like this:</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Shape of the problematic query</span><div class="article-code-actions"><b>report.sql</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="sql">SELECT c.*,
+       (
+         SELECT o.created_at
+         FROM orders o
+         WHERE o.customer_id = c.id
+         ORDER BY o.id DESC
+         LIMIT 1
+       ) AS last_order_at
+FROM customers c
+WHERE c.is_active = 1 OR c.order_count &gt; 0
+ORDER BY c.last_name;</code></pre>
+        </div>
+
+        <p>On an old MariaDB release, the correlated subquery repeated the lookup for tens of thousands of customers. The slow log showed a full scan and an on-disk sort. A single-column index on <code>customer_id</code> already existed, yet the optimiser chose the primary key and walked it repeatedly.</p>
+
+        <h2>An index is not a fix until the plan uses it</h2>
+        <p>A composite index on <code>(customer_id, id, created_at)</code> matched the latest-row lookup and could cover the subquery. A control <code>EXPLAIN</code>, however, showed that the old optimiser still ignored it. <code>FORCE INDEX</code> changed the plan to a keyed lookup, but also coupled the query to that index being present in every current and future schema.</p>
+        <p>The permanent change therefore belongs in one release: a migration creates the index, the query uses a verified plan or removes the correlated lookup, and tests cover both output and plan. A temporary index used during investigation was not left behind as undocumented production state.</p>
+
+        <h2>What the map rules out</h2>
+        <ol class="article-steps incident-decisions">
+          <li><strong>Restart everything.</strong> The site might recover briefly, but the link between the first request, the session lock and the slow query would be lost.</li>
+          <li><strong>Increase the proxy timeout.</strong> Users would wait longer, occupied workers would accumulate and the query would still examine billions of rows.</li>
+          <li><strong>Treat every 504 as one incident.</strong> Shared logs contained unrelated timeouts. Only events with matching timestamps, sessions and backend request chains belonged to this case.</li>
+          <li><strong>Keep manual DDL.</strong> A durable schema change belongs in application migrations; otherwise the next tenant schema or restored template silently reintroduces the old behaviour.</li>
+        </ol>
+
+        <h2>Verification after the fix</h2>
+        <ul class="article-checklist">
+          <li>open the same report against a comparable data volume;</li>
+          <li>check <code>EXPLAIN</code> for keyed access through the composite index rather than a primary-key walk;</li>
+          <li>confirm that the query no longer enters the slow log or holds the PHP session;</li>
+          <li>check for new <code>upstream timed out</code> records and rising worker occupancy;</li>
+          <li>monitor report duration and examined rows as explicit signals.</li>
+        </ul>
+
+        <div class="article-note incident-result">
+          <strong>Investigation result</strong>
+          <p>The 504 was tied to one reproducible chain: a correlated SQL query continued after Nginx reached its 200-second limit, while the PHP session lock queued the browser's remaining requests. The durable fix belongs in the query and its migration; a longer proxy timeout is not part of it.</p>
+        </div>
+      </div>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К другим<br>публикациям.</span><span class="lang lang-en">Read more<br>technical notes.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/articles/">Все публикации <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/articles/">All publications <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург · удалённо</span><span class="lang lang-en">Saint Petersburg · remote</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i><i class="energia-booster energia-booster-back-right"></i>
+      <i class="energia-booster energia-booster-left"></i><i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i><i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i><i class="energia-plume energia-plume-outer"></i><i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260803a" defer></script>
+  <script src="/telemetry.min.js?v=20260803b" defer></script>
+</body>
+</html>
