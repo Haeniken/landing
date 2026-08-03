@@ -17,6 +17,79 @@ if (year) {
   year.textContent = new Date().getFullYear();
 }
 
+const technicalArticle = document.querySelector(".technical-article");
+if (technicalArticle) {
+  const articleLanguage = root.dataset.language === "en" ? "en" : "ru";
+  const readingSections = [
+    ...technicalArticle.querySelectorAll(`.article-language.lang-${articleLanguage}`),
+  ];
+  const readingSpeed = articleLanguage === "en" ? 220 : 180;
+  let readingWords = 0;
+  let readingFigures = 0;
+  let readingCodeBlocks = 0;
+  let readingEquations = 0;
+
+  readingSections.forEach((section) => {
+    const copy = section.cloneNode(true);
+    copy.querySelectorAll("pre, code, svg, script, style, [aria-hidden='true']").forEach((element) => element.remove());
+    readingWords += copy.textContent.match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu)?.length ?? 0;
+    readingFigures += section.querySelectorAll("figure").length;
+    readingCodeBlocks += section.querySelectorAll(".article-code").length;
+    readingEquations += section.querySelectorAll(".article-equation").length;
+  });
+
+  const readingMinutes = Math.max(1, Math.ceil(
+    (readingWords / readingSpeed)
+    + (readingFigures * .2)
+    + (readingCodeBlocks * .35)
+    + (readingEquations * .15),
+  ));
+  const articleMeta = document.querySelector(".article-meta");
+  if (articleMeta) {
+    const readingTime = document.createElement("span");
+    readingTime.className = "article-reading-time";
+    readingTime.textContent = articleLanguage === "en"
+      ? `≈ ${readingMinutes} min read`
+      : `≈ ${readingMinutes} мин чтения`;
+    articleMeta.append(readingTime);
+  }
+
+  const readingProgress = document.createElement("div");
+  readingProgress.className = "article-reading-progress";
+  readingProgress.setAttribute("role", "progressbar");
+  readingProgress.setAttribute("aria-label", articleLanguage === "en" ? "Article reading progress" : "Прогресс чтения статьи");
+  readingProgress.setAttribute("aria-valuemin", "0");
+  readingProgress.setAttribute("aria-valuemax", "100");
+  readingProgress.setAttribute("aria-valuenow", "0");
+  const readingProgressFill = document.createElement("span");
+  readingProgressFill.setAttribute("aria-hidden", "true");
+  readingProgress.append(readingProgressFill);
+  document.body.append(readingProgress);
+
+  let readingProgressFrame = 0;
+  const updateReadingProgress = () => {
+    readingProgressFrame = 0;
+    const viewportAnchor = window.scrollY + (window.innerHeight * .2);
+    const articleStart = technicalArticle.offsetTop;
+    const articleEnd = articleStart + technicalArticle.offsetHeight - (window.innerHeight * .55);
+    const progress = Math.min(1, Math.max(0, (viewportAnchor - articleStart) / Math.max(1, articleEnd - articleStart)));
+    const progressPercent = Math.round(progress * 100);
+    readingProgress.style.setProperty("--article-reading-progress", progress.toFixed(4));
+    readingProgress.setAttribute("aria-valuenow", String(progressPercent));
+    readingProgress.classList.toggle(
+      "is-active",
+      viewportAnchor >= articleStart && window.scrollY < articleStart + technicalArticle.offsetHeight,
+    );
+  };
+  const scheduleReadingProgress = () => {
+    if (!readingProgressFrame) readingProgressFrame = window.requestAnimationFrame(updateReadingProgress);
+  };
+  window.addEventListener("scroll", scheduleReadingProgress, { passive: true });
+  window.addEventListener("resize", scheduleReadingProgress);
+  window.addEventListener("pageshow", scheduleReadingProgress);
+  updateReadingProgress();
+}
+
 const menuToggle = document.querySelector(".mobile-menu-toggle");
 const menu = menuToggle
   ? document.getElementById(menuToggle.getAttribute("aria-controls"))

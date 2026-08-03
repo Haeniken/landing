@@ -17,7 +17,7 @@ main, .hero, .metrics, .expertise, .experience, .projects, .certificates, .conta
   background: #fff !important; background-image: none !important;
 }
 a { color: inherit; }
-.site-header, .noise, .skip-link, .hero-visual, .scroll-hint,
+.site-header, .noise, .skip-link, .hero-visual, .scroll-hint, .service-telemetry, .article-reading-progress,
 .stack-ticker, .hero-actions, .lab-orbit-track, .return-to-top, .observation-break, .contact-glow, .contact-actions, footer {
   display: none !important;
 }

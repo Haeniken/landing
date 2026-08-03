@@ -1259,6 +1259,7 @@ html[data-language="en"] .lab-hero h1 em .lang-en { display: block; }
 
 .lab-footer {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 25px;
@@ -1271,6 +1272,38 @@ html[data-language="en"] .lab-hero h1 em .lang-en { display: block; }
   letter-spacing: .08em;
   text-transform: uppercase;
 }
+.service-telemetry {
+  position: relative; flex: 0 0 100%; width: 100%; display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center; margin-bottom: 0; padding: 13px 16px;
+  overflow: hidden; border: 1px solid rgba(102,225,231,.18);
+  background: linear-gradient(90deg, rgba(102,225,231,.035), rgba(255,112,86,.025));
+  font-size: 9px; letter-spacing: .11em; text-transform: uppercase;
+}
+.service-telemetry::before {
+  content: ""; position: absolute; top: 0; right: 0; left: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(102,225,231,.72), rgba(255,112,86,.6), transparent);
+}
+.service-telemetry-item {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 18px; padding: 0 16px;
+  border-left: 1px solid rgba(247,250,247,.12); white-space: nowrap;
+}
+.service-telemetry-item:first-child { border-left: 0; }
+.service-telemetry-key { color: rgba(247,250,247,.42); }
+.service-telemetry-value { color: rgba(247,250,247,.82); font-weight: 800; }
+.service-health-light { position: relative; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: rgba(247,250,247,.34); }
+.service-health.is-ok .service-health-light {
+  background: #75e29d; box-shadow: 0 0 9px rgba(117,226,157,.72);
+  animation: service-health-blink 1.8s ease-in-out infinite;
+}
+.service-health.is-ok .service-health-light::after {
+  content: ""; position: absolute; inset: -4px; border: 1px solid rgba(117,226,157,.76); border-radius: 50%;
+  animation: service-health-pulse 2.1s ease-out infinite;
+}
+@keyframes service-health-pulse {
+  0% { opacity: .9; transform: scale(.45); }
+  72%, 100% { opacity: 0; transform: scale(1.65); }
+}
+@keyframes service-health-blink { 50% { opacity: .58; } }
 .lab-footer a { color: var(--white); }
 .lab-footer a:hover, .lab-footer a:focus-visible { color: var(--orange); outline: none; }
 
@@ -1421,6 +1454,9 @@ html[data-language="en"] .lab-hero h1 em .lang-en { display: block; }
   .manual-grid article { min-height: 190px; }
   .manual-grid h3 { margin-top: 45px; }
   .lab-footer { align-items: flex-start; flex-direction: column; min-height: 0; }
+  .service-telemetry { width: 100%; justify-content: flex-start; padding: 13px 12px; }
+  .service-telemetry-item { padding: 0 10px; }
+  .service-telemetry-item:first-child { padding-left: 0; }
   .return-to-top { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); width: 70px; height: 94px; }
   .return-to-top::after { display: none; }
   .result-overlay { position: fixed; }
@@ -1466,4 +1502,6 @@ html[data-language="en"] .lab-hero h1 em .lang-en { display: block; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+  .service-health.is-ok .service-health-light,
+  .service-health.is-ok .service-health-light::after { animation: none !important; opacity: 1; transform: none; }
 }

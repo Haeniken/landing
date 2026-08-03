@@ -16,12 +16,22 @@
 
 ```bash
 npx terser script.js --compress passes=2 --mangle --format comments=false -o script.min.js
+npx terser telemetry.js --compress passes=2 --mangle --format comments=false -o telemetry.min.js
 npx terser lab/lab.js --compress passes=2 --mangle --format comments=false -o lab/lab.min.js
 npx clean-css-cli -O2 -o styles.min.css styles.css
 npx clean-css-cli -O2 -o articles.min.css articles.css
 npx clean-css-cli -O2 -o rocket.min.css rocket.css
 npx clean-css-cli -O2 -o lab/lab.min.css lab/lab.css
 ```
+
+Перед публикацией служебная панель получает фактические номер выпуска и время развёртывания:
+
+```bash
+tools/write-release-info.sh /path/to/site/release.json "$(git rev-parse --short=7 HEAD)"
+```
+
+Загрузка самой страницы служит признаком доступности, поэтому панель не делает отдельный
+запрос к `/healthz`. Исходный `release.json` содержит безопасные значения для локальной разработки.
 
 ## Проверки
 

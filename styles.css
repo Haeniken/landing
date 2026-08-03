@@ -657,7 +657,40 @@ footer {
   font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
 }
 footer .brand { color: var(--white); }
-footer p:last-child { justify-self: end; }
+footer > p:last-of-type { justify-self: end; }
+.service-telemetry {
+  position: relative; grid-column: 1 / -1; width: 100%; display: flex; flex-wrap: wrap;
+  align-items: center; justify-content: center; gap: 0; margin-bottom: 18px; padding: 13px 16px;
+  overflow: hidden; border: 1px solid rgba(115,213,218,.18);
+  background: linear-gradient(90deg, rgba(115,213,218,.035), rgba(255,118,87,.025));
+}
+.service-telemetry::before {
+  content: ""; position: absolute; top: 0; right: 0; left: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(115,213,218,.72), rgba(255,118,87,.6), transparent);
+}
+.service-telemetry-item {
+  display: inline-flex; align-items: center; gap: 7px; min-height: 18px; padding: 0 16px;
+  border-left: 1px solid rgba(247,250,247,.12); white-space: nowrap;
+}
+.service-telemetry-item:first-child { border-left: 0; }
+.service-telemetry-key { color: rgba(247,250,247,.42); }
+.service-telemetry-value { color: rgba(247,250,247,.82); font-weight: 800; }
+.service-health-light {
+  position: relative; width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: rgba(247,250,247,.34);
+}
+.service-health.is-ok .service-health-light {
+  background: #75e29d; box-shadow: 0 0 9px rgba(117,226,157,.72);
+  animation: service-health-blink 1.8s ease-in-out infinite;
+}
+.service-health.is-ok .service-health-light::after {
+  content: ""; position: absolute; inset: -4px; border: 1px solid rgba(117,226,157,.76); border-radius: 50%;
+  animation: service-health-pulse 2.1s ease-out infinite;
+}
+@keyframes service-health-pulse {
+  0% { opacity: .9; transform: scale(.45); }
+  72%, 100% { opacity: 0; transform: scale(1.65); }
+}
+@keyframes service-health-blink { 50% { opacity: .58; } }
 
 .return-to-top {
   position: fixed;
@@ -876,7 +909,10 @@ footer p:last-child { justify-self: end; }
   .contact-link { width: 100%; justify-content: flex-start; text-align: left; }
   .contact-arrow { margin-left: auto; }
   footer { grid-template-columns: 1fr auto; gap: 28px; }
-  footer p:last-child { display: none; }
+  footer > p:last-of-type { display: none; }
+  .service-telemetry { justify-content: flex-start; padding: 13px 12px; }
+  .service-telemetry-item { padding: 0 10px; }
+  .service-telemetry-item:first-child { padding-left: 0; }
 }
 
 @media (max-width: 370px) {
@@ -892,4 +928,6 @@ footer p:last-child { justify-self: end; }
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
   .reveal { opacity: 1; transform: none; }
   .lab-orbit-track, .lab-orbit-link { animation: none !important; }
+  .service-health.is-ok .service-health-light,
+  .service-health.is-ok .service-health-light::after { animation: none !important; opacity: 1; transform: none; }
 }
