@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07111f"/>
+      <stop offset=".55" stop-color="#0d2637"/>
+      <stop offset="1" stop-color="#06101c"/>
+    </linearGradient>
+    <radialGradient id="core" cx="50%" cy="45%" r="65%">
+      <stop offset="0" stop-color="#1f5969"/>
+      <stop offset=".7" stop-color="#0b2030"/>
+      <stop offset="1" stop-color="#050b14"/>
+    </radialGradient>
+    <pattern id="grid" width="34" height="34" patternUnits="userSpaceOnUse">
+      <path d="M34 0H0V34" fill="none" stroke="#73d5da" stroke-opacity=".075"/>
+    </pattern>
+    <filter id="glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <ellipse cx="635" cy="315" rx="520" ry="250" fill="none" stroke="#73d5da" stroke-opacity=".15" stroke-dasharray="4 10"/>
+  <ellipse cx="635" cy="315" rx="360" ry="170" fill="none" stroke="#ff7657" stroke-opacity=".16"/>
+
+  <g fill="none" stroke-linecap="round" stroke-width="3">
+    <path d="M230 315H470" stroke="#73d5da"/>
+    <path d="M610 286C660 208 690 174 742 154" stroke="#73d5da"/>
+    <path d="M620 315H742" stroke="#73d5da"/>
+    <path d="M610 344C660 422 690 456 742 476" stroke="#73d5da"/>
+    <path d="M856 154C900 188 916 238 916 272" stroke="#ff7657"/>
+    <path d="M856 315H870" stroke="#ff7657"/>
+    <path d="M856 476C900 442 916 392 916 358" stroke="#ff7657"/>
+    <path d="M870 315C820 548 704 548 620 405" stroke="#ff7657"/>
+  </g>
+
+  <g filter="url(#glow)">
+    <circle cx="352" cy="315" r="7" fill="#c9fdff"/>
+    <circle cx="680" cy="218" r="6" fill="#c9fdff"/>
+    <circle cx="690" cy="315" r="6" fill="#c9fdff"/>
+    <circle cx="678" cy="426" r="6" fill="#c9fdff"/>
+    <circle cx="890" cy="215" r="6" fill="#fff0ea"/>
+    <circle cx="890" cy="415" r="6" fill="#fff0ea"/>
+  </g>
+
+  <g transform="translate(92 215)">
+    <path d="M20 0H126L146 20V180L126 200H20L0 180V20Z" fill="url(#core)" stroke="#73d5da" stroke-width="2"/>
+    <rect x="22" y="26" width="102" height="124" rx="8" fill="#0c2232" stroke="#73d5da" stroke-opacity=".55"/>
+    <text x="73" y="80" text-anchor="middle" fill="#f7faf7" font-family="DejaVu Sans,sans-serif" font-size="20" font-weight="900">ANDROID</text>
+    <text x="73" y="110" text-anchor="middle" fill="#73d5da" font-family="monospace" font-size="15" font-weight="700">WIREGUARD</text>
+    <circle cx="73" cy="173" r="8" fill="#ff7657"/>
+  </g>
+
+  <g transform="translate(470 230)">
+    <circle cx="70" cy="85" r="98" fill="none" stroke="#73d5da" stroke-opacity=".28"/>
+    <circle cx="70" cy="85" r="78" fill="url(#core)" stroke="#73d5da"/>
+    <text x="70" y="74" text-anchor="middle" fill="#ff7657" font-family="DejaVu Sans,sans-serif" font-size="38" font-weight="900">TURN</text>
+    <text x="70" y="103" text-anchor="middle" fill="#f7faf7" font-family="DejaVu Sans,sans-serif" font-size="17" font-weight="900">LANE POOL</text>
+    <text x="70" y="126" text-anchor="middle" fill="#73d5da" font-family="monospace" font-size="12">RTT · LOSS · QUEUE</text>
+  </g>
+
+  <g fill="url(#core)" stroke="#73d5da">
+    <path d="M742 108H840L856 124V200H742Z"/>
+    <path d="M742 269H840L856 285V361H742Z"/>
+    <path d="M742 430H840L856 446V522H742Z"/>
+  </g>
+  <g fill="#f7faf7" font-family="DejaVu Sans,sans-serif" font-size="18" font-weight="900">
+    <text x="762" y="150">TURN A</text><text x="762" y="311">TURN B</text><text x="762" y="472">TURN C</text>
+  </g>
+  <g fill="#73d5da" font-family="monospace" font-size="12">
+    <text x="762" y="178">DTLS · LANE 01</text><text x="762" y="339">DTLS · LANE 02</text><text x="762" y="500">DTLS · LANE 03</text>
+  </g>
+
+  <g transform="translate(870 250)">
+    <path d="M0 0H128L148 20V126H0Z" fill="url(#core)" stroke="#ff7657" stroke-width="2"/>
+    <text x="18" y="42" fill="#f7faf7" font-family="DejaVu Sans,sans-serif" font-size="22" font-weight="900">PROXY V2</text>
+    <text x="18" y="70" fill="#ff7657" font-family="monospace" font-size="13">UUID · STREAM</text>
+    <text x="18" y="93" fill="#73d5da" font-family="monospace" font-size="13">ONE SESSION</text>
+  </g>
+</svg>

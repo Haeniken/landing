@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="ru" data-language="ru" prefix="og: https://ogp.me/ns# article: https://ogp.me/ns/article#">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="description" content="Как устроен многопоточный транспорт WireGuard поверх TURN: единая UDP-сессия, упорядочивание пакетов, смена сети без разрыва и совместимое обновление сервера.">
+  <meta name="author" content="Sergey Haeniken">
+  <link rel="canonical" href="https://haeniken.com/articles/turn-transport/">
+  <link rel="alternate" hreflang="ru" href="https://haeniken.com/articles/turn-transport/">
+  <link rel="alternate" hreflang="en" href="https://haeniken.com/en/articles/turn-transport/">
+  <link rel="alternate" hreflang="x-default" href="https://haeniken.com/articles/turn-transport/">
+  <meta property="og:title" content="WireGuard поверх TURN: многопоточный транспорт RabbitHole">
+  <meta property="og:description" content="Один WireGuard endpoint для нескольких TURN-потоков, ограниченное переупорядочивание, адаптивный пул и смена физической сети без обрыва туннеля.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://haeniken.com/articles/turn-transport/">
+  <meta property="og:site_name" content="Sergey Haeniken">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:locale:alternate" content="en_US">
+  <meta property="og:image" content="https://haeniken.com/assets/social/turn-transport-preview.jpg">
+  <meta property="og:image:secure_url" content="https://haeniken.com/assets/social/turn-transport-preview.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Схема многопоточного транспорта WireGuard поверх TURN">
+  <meta property="article:published_time" content="2026-08-25T13:00:00+03:00">
+  <meta property="article:modified_time" content="2026-08-25T13:22:51+03:00">
+  <meta property="article:author" content="https://haeniken.com/">
+  <meta property="article:section" content="Сетевой транспорт и надёжность">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="WireGuard поверх TURN: многопоточный транспорт RabbitHole">
+  <meta name="twitter:description" content="Разбор серверной агрегации потоков, управления очередями, смены сети и совместимого развёртывания транспорта.">
+  <meta name="twitter:image" content="https://haeniken.com/assets/social/turn-transport-preview.jpg">
+  <meta name="twitter:image:alt" content="Схема многопоточного транспорта WireGuard поверх TURN">
+  <title>WireGuard поверх TURN: транспорт RabbitHole — Sergey Haeniken</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/articles.min.css?v=20260825a">
+  <noscript><link rel="stylesheet" href="/rocket.min.css?v=20260728d"></noscript>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "WireGuard поверх TURN: многопоточный транспорт RabbitHole",
+    "description": "Технический разбор многопоточного транспорта WireGuard поверх TURN: агрегация UDP-сессий, упорядочивание пакетов, адаптивный пул и смена сети без разрыва.",
+    "inLanguage": "ru",
+    "datePublished": "2026-08-25T13:00:00+03:00",
+    "dateModified": "2026-08-25T13:22:51+03:00",
+    "mainEntityOfPage": "https://haeniken.com/articles/turn-transport/",
+    "image": "https://haeniken.com/assets/social/turn-transport-preview.jpg",
+    "articleSection": "Сетевой транспорт и надёжность",
+    "keywords": ["WireGuard", "TURN", "DTLS", "UDP", "Android", "многопоточность", "упорядочивание пакетов", "make-before-break"],
+    "author": {
+      "@type": "Person",
+      "name": "Sergey Haeniken",
+      "url": "https://haeniken.com/",
+      "sameAs": [
+        "https://github.com/Haeniken",
+        "https://orcid.org/0009-0005-5804-5011"
+      ]
+    },
+    "about": [
+      {
+        "@type": "SoftwareSourceCode",
+        "name": "Rabbit Hole TURN Proxy",
+        "codeRepository": "https://github.com/Haeniken/rabbithole-turn-proxy",
+        "programmingLanguage": "Go"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "name": "Rabbit Hole Android",
+        "url": "https://github.com/Haeniken/rabbithole-turn-android",
+        "operatingSystem": "Android",
+        "applicationCategory": "UtilitiesApplication"
+      }
+    ]
+  }
+  </script>
+</head>
+<body class="article-page turn-article-page">
+  <a class="skip-link" href="#article">К статье</a>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header article-site-header">
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <nav class="nav article-nav" id="article-navigation" aria-label="Навигация статьи">
+      <a class="lang lang-ru" href="/">Главная</a><a class="lang lang-en" href="/en/">Home</a>
+      <a class="lang lang-ru" href="/articles/">Публикации</a><a class="lang lang-en" href="/en/articles/">Publications</a>
+    </nav>
+    <button class="mobile-menu-toggle" type="button" aria-expanded="false" aria-controls="article-navigation">
+      <span class="menu-toggle-label"><span class="lang lang-ru">Меню</span><span class="lang lang-en">Menu</span></span>
+      <span class="menu-toggle-icon" aria-hidden="true"><i></i><i></i></span>
+    </button>
+    <div class="header-actions">
+      <a class="language-toggle lang lang-ru" href="/en/articles/turn-transport/" hreflang="en" lang="en" aria-label="English version">EN</a>
+      <a class="language-toggle lang lang-en" href="/articles/turn-transport/" hreflang="ru" lang="ru" aria-label="Русская версия">RU</a>
+    </div>
+  </header>
+
+  <main id="article">
+    <header class="article-hero turn-article-hero">
+      <div class="article-hero-inner">
+        <p class="eyebrow reveal"><span class="status-light"></span><span class="lang lang-ru">Техническая заметка · сетевой транспорт</span><span class="lang lang-en">Technical note · network transport</span></p>
+        <h1 class="reveal">
+          <span class="lang lang-ru">WireGuard поверх TURN:<br><em>одна сессия,</em> несколько путей.</span>
+          <span class="lang lang-en">WireGuard over TURN:<br><em>one session,</em> several paths.</span>
+        </h1>
+        <p class="article-deck reveal">
+          <span class="lang lang-ru">Как я свёл параллельные TURN-соединения к одному конечному адресу UDP, добавил ограниченное упорядочивание пакетов и сохранил туннель при переходе телефона между Wi-Fi и мобильной сетью.</span>
+          <span class="lang lang-en">How I aggregated parallel TURN connections into one UDP endpoint, added bounded packet reordering and kept the tunnel alive while a phone moved between Wi-Fi and mobile data.</span>
+        </p>
+        <div class="article-meta reveal">
+          <span>Sergey Haeniken</span>
+          <span>Go · Android · WireGuard · TURN · DTLS</span>
+          <a href="https://github.com/Haeniken/rabbithole-turn-proxy" target="_blank" rel="noreferrer">TURN Proxy · GitHub ↗</a>
+          <a href="https://github.com/Haeniken/rabbithole-turn-android" target="_blank" rel="noreferrer">Android · GitHub ↗</a>
+        </div>
+      </div>
+    </header>
+
+    <article class="technical-article turn-technical-article">
+      <div class="article-language turn-article-intro lang lang-ru">
+        <aside class="rabbit-scope-notice" aria-label="Важная информация">
+          <strong>Не является рекламой VPN</strong>
+          <p>Это разбор клиентского и серверного сетевого транспорта для администрирования разрешённой инфраструктуры. Здесь нет предложения услуги, ссылки для подключения или действующих реквизитов доступа.</p>
+        </aside>
+
+        <p class="article-lead">Первая версия прокси уже умела передавать локальный UDP через TURN. Для одного соединения этого хватало. После появления нескольких параллельных потоков выяснилось, что простое циклическое распределение ломает как раз то, ради чего они нужны: WireGuard видит разные серверные сокеты, меняет конечный адрес, а пакеты приходят в другом порядке.</p>
+
+        <p>Я разработал серверный прокси и Android-клиент. Совместимость со сторонними клиентами осталась обязательным условием: действующие приложения для Android и iPhone нельзя было выключить ради новой схемы.</p>
+
+        <ul class="article-flow turn-flow-summary">
+          <li><span>01</span><strong>Локальный вход</strong><small>WireGuard → транспортный модуль</small></li>
+          <li><span>02</span><strong>Пул линий</strong><small>соединения TURN · UDP / TCP</small></li>
+          <li><span>03</span><strong>Агрегация</strong><small>одна сессия · один серверный сокет</small></li>
+          <li><span>04</span><strong>Смена сети</strong><small>новая линия готова до закрытия старой</small></li>
+        </ul>
+      </div>
+
+      <div class="article-language turn-article-body lang lang-ru">
+        <h2>Как клиент и сервер передают пакет</h2>
+
+        <p>В этой схеме WireGuard отвечает за туннель и шифрование пользовательского трафика. TURN доставляет пакеты через промежуточное реле, а транспортный прокси соединяет TURN с обычным UDP-входом WireGuard на сервере. Эти три слоя решают разные задачи и не подменяют друг друга.</p>
+
+        <ol class="article-steps">
+          <li><strong>Клиент читает профиль.</strong> Это обычная конфигурация WireGuard с дополнительными комментариями <code>#@wgt:</code>. Из них приложение узнаёт адрес транспортного прокси, ссылку для получения временных реквизитов TURN, число линий и режимы транспорта. Перед запуском endpoint WireGuard заменяется на локальный адрес <code>127.0.0.1:&lt;порт&gt;</code>, а MTU уменьшается до 1264 с учётом внешних оболочек.</li>
+          <li><strong>Android создаёт системный туннель.</strong> Приложение поднимает <code>VpnService</code> и TUN-интерфейс. Сокеты DNS, HTTP и TURN исключаются из этого туннеля через <code>VpnService.protect()</code>, иначе соединение с реле попыталось бы пройти через ещё не готовый WireGuard и замкнулось бы само на себя.</li>
+          <li><strong>Транспортный модуль получает маршрут через TURN.</strong> По ссылке на звонок клиент запрашивает временные логин и пароль, затем создаёт TURN allocation. Эти реквизиты дают право пользоваться реле, но не являются ключами WireGuard. Сначала проверяется TURN поверх UDP; если сеть его не пропускает, та же линия поднимается через TCP.</li>
+          <li><strong>Формируется пул линий.</strong> Каждая готовая линия — это отдельная TURN allocation и DTLS-сессия от телефона через реле до транспортного прокси. Реле пересылает дейтаграммы между сторонами, но не становится сервером WireGuard. Клиент ждёт готовности хотя бы одной линии и только после этого запускает туннель.</li>
+          <li><strong>Исходящий пакет попадает в локальный транспорт.</strong> Приложение пишет данные в TUN, WireGuard шифрует их и отправляет получившуюся дейтаграмму на локальный порт. Транспортный модуль выбирает готовую линию, помещает пакет в DTLS и передаёт его через TURN. До транспортного прокси доходит уже зашифрованный пакет WireGuard, а не открытый трафик приложения.</li>
+          <li><strong>Прокси сводит линии в одну серверную сессию.</strong> После снятия внешней оболочки он читает UUID и номер линии из служебного префикса <code>proxy_v2</code>. Все линии с одним UUID получают общий UDP-сокет до локального WireGuard backend. Поэтому сервер WireGuard видит стабильный адрес отправителя, а не новый endpoint для каждого TURN-соединения.</li>
+          <li><strong>Ответ проходит тот же путь в обратную сторону.</strong> WireGuard backend возвращает зашифрованную дейтаграмму в общий сокет. Прокси выбирает подходящую линию, клиент принимает ответы со всего пула, ограниченно восстанавливает порядок и пишет пакет обратно на локальный UDP-адрес WireGuard. После проверки и расшифрования WireGuard отдаёт данные в TUN и приложению.</li>
+          <li><strong>Отказ одной линии не останавливает весь туннель.</strong> Линия с растущей очередью, потерями или просроченным проверочным ответом исключается из выбора и пересоздаётся. Пока в пуле остаётся готовый путь, локальный endpoint WireGuard и логическая серверная сессия не меняются.</li>
+        </ol>
+
+        <p>Таким образом, отдельно живут состояние туннеля WireGuard, локальная очередь клиента, TURN-соединения, логическая сессия прокси и UDP-сокет до серверного WireGuard. Если считать каждую линию самостоятельной сессией, сервер увидит несколько исходных адресов UDP и WireGuard начнёт постоянно переключаться между ними.</p>
+
+        <h2>Одна логическая сессия — один UDP-сокет</h2>
+
+        <p>В <code>proxy_v2</code> Android перед обычными пакетами отправляет 17 байт: UUID логической сессии и номер потока. Старый сервер считает такой префикс посторонним коротким пакетом и пропускает следующие WireGuard-пакеты как раньше. Новый сервер по UUID находит общую сессию, подключает к ней очередную линию и создаёт UDP-сокет до сервера WireGuard только один раз.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Префикс логической UDP-сессии</span><div class="article-code-actions"><b>session_udp.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="go">const udpSessionPrefaceLen = 17
+
+type udpSessionHello struct {
+    id              [16]byte
+    streamID        byte
+    supportsReorder bool
+}</code></pre>
+        </div>
+
+        <p>Восходящие пакеты всех линий записываются в общий сокет под одной блокировкой. Обратный трафик читается одним циклом. Так WireGuard продолжает видеть один конечный адрес, даже если транспорт пользуется несколькими TURN-реле.</p>
+
+        <h2>Короткие серии вместо случайного распределения</h2>
+
+        <p>Разбрасывать каждый следующий пакет по новой линии нельзя: задержка на них отличается, поэтому TCP внутри туннеля получает лишние повторы, а UDP-приложения — скачки порядка. Сервер передаёт короткую серию пакетов по одной линии и меняет её на естественной паузе или когда очередь выбранной линии становится хуже соседних.</p>
+
+        <p>Новый Android-клиент сообщает отдельным флагом, что умеет ограниченно переупорядочивать пакеты. Только после этого сервер распределяет нисходящий трафик между линиями. Старый Android с 17-байтовым префиксом тоже получает единый серверный сокет, но обратный поток закрепляется за одной линией. iPhone и <code>proxy_v1</code> продолжают работать по прежней схеме.</p>
+
+        <blockquote>Возможность включается со стороны клиента. Сервер не предполагает, что старое приложение умеет собирать пакеты обратно в правильном порядке.</blockquote>
+
+        <h2>Пул линий реагирует на сеть</h2>
+
+        <p>Клиент начинает с полного набора соединений, но не держит их все активными без причины. После простоя пул сжимается до четырёх линий. При нагрузке он учитывает размер очереди, задержку, потери и временные штрафы, а затем возвращает нужную ёмкость.</p>
+
+        <p>На Android основной транспорт — TURN поверх UDP. Если текущая сеть его не пропускает, остаётся совместимый переход на TCP. Это именно резерв: TCP поверх TCP хуже переносит потери, поэтому делать его обычным путём невыгодно.</p>
+
+        <h2>Новая сеть готовится до закрытия старой</h2>
+
+        <p>Android сообщает о смене физической сети раньше, чем старые сокеты окончательно перестают отвечать. Клиент создаёт новое поколение потоков на появившейся сети, ждёт готовности хотя бы одной линии, переключает локальный транспорт и только затем закрывает старое поколение.</p>
+
+        <p>Если подготовка новой сети не удалась, клиент не оставляет туннель привязанным к мёртвому поколению сокетов, а выполняет обычный перезапуск транспорта. Этот запасной путь медленнее, зато состояние остаётся однозначным.</p>
+
+        <h2>Проверка живости и штатное завершение</h2>
+
+        <p>В сервер добавлен небольшой проверочный пакет с отдельной сигнатурой. Он проходит по транспортному пути и не попадает на сервер WireGuard. Клиент помечает устаревшие линии, не выбирает их для новых серий и может восстановить пул без остановки всего туннеля.</p>
+
+        <p>При обновлении контейнера сервер перестаёт принимать новые сессии, но даёт установленным соединениям время завершиться. После <code>SIGTERM</code> жёсткое закрытие происходит только по тайм-ауту. Такой порядок полезнее мгновенного перезапуска: мобильный клиент успевает выбрать другую линию, а короткие сеансы заканчиваются без обрыва.</p>
+
+        <h2>Зачем нужен WRAP</h2>
+
+        <p>WRAP — необязательная внешняя оболочка для сетей, которые нестабильно обращаются с обычными DTLS-пакетами. Перед отправкой в TURN клиент оформляет DTLS-запись как RTP-подобный кадр и защищает всю оболочку ChaCha20-Poly1305 с общим ключом. Сервер проверяет её целостность, снимает WRAP и только затем передаёт содержимое в DTLS.</p>
+
+        <p>WRAP не шифрует пользовательский трафик вместо WireGuard, не заменяет DTLS и не даёт доступ к серверу. Без совпадающего ключа клиент и прокси просто не смогут разобрать внешние кадры. Режим включается только на обеих сторонах и нужен для совместимого транспортного кадрирования, а не как ещё один туннель.</p>
+
+        <h2>Перенос рабочего экземпляра на новый узел</h2>
+
+        <p>Перед переносом я проверил архитектуру целевого узла, свободный UDP-порт, имена Compose-проекта и контейнеров, версию Docker и отсутствие пересечений с уже работающими службами. На новый сервер перенёс тот же собранный образ и сверил контрольные суммы конфигурационных файлов. Так изменение площадки не смешалось с обновлением кода.</p>
+
+        <p>WireGuard backend развернул отдельно и скопировал только нужные правила. Посторонние туннели и маршруты с исходного узла в новый контур не попали. Закрытые ключи, клиентский профиль и QR остались вне Git с правами <code>0600</code>; в журнал команд их содержимое не выводилось.</p>
+
+        <p>Сначала я подтвердил доступность внешнего UDP-порта безопасным тестовым пакетом и ростом счётчика Docker NAT. Затем импортировал обычную конфигурацию WireGuard с транспортными комментариями и проверил реальный handshake. Эта проверка поймала ошибку формата QR: мобильное приложение ждало стандартные секции <code>[Interface]</code> и <code>[Peer]</code>, а не пользовательскую URI-схему.</p>
+
+        <h2>Маршрутизация должна приниматься на клиенте</h2>
+
+        <p>Сервер может заблокировать выбранный трафик после входа в WireGuard, но уже не способен вернуть его в прямой сетевой путь телефона. Поэтому раздельная маршрутизация находится в Android-клиенте. Профиль с явным комментарием включает локальные GeoIP/GeoSite-списки; обычный профиль сохраняет прежнее поведение.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Явная политика профиля</span><div class="article-code-actions"><b>client.conf</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Копировать</span><span class="article-copy-success">Скопировано</span></button></div></div>
+          <pre><code data-syntax="ini">#@rhv:Routing = ru-direct
+
+[Interface]
+Address = 192.0.2.2/32
+
+[Peer]
+Endpoint = 127.0.0.1:9000</code></pre>
+        </div>
+
+        <p>Для такого профиля списки загружаются и полностью проверяются до запуска туннеля. Если данных нет или они повреждены, соединение не включается. Запрет запуска при ошибке действует только для профилей, которые запросили эту политику; остальные пользователи не зависят от загрузки геобазы.</p>
+
+        <h2>Подписка на профиль и отзыв устройства</h2>
+
+        <p>Каждое устройство получает отдельную ссылку подписки. Android проверяет обновление при запуске, по расписанию и вручную; составной набор обновляется целиком, а не по одному выбранному туннелю. Ответы <code>401</code>, <code>403</code>, <code>404</code> и <code>410</code> отключают подписку локально.</p>
+
+        <p>На сервере отзыв идемпотентен: повторный запрос не создаёт новое состояние. Запись устройства отключается, его WireGuard peer удаляется из backend, а ссылка начинает отвечать <code>410 Gone</code>. Старый формат iPhone при этом не менялся.</p>
+
+        <h2>Что осталось за границей решения</h2>
+
+        <ul class="article-checklist">
+          <li>TURN остаётся внешней зависимостью: формат реквизитов, квоты и доступность реле могут измениться;</li>
+          <li>несколько линий не создают пропускную способность из воздуха — они помогают использовать разные пути и переживать деградацию отдельных соединений;</li>
+          <li>bounded reorder ограничивает перестановку, но не скрывает долгую потерю пакетов или перегруженный канал;</li>
+          <li>make-before-break работает, когда Android успевает увидеть новую сеть до полного исчезновения старой;</li>
+          <li>рабочий handshake проверяется только с реальным клиентом: открытый порт и счётчик NAT не заменяют эту проверку.</li>
+        </ul>
+
+        <div class="article-note">
+          <strong>Результат</strong>
+          <p>Несколько TURN-потоков обслуживают одну логическую WireGuard-сессию и один конечный адрес сервера. Новый клиент получает управляемое распределение трафика и смену сети без раннего разрыва, а сторонние клиенты Android и iPhone продолжают работать без обязательного обновления протокола.</p>
+        </div>
+
+        <div class="article-sources">
+          <span>Исходный код:</span>
+          <a href="https://github.com/Haeniken/rabbithole-turn-proxy" target="_blank" rel="noreferrer">TURN Proxy ↗</a>
+          <a href="https://github.com/Haeniken/rabbithole-turn-android" target="_blank" rel="noreferrer">Android client ↗</a>
+        </div>
+      </div>
+
+      <div class="article-language turn-article-intro lang lang-en">
+        <aside class="rabbit-scope-notice" aria-label="Important information">
+          <strong>Not a VPN advertisement</strong>
+          <p>This is a technical review of client and server transport for authorised infrastructure administration. It contains no service offer, connection link or active access details.</p>
+        </aside>
+
+        <p class="article-lead">The first proxy version could already carry local UDP traffic over TURN. That was enough for one connection. Once several parallel streams were added, plain round-robin broke the property they were meant to improve: WireGuard saw several server sockets, roamed between endpoints and received packets out of order.</p>
+
+        <p>I developed the server proxy and Android client. Compatibility with third-party clients remained a hard requirement: existing Android and iPhone applications could not be retired for the new transport.</p>
+
+        <ul class="article-flow turn-flow-summary">
+          <li><span>01</span><strong>Local input</strong><small>WireGuard → transport module</small></li>
+          <li><span>02</span><strong>Lane pool</strong><small>TURN allocations · UDP / TCP</small></li>
+          <li><span>03</span><strong>Aggregation</strong><small>one session · one backend socket</small></li>
+          <li><span>04</span><strong>Handover</strong><small>new lane before the old one closes</small></li>
+        </ul>
+      </div>
+
+      <div class="article-language turn-article-body lang lang-en">
+        <h2>How the client and server carry a packet</h2>
+
+        <p>WireGuard owns the tunnel and encrypts user traffic. TURN carries packets through an intermediate relay, while the transport proxy connects TURN to an ordinary UDP WireGuard endpoint on the server. These three layers solve different problems and do not replace one another.</p>
+
+        <ol class="article-steps">
+          <li><strong>The client reads the profile.</strong> It is a standard WireGuard configuration with additional <code>#@wgt:</code> comments. They provide the transport-proxy address, the link used to obtain temporary TURN credentials, the lane count and transport modes. Before startup, the WireGuard endpoint is changed to <code>127.0.0.1:&lt;port&gt;</code> and the MTU is reduced to 1264 to account for the outer framing.</li>
+          <li><strong>Android creates the system tunnel.</strong> The application starts a <code>VpnService</code> and TUN interface. DNS, HTTP and TURN sockets are excluded from that tunnel with <code>VpnService.protect()</code>; otherwise the connection to the relay would be routed into WireGuard before WireGuard itself had a working transport.</li>
+          <li><strong>The transport module obtains a TURN path.</strong> The client uses the call link to request a temporary username and password, then creates a TURN allocation. Those credentials authorise relay use; they are not WireGuard keys. TURN over UDP is attempted first, with a bounded fallback to TCP when the current network blocks UDP.</li>
+          <li><strong>The client builds a lane pool.</strong> Every ready lane consists of a TURN allocation and a DTLS session from the phone through the relay to the transport proxy. The relay forwards datagrams between the two endpoints; it does not become the WireGuard server. The tunnel starts after at least one lane is ready.</li>
+          <li><strong>An outbound packet enters the local transport.</strong> An application writes to TUN, WireGuard encrypts the data and sends the resulting datagram to the local port. The transport module selects a healthy lane, places the packet in DTLS and sends it through TURN. The transport proxy therefore receives an encrypted WireGuard packet, not plaintext application traffic.</li>
+          <li><strong>The proxy aggregates lanes into one server-side session.</strong> After removing the outer framing, it reads the logical UUID and lane number from the <code>proxy_v2</code> preface. Every lane carrying that UUID shares one UDP socket to the local WireGuard backend. WireGuard sees a stable sender endpoint instead of a new one for every TURN connection.</li>
+          <li><strong>The reply follows the same path in reverse.</strong> The WireGuard backend writes an encrypted datagram to the shared socket. The proxy selects a suitable lane; the client receives replies from the whole pool, performs bounded reordering and writes the packet back to WireGuard's local UDP address. WireGuard verifies and decrypts it, then delivers the data through TUN to the application.</li>
+          <li><strong>A failed lane does not stop the whole tunnel.</strong> A lane with queue pressure, loss or a stale probe response is removed from selection and rebuilt. As long as the pool retains a ready path, neither WireGuard's local endpoint nor the logical server session changes.</li>
+        </ol>
+
+        <p>The WireGuard tunnel, client queue, TURN connections, logical proxy session and UDP socket to the server-side WireGuard endpoint are therefore separate pieces of state. Treating every lane as its own session would expose several source endpoints and make WireGuard roam between them.</p>
+
+        <h2>One logical session, one UDP socket</h2>
+
+        <p>In <code>proxy_v2</code>, Android sends a 17-byte preface before ordinary packets: a logical-session UUID and a stream number. An old server treats it as an unrelated short packet and handles subsequent WireGuard packets as before. The new server uses the UUID to find a shared session, attaches the lane and creates the backend socket only once.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Logical UDP session preface</span><div class="article-code-actions"><b>session_udp.go</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="go">const udpSessionPrefaceLen = 17
+
+type udpSessionHello struct {
+    id              [16]byte
+    streamID        byte
+    supportsReorder bool
+}</code></pre>
+        </div>
+
+        <p>Uplink packets from every lane are serialised into the shared backend. A single loop reads the return path. WireGuard therefore sees one endpoint even when the transport uses several TURN relays.</p>
+
+        <h2>Stable flowlets instead of packet round-robin</h2>
+
+        <p>Sending every next packet over a different lane is unsafe because their latency differs. TCP inside the tunnel produces avoidable retransmissions and UDP applications see reordered bursts. The scheduler keeps a short stable flowlet and changes lanes at its boundary or when the current queue becomes worse than its neighbours.</p>
+
+        <p>The new Android client advertises a capability flag for bounded reordering. Only then does the server stripe downlink traffic. Older Android builds with the 17-byte preface still receive a single backend socket, but their return path remains pinned to one lane. iPhone and <code>proxy_v1</code> keep the legacy behaviour.</p>
+
+        <blockquote>The client explicitly enables the feature. The server never assumes that an old application can reconstruct packet order.</blockquote>
+
+        <h2>An adaptive lane pool</h2>
+
+        <p>The client starts with the full connection set but does not retain every lane without traffic. After an idle period the pool contracts to four. Under load, selection accounts for queue depth, RTT, loss and temporary penalties, then restores capacity when needed.</p>
+
+        <p>TURN over UDP is the Android default. TCP remains a compatible fallback for networks that block UDP. It is deliberately secondary: TCP over TCP reacts poorly to packet loss and should not be the ordinary path.</p>
+
+        <h2>Moving between Wi-Fi and mobile data</h2>
+
+        <p>Android reports a physical-network change before the old sockets necessarily fail. The client creates a new stream generation on the new network, waits for at least one ready lane, switches the local transport and only then closes the old generation.</p>
+
+        <p>If preparation fails, the client falls back to a conventional transport restart rather than leaving the tunnel bound to a dead socket generation. It is slower, but its state is unambiguous.</p>
+
+        <h2>Health checks and graceful shutdown</h2>
+
+        <p>The server has a small echo probe with its own magic packet. It tests the transport path without reaching the WireGuard backend. The client marks stale lanes, avoids selecting them for new flowlets and can rebuild pool capacity without stopping the tunnel.</p>
+
+        <p>During a container update the server stops admitting new sessions but allows established ones to finish. <code>SIGTERM</code> starts a drain and force-closes only after a timeout. Mobile clients get time to select another lane and short sessions can complete normally.</p>
+
+        <h2>What WRAP is for</h2>
+
+        <p>WRAP is an optional outer envelope for networks that handle ordinary DTLS packets unreliably. Before TURN transmission, the client frames a DTLS record to resemble RTP and protects the complete envelope with ChaCha20-Poly1305 under a shared key. The server authenticates and removes WRAP before passing the contents to DTLS.</p>
+
+        <p>WRAP does not encrypt user traffic in place of WireGuard, replace DTLS or grant server access. A client and proxy without the same key simply cannot decode the outer frames. It must be enabled at both ends and exists for compatible transport framing, not as another tunnel.</p>
+
+        <h2>Moving the live instance to another node</h2>
+
+        <p>Before migration I checked the target architecture, UDP port availability, Compose and container-name collisions, the Docker version and overlap with existing services. I transferred the exact built image and compared configuration checksums, keeping the host move separate from a software release.</p>
+
+        <p>The WireGuard backend was deployed separately, with only the required rules. Unrelated tunnels and routes from the source host were not copied. Private keys, the client profile and QR stayed outside Git with mode <code>0600</code>, and their contents were not printed into command logs.</p>
+
+        <p>I first confirmed public UDP reachability with a harmless packet and a Docker NAT counter, then imported an ordinary WireGuard profile with transport comments and verified a real handshake. That last check caught a QR-format error: the mobile app expected standard <code>[Interface]</code> and <code>[Peer]</code> sections, not a custom URI scheme.</p>
+
+        <h2>Routing belongs on the client</h2>
+
+        <p>A server can drop selected traffic after it enters WireGuard, but cannot put it back onto the phone's direct network path. Split routing therefore lives in the Android client. An explicit profile comment enables local GeoIP/GeoSite lists; profiles without it keep their old behaviour.</p>
+
+        <div class="article-code">
+          <div class="article-code-head"><span>Explicit profile policy</span><div class="article-code-actions"><b>client.conf</b><button type="button" class="article-copy" data-copy-code><span class="article-copy-default">Copy</span><span class="article-copy-success">Copied</span></button></div></div>
+          <pre><code data-syntax="ini">#@rhv:Routing = ru-direct
+
+[Interface]
+Address = 192.0.2.2/32
+
+[Peer]
+Endpoint = 127.0.0.1:9000</code></pre>
+        </div>
+
+        <p>Profiles using this policy download and fully validate the lists before tunnel start. Missing or corrupt data prevents that connection from starting. The fail-closed rule applies only to profiles requesting the policy; other users do not depend on the Geo database.</p>
+
+        <h2>Profile subscriptions and device revocation</h2>
+
+        <p>Every device receives an individual subscription URL. Android checks for updates at startup, on schedule and manually; a bundle is updated as a unit rather than one selected tunnel at a time. Responses <code>401</code>, <code>403</code>, <code>404</code> and <code>410</code> disable the subscription locally.</p>
+
+        <p>Server-side revocation is idempotent. The device record is disabled, its WireGuard peer is removed from the backend and the subscription returns <code>410 Gone</code>. The existing iPhone format remains unchanged.</p>
+
+        <h2>Limits</h2>
+
+        <ul class="article-checklist">
+          <li>TURN remains an external dependency whose credential format, limits and availability can change;</li>
+          <li>multiple lanes do not invent bandwidth; they help use distinct paths and survive a degraded connection;</li>
+          <li>bounded reordering cannot hide a long loss burst or a congested link;</li>
+          <li>make-before-break depends on Android seeing the new network before the old one disappears entirely;</li>
+          <li>a live handshake still requires a real client; an open port and NAT counter are not substitutes.</li>
+        </ul>
+
+        <div class="article-note">
+          <strong>Result</strong>
+          <p>Several TURN streams now serve one logical WireGuard session and one backend endpoint. The new client gains capability-gated striping and make-before-break handover, while third-party Android and iPhone clients continue to work without a mandatory protocol update.</p>
+        </div>
+
+        <div class="article-sources">
+          <span>Source code:</span>
+          <a href="https://github.com/Haeniken/rabbithole-turn-proxy" target="_blank" rel="noreferrer">TURN Proxy ↗</a>
+          <a href="https://github.com/Haeniken/rabbithole-turn-android" target="_blank" rel="noreferrer">Android client ↗</a>
+        </div>
+      </div>
+
+      <figure class="astro-architecture-figure turn-architecture-figure" data-turn-architecture>
+        <div class="astro-architecture-hud" aria-hidden="true">
+          <span><span class="lang lang-ru">Живой контур транспорта</span><span class="lang lang-en">Live transport path</span></span>
+          <strong data-turn-stage-label>ПРОФИЛЬ · ПОЛИТИКА / ПОДПИСКА</strong>
+          <i data-turn-stage-index>01 / 04</i>
+        </div>
+        <div class="astro-architecture-canvas">
+          <svg viewBox="0 0 1200 720" role="img" aria-label="Анимированная схема многопоточного транспорта WireGuard через TURN">
+            <defs>
+              <pattern id="turn-grid" width="34" height="34" patternUnits="userSpaceOnUse"><path d="M34 0H0V34" class="astro-grid-line"></path></pattern>
+              <linearGradient id="turn-panel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#17394b"></stop><stop offset=".55" stop-color="#0b1e2e"></stop><stop offset="1" stop-color="#050c16"></stop></linearGradient>
+              <radialGradient id="turn-core" cx="50%" cy="45%" r="65%"><stop offset="0" stop-color="#19495b"></stop><stop offset=".68" stop-color="#0a1c2b"></stop><stop offset="1" stop-color="#050b14"></stop></radialGradient>
+              <filter id="turn-glow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+              <marker id="turn-arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#73d5da"></path></marker>
+              <marker id="turn-arrow-orange" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#ff7657"></path></marker>
+            </defs>
+
+            <rect width="1200" height="720" rx="24" fill="#07111f"></rect>
+            <rect width="1200" height="720" rx="24" fill="url(#turn-grid)"></rect>
+            <g aria-hidden="true"><ellipse cx="600" cy="355" rx="548" ry="280" class="astro-orbit"></ellipse><ellipse cx="600" cy="355" rx="400" ry="202" class="astro-orbit astro-orbit-inner"></ellipse><circle cx="600" cy="355" r="126" class="astro-axis"></circle></g>
+
+            <g class="turn-channels" aria-hidden="true">
+              <path id="turn-profile-path" d="M144 570C206 512 240 466 298 418" class="astro-channel turn-channel-profile" data-turn-channel="profile" marker-end="url(#turn-arrow-cyan)"></path>
+              <path id="turn-client-hub" d="M320 342H454" class="astro-channel turn-channel-allocate" data-turn-channel="allocate"></path>
+              <path id="turn-hub-relay-a" d="M612 322C692 238 745 210 820 190" class="astro-channel turn-channel-allocate" data-turn-channel="allocate"></path>
+              <path id="turn-hub-relay-b" d="M620 354H820" class="astro-channel turn-channel-allocate" data-turn-channel="allocate"></path>
+              <path id="turn-hub-relay-c" d="M612 386C692 470 745 494 820 514" class="astro-channel turn-channel-allocate" data-turn-channel="allocate"></path>
+              <path id="turn-relay-a-proxy" d="M970 190C1040 222 1062 260 1066 305" class="astro-channel turn-channel-aggregate" data-turn-channel="aggregate"></path>
+              <path id="turn-relay-b-proxy" d="M970 354H1014" class="astro-channel turn-channel-aggregate" data-turn-channel="aggregate"></path>
+              <path id="turn-relay-c-proxy" d="M970 514C1040 482 1062 444 1066 401" class="astro-channel turn-channel-aggregate" data-turn-channel="aggregate"></path>
+              <path id="turn-proxy-backend" d="M1014 354C932 596 764 616 640 578" class="astro-channel turn-channel-aggregate" data-turn-channel="aggregate" marker-end="url(#turn-arrow-orange)"></path>
+              <path id="turn-old-network" d="M204 176C322 118 430 164 500 258" class="astro-channel turn-channel-handover turn-channel-old" data-turn-channel="handover"></path>
+              <path id="turn-new-network" d="M214 238C330 240 398 252 500 300" class="astro-channel turn-channel-handover turn-channel-new" data-turn-channel="handover" marker-end="url(#turn-arrow-cyan)"></path>
+            </g>
+
+            <g class="astro-flow turn-flow" data-turn-flow="profile" aria-hidden="true"><circle r="5"><animateMotion dur="2.6s" repeatCount="indefinite"><mpath href="#turn-profile-path"></mpath></animateMotion></circle></g>
+            <g class="astro-flow turn-flow" data-turn-flow="allocate" aria-hidden="true">
+              <circle r="5"><animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#turn-client-hub"></mpath></animateMotion></circle>
+              <rect x="-9" y="-3" width="18" height="6" rx="2"><animateMotion dur="3.2s" repeatCount="indefinite"><mpath href="#turn-hub-relay-a"></mpath></animateMotion></rect>
+              <rect x="-9" y="-3" width="18" height="6" rx="2"><animateMotion dur="2.8s" begin="-.8s" repeatCount="indefinite"><mpath href="#turn-hub-relay-b"></mpath></animateMotion></rect>
+              <rect x="-9" y="-3" width="18" height="6" rx="2"><animateMotion dur="3.4s" begin="-1.4s" repeatCount="indefinite"><mpath href="#turn-hub-relay-c"></mpath></animateMotion></rect>
+            </g>
+            <g class="astro-flow turn-flow turn-flow-orange" data-turn-flow="aggregate" aria-hidden="true">
+              <circle r="5"><animateMotion dur="2.9s" repeatCount="indefinite"><mpath href="#turn-relay-a-proxy"></mpath></animateMotion></circle>
+              <circle r="5"><animateMotion dur="2.6s" begin="-.7s" repeatCount="indefinite"><mpath href="#turn-relay-b-proxy"></mpath></animateMotion></circle>
+              <circle r="5"><animateMotion dur="3.1s" begin="-1.2s" repeatCount="indefinite"><mpath href="#turn-relay-c-proxy"></mpath></animateMotion></circle>
+              <rect x="-10" y="-3" width="20" height="6" rx="2"><animateMotion dur="3.5s" repeatCount="indefinite"><mpath href="#turn-proxy-backend"></mpath></animateMotion></rect>
+            </g>
+            <g class="astro-flow turn-flow" data-turn-flow="handover" aria-hidden="true">
+              <circle r="5"><animateMotion dur="2.7s" repeatCount="indefinite"><mpath href="#turn-new-network"></mpath></animateMotion></circle>
+            </g>
+
+            <g class="astro-architecture-node turn-network-pair" data-turn-node="handover" transform="translate(62 120)">
+              <path d="M0 0H178L196 18V144H0Z" fill="url(#turn-panel)"></path>
+              <text x="18" y="29" class="astro-node-title lang lang-ru">ФИЗИЧЕСКАЯ СЕТЬ</text><text x="18" y="29" class="astro-node-title lang lang-en">PHYSICAL NETWORK</text>
+              <path d="M18 43H176" class="astro-node-divider"></path>
+              <circle cx="42" cy="78" r="20" class="turn-network-old"></circle><text x="73" y="82" class="astro-node-meta">WI-FI · GEN N</text>
+              <circle cx="42" cy="116" r="20" class="turn-network-new"></circle><text x="73" y="120" class="astro-node-meta">LTE · GEN N+1</text>
+            </g>
+
+            <g class="astro-architecture-node" data-turn-node="profile handover" transform="translate(80 286)">
+              <path d="M22 0H146L168 22V176L146 198H22L0 176V22Z" fill="url(#turn-panel)"></path>
+              <rect x="23" y="24" width="122" height="128" rx="8" class="turn-phone-screen"></rect>
+              <circle cx="84" cy="172" r="8" class="turn-phone-button"></circle>
+              <text x="84" y="61" text-anchor="middle" class="astro-node-title">ANDROID</text>
+              <text x="84" y="88" text-anchor="middle" class="astro-node-meta">WIREGUARD</text>
+              <text x="84" y="108" text-anchor="middle" class="astro-node-meta">127.0.0.1</text>
+              <text x="84" y="135" text-anchor="middle" class="astro-node-status">TUNNEL UP</text>
+            </g>
+
+            <g class="astro-architecture-node" data-turn-node="profile" transform="translate(62 548)">
+              <rect width="210" height="112" rx="8" fill="url(#turn-panel)"></rect>
+              <text x="18" y="31" class="astro-node-title lang lang-ru">ПРОФИЛЬ · ПОДПИСКА</text><text x="18" y="31" class="astro-node-title lang lang-en">PROFILE · SUBSCRIPTION</text>
+              <path d="M18 44H192" class="astro-node-divider"></path>
+              <text x="18" y="69" class="astro-node-meta">#@WGT · #@RHV</text>
+              <text x="18" y="92" class="astro-node-status">UPDATE · REVOKE · 410</text>
+            </g>
+
+            <g class="astro-core turn-client-core" data-turn-node="allocate handover" transform="translate(540 354)">
+              <circle r="106" class="astro-core-halo"></circle><circle r="84" fill="url(#turn-core)" class="astro-core-body"></circle>
+              <path d="M-58-12H58M-58 25H58" class="astro-core-divider"></path>
+              <text y="-30" text-anchor="middle" class="astro-core-go">TURN</text>
+              <text y="10" text-anchor="middle" class="astro-core-name">LANE POOL</text>
+              <text y="50" text-anchor="middle" class="astro-core-meta">QUEUE · RTT · LOSS</text>
+            </g>
+
+            <g class="astro-architecture-node turn-relay" data-turn-node="allocate aggregate" transform="translate(820 135)">
+              <path d="M0 0H132L150 18V108H0Z" fill="url(#turn-panel)"></path><text x="18" y="31" class="astro-node-title">TURN A</text><text x="18" y="57" class="astro-node-meta">DTLS · LANE 01</text><text x="18" y="84" class="astro-node-status">READY</text>
+            </g>
+            <g class="astro-architecture-node turn-relay" data-turn-node="allocate aggregate" transform="translate(820 300)">
+              <path d="M0 0H132L150 18V108H0Z" fill="url(#turn-panel)"></path><text x="18" y="31" class="astro-node-title">TURN B</text><text x="18" y="57" class="astro-node-meta">DTLS · LANE 02</text><text x="18" y="84" class="astro-node-status">READY</text>
+            </g>
+            <g class="astro-architecture-node turn-relay" data-turn-node="allocate aggregate" transform="translate(820 465)">
+              <path d="M0 0H132L150 18V108H0Z" fill="url(#turn-panel)"></path><text x="18" y="31" class="astro-node-title">TURN C</text><text x="18" y="57" class="astro-node-meta">DTLS · LANE 03</text><text x="18" y="84" class="astro-node-status">READY</text>
+            </g>
+
+            <g class="astro-architecture-node" data-turn-node="aggregate" transform="translate(1014 292)">
+              <path d="M0 0H132L150 18V126H0Z" fill="url(#turn-panel)"></path>
+              <text x="18" y="31" class="astro-node-title">PROXY V2</text><path d="M18 44H132" class="astro-node-divider"></path>
+              <text x="18" y="68" class="astro-node-meta">UUID · STREAM</text><text x="18" y="88" class="astro-node-meta">FLOWLET · REORDER</text><text x="18" y="112" class="astro-node-status">1 SESSION</text>
+            </g>
+
+            <g class="astro-architecture-node" data-turn-node="aggregate" transform="translate(500 548)">
+              <rect width="226" height="112" rx="8" fill="url(#turn-panel)"></rect>
+              <ellipse cx="43" cy="35" rx="23" ry="8" class="astro-store-disk"></ellipse><path d="M20 35V72C20 83 66 83 66 72V35M20 54C20 65 66 65 66 54" class="astro-store-lines"></path>
+              <text x="84" y="34" class="astro-node-title">WIREGUARD</text><text x="84" y="56" class="astro-node-meta">UDP BACKEND</text>
+              <text x="20" y="92" class="astro-node-status">ONE SOCKET · ONE ENDPOINT</text>
+            </g>
+
+            <g class="astro-stage-legend" transform="translate(310 686)">
+              <circle cx="0" cy="0" r="4" data-turn-stage-dot="profile"></circle><text x="12" y="4" class="lang lang-ru">ПРОФИЛЬ</text><text x="12" y="4" class="lang lang-en">PROFILE</text>
+              <circle cx="185" cy="0" r="4" data-turn-stage-dot="allocate"></circle><text x="197" y="4" class="lang lang-ru">ЛИНИИ</text><text x="197" y="4" class="lang lang-en">LANES</text>
+              <circle cx="350" cy="0" r="4" data-turn-stage-dot="aggregate"></circle><text x="362" y="4" class="lang lang-ru">АГРЕГАЦИЯ</text><text x="362" y="4" class="lang lang-en">AGGREGATE</text>
+              <circle cx="555" cy="0" r="4" data-turn-stage-dot="handover"></circle><text x="567" y="4" class="lang lang-ru">СМЕНА СЕТИ</text><text x="567" y="4" class="lang lang-en">HANDOVER</text>
+            </g>
+          </svg>
+        </div>
+        <figcaption>
+          <span class="lang lang-ru">Демонстрация четырёх участков: доставка профиля, создание пула TURN-линий, агрегация в одну серверную UDP-сессию и переключение на новое поколение сокетов до закрытия старого.</span>
+          <span class="lang lang-en">Four stages: profile delivery, TURN lane allocation, aggregation into one server-side UDP session and handover to a new socket generation before the old one closes.</span>
+        </figcaption>
+      </figure>
+    </article>
+
+    <section class="article-cta">
+      <p class="kicker"><span class="lang lang-ru">Продолжить</span><span class="lang lang-en">Continue</span></p>
+      <h2><span class="lang lang-ru">К панели управления<br>RabbitHole.</span><span class="lang lang-en">Continue to the RabbitHole<br>control panel.</span></h2>
+      <a class="button button-primary lang lang-ru" href="/articles/rabbithole-vpn/">Читать заметку <span aria-hidden="true">→</span></a>
+      <a class="button button-primary lang lang-en" href="/en/articles/rabbithole-vpn/">Read the article <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer>
+    <a class="brand lang lang-ru" href="/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <a class="brand lang lang-en" href="/en/"><span class="brand-mark">H</span><span>HA<span class="brand-e">E</span>NIKEN<span class="brand-dot">.</span></span></a>
+    <p>© <span data-year>2026</span> Sergey Haeniken</p>
+    <p><span class="lang lang-ru">Санкт-Петербург</span><span class="lang lang-en">Saint Petersburg</span></p>
+  </footer>
+  <button class="return-to-top" type="button" data-return-to-top data-label-ru="Наверх" data-label-en="Back to top" aria-label="Наверх">
+    <span class="energia-buran" aria-hidden="true">
+      <i class="energia-core"><b class="energia-band"></b><b class="energia-mark">ЭНЕРГИЯ</b></i>
+      <i class="energia-booster energia-booster-back-left"></i><i class="energia-booster energia-booster-back-right"></i><i class="energia-booster energia-booster-left"></i><i class="energia-booster energia-booster-right"></i>
+      <i class="energia-nozzles"></i><i class="buran-orbiter"><b class="buran-tile-line"></b><b class="buran-mark">Б</b><b class="buran-tail"></b></i>
+      <i class="energia-exhaust-glow"></i><i class="energia-plume energia-plume-outer"></i><i class="energia-plume energia-plume-core"></i>
+    </span>
+  </button>
+  <script src="/script.min.js?v=20260825a" defer></script>
+  <script src="/telemetry.min.js?v=20260803b" defer></script>
+</body>
+</html>
