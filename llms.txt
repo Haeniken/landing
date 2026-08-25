@@ -21,6 +21,8 @@
 - [Astrodome: a forecast for the whole sky — English](https://haeniken.com/en/articles/astrodome/): English version of the Astrodome architecture and scientific-method article.
 - [RabbitHole VPN control panel: payments and actual 3x-ui state](https://haeniken.com/articles/rabbithole-vpn/): Russian technical case study of an internal control panel, idempotent payment handling, provisioning and state reconciliation. It is not a service offer and contains no connection link.
 - [RabbitHole VPN control panel — English](https://haeniken.com/en/articles/rabbithole-vpn/): English version of the private control-panel architecture and failure-recovery case study.
+- [WireGuard over TURN: one session, several paths](https://haeniken.com/articles/turn-transport/): Russian technical article about multi-stream TURN transport, a shared WireGuard backend endpoint, bounded packet reordering and Android network handover. It is not a service offer and contains no connection link.
+- [WireGuard over TURN — English](https://haeniken.com/en/articles/turn-transport/): English version of the transport architecture, compatibility and deployment case study.
 
 ## Interactive engineering lab
 

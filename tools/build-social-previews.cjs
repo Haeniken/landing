@@ -57,6 +57,13 @@ const cards = [
     alt: "Payments, subscriptions and 3x-ui state",
   },
   {
+    output: "public/social/turn-transport-preview.jpg",
+    image: "design/social/turn-transport-visual-source.svg",
+    kind: "article",
+    title: ["WIREGUARD", "OVER TURN", "TRANSPORT"],
+    alt: "Multi-stream WireGuard over TURN transport",
+  },
+  {
     output: "public/social/incident-504-preview.jpg",
     image: "design/social/incident-504-visual-source.svg",
     kind: "article",

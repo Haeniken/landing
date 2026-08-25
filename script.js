@@ -31,7 +31,9 @@ if (technicalArticle) {
 
   readingSections.forEach((section) => {
     const copy = section.cloneNode(true);
-    copy.querySelectorAll("pre, code, svg, script, style, [aria-hidden='true']").forEach((element) => element.remove());
+    copy.querySelectorAll("pre, code, svg, script, style, [aria-hidden='true']").forEach((element) => {
+      element.remove();
+    });
     readingWords += copy.textContent.match(/[\p{L}\p{N}]+(?:[-’'][\p{L}\p{N}]+)*/gu)?.length ?? 0;
     readingFigures += section.querySelectorAll("figure").length;
     readingCodeBlocks += section.querySelectorAll(".article-code").length;
@@ -592,6 +594,63 @@ if (rabbitArchitecture) {
     document.addEventListener("visibilitychange", () => {
       window.clearTimeout(rabbitTimer);
       if (!document.hidden && rabbitVisible) scheduleRabbitStage();
+    });
+  }
+}
+
+const turnArchitecture = document.querySelector("[data-turn-architecture]");
+if (turnArchitecture) {
+  const turnStages = ["profile", "allocate", "aggregate", "handover"];
+  const turnLabels = {
+    ru: [
+      "ПРОФИЛЬ · ПОЛИТИКА / ПОДПИСКА",
+      "ЛИНИИ · TURN / DTLS / АДАПТИВНЫЙ ПУЛ",
+      "АГРЕГАЦИЯ · UUID / ОДИН BACKEND SOCKET",
+      "СМЕНА СЕТИ · MAKE-BEFORE-BREAK",
+    ],
+    en: [
+      "PROFILE · POLICY / SUBSCRIPTION",
+      "LANES · TURN / DTLS / ADAPTIVE POOL",
+      "AGGREGATE · UUID / ONE BACKEND SOCKET",
+      "HANDOVER · MAKE-BEFORE-BREAK",
+    ],
+  };
+  const turnStageLabel = turnArchitecture.querySelector("[data-turn-stage-label]");
+  const turnStageIndex = turnArchitecture.querySelector("[data-turn-stage-index]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let turnIndex = 0;
+  let turnTimer;
+  let turnVisible = false;
+
+  const showTurnStage = (index) => {
+    turnArchitecture.classList.remove(...turnStages.map((stage) => `is-${stage}`));
+    turnArchitecture.classList.add(`is-${turnStages[index]}`);
+    const language = root.dataset.language === "en" ? "en" : "ru";
+    if (turnStageLabel) turnStageLabel.textContent = turnLabels[language][index];
+    if (turnStageIndex) turnStageIndex.textContent = `${String(index + 1).padStart(2, "0")} / 04`;
+  };
+
+  const scheduleTurnStage = () => {
+    window.clearTimeout(turnTimer);
+    if (!turnVisible || document.hidden || reducedMotion) return;
+    turnTimer = window.setTimeout(() => {
+      turnIndex = (turnIndex + 1) % turnStages.length;
+      showTurnStage(turnIndex);
+      scheduleTurnStage();
+    }, 4300);
+  };
+
+  showTurnStage(0);
+  if (!reducedMotion) {
+    const turnVisibility = new IntersectionObserver(([entry]) => {
+      turnVisible = entry.isIntersecting;
+      window.clearTimeout(turnTimer);
+      if (turnVisible && !document.hidden) scheduleTurnStage();
+    }, { threshold: .12 });
+    turnVisibility.observe(turnArchitecture);
+    document.addEventListener("visibilitychange", () => {
+      window.clearTimeout(turnTimer);
+      if (!document.hidden && turnVisible) scheduleTurnStage();
     });
   }
 }

@@ -19,7 +19,7 @@
 - В разборах инцидентов не публикуйте реальные домены, имена узлов и баз, внутренние пути, номера объектов и точное число клиентских схем. Используйте условные имена и округлённые показатели без отдельной оговорки об анонимизации.
 - Отделяйте доказанную первопричину от оперативных действий. Ручной DDL, перезапуск или увеличение тайм-аута не представляйте как постоянное исправление, если итоговое изменение должно выйти в коде и миграции приложения.
 - Параметры наблюдения и отказоустойчивости описывайте через период проверки, число последовательных пропусков и итоговое время обнаружения. Не используйте формулировки вроде `с множителем 3` или `зависит от фазы таймера`, не объяснив фактическое поведение.
-- Английская версия должна быть полноценной и индексируемой по отдельным адресам `/en/`, `/en/articles/`, `/en/articles/astrosferum/`, `/en/articles/astrodome/`, `/en/articles/network-ha/`, `/en/articles/rabbithole-vpn/`, `/en/articles/incident-504/` и `/en/lab/`.
+- Английская версия должна быть полноценной и индексируемой по отдельным адресам `/en/`, `/en/articles/`, `/en/articles/astrosferum/`, `/en/articles/astrodome/`, `/en/articles/network-ha/`, `/en/articles/rabbithole-vpn/`, `/en/articles/turn-transport/`, `/en/articles/incident-504/` и `/en/lab/`.
 - Английские страницы формируются подстановками в `deploy/alice-bg-haeniken.conf`. После правки заголовка, описания, метаданных, `alt`, `aria-label` или структурированных данных проверяйте и исходную строку, и соответствующий `sub_filter`.
 - На русской странице не должно быть видимого дублирования русских подписей английскими. В английской версии — наоборот.
 - В каталоге публикаций показывайте год каждой статьи в строке метаданных через семантический `<time datetime="YYYY">`; русская и английская карточки должны содержать одинаковую дату.
@@ -28,6 +28,7 @@
 - Альтернативные подписи фотографий сохраняйте как `Астроном` и `Астроном2`; в английской версии проверяйте корректную подстановку.
 - Электронная почта не должна присутствовать в открытом виде в HTML. Номер телефона не публиковать. Год в подвале должен определяться автоматически.
 - На технических статьях время чтения рассчитывайте только по текущей языковой версии; не учитывайте блоки кода, а индикатор прочитанной части связывайте с границами основного текста статьи.
+- Материалы о RabbitHole должны содержать заметную плашку «Не является рекламой VPN», не предлагать услугу и не публиковать ссылки для подключения, действующие профили, адреса, ключи или реквизиты доступа.
 
 ## Интерфейс, адаптивность и доступность
 
@@ -121,7 +122,7 @@ node --check lab/lab.js
 node --check lab/lab.min.js
 npx @biomejs/biome lint script.js lab/lab.js
 npx eslint --no-config-lookup script.js lab/lab.js
-npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html articles/astrodome/index.html articles/network-ha/index.html articles/rabbithole-vpn/index.html articles/incident-504/index.html errors/*.html
+npx html-validate index.html lab/index.html articles/index.html articles/astrosferum/index.html articles/astrodome/index.html articles/network-ha/index.html articles/rabbithole-vpn/index.html articles/turn-transport/index.html articles/incident-504/index.html errors/*.html
 
 cd leaderboard-api
 gofmt -w *.go

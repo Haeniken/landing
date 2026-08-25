@@ -14,13 +14,13 @@
   </url>
   <url>
     <loc>https://haeniken.com/articles/</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
     <loc>https://haeniken.com/en/articles/</loc>
-    <lastmod>2026-08-03</lastmod>
+    <lastmod>2026-08-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
@@ -82,6 +82,18 @@
     <loc>https://haeniken.com/en/articles/astrodome/</loc>
     <lastmod>2026-08-03</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://haeniken.com/articles/turn-transport/</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://haeniken.com/en/articles/turn-transport/</loc>
+    <lastmod>2026-08-25</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
