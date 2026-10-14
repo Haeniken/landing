@@ -474,7 +474,7 @@
             <time datetime="2024-01"><span class="lang lang-ru">2024 — настоящее время</span><span class="lang lang-en">2024 — present</span></time>
           </div>
           <div class="timeline-detail">
-            <p><span class="lang lang-ru">Эксплуатация распределённой инфраструктуры интернет-банка: более 100 микросервисов в Docker Swarm, работа с Kubernetes и Helm, плановые и аварийные развёртывания, GitLab CI/CD.</span><span class="lang lang-en">Operating distributed internet-banking infrastructure: 100+ microservices in Docker Swarm, work with Kubernetes and Helm, planned and emergency deployments, and GitLab CI/CD.</span></p>
+            <p><span class="lang lang-ru">Эксплуатация распределённой инфраструктуры интернет-банка: более 100 микросервисов в Docker Swarm, работа с Kubernetes и Helm, плановые и аварийные развёртывания, GitLab CI/CD. Сейчас участвую в проекте внедрения ИИ для анализа прикладных журналов и разбора ошибок сервисов.</span><span class="lang lang-en">Operating distributed internet-banking infrastructure: 100+ microservices in Docker Swarm, work with Kubernetes and Helm, planned and emergency deployments, and GitLab CI/CD. I am currently working on introducing AI to analyze application logs and investigate service errors.</span></p>
             <p><span class="lang lang-ru">Мониторинг критичных интеграций и бизнес-метрик, разбор инцидентов L3 и участие в круглосуточном восстановлении сервисов с SLA 99,97%.</span><span class="lang lang-en">Monitoring critical integrations and business metrics, investigating L3 incidents and participating in 24/7 service recovery at 99.97% SLA.</span></p>
           </div>
         </article>
@@ -486,7 +486,8 @@
           </div>
           <div class="timeline-detail">
             <p><span class="lang lang-ru">Архитектура и эксплуатация SaaS-инфраструктуры: 500+ клиентских ресурсов, 7 виртуальных и 6 физических серверов, более 75 ТБ данных.</span><span class="lang lang-en">Architecture and operations for SaaS infrastructure: 500+ client resources, 7 virtual and 6 physical servers, and 75+ TB of data.</span></p>
-            <p><span class="lang lang-ru">WireGuard/IPsec с BGP/BFD, ZFS RAIDZ, MySQL Galera, GitOps-управление Traefik, резервное копирование Restic/S3 и тестовые восстановления.</span><span class="lang lang-en">WireGuard/IPsec with BGP/BFD, ZFS RAIDZ, MySQL Galera, GitOps-managed Traefik, Restic/S3 backups and recovery testing.</span></p>
+            <p><span class="lang lang-ru">WireGuard/IPsec с BGP/BFD, ZFS RAIDZ, MySQL Galera, GitOps-управление Traefik, геораспределённое резервное копирование и проверки восстановления.</span><span class="lang lang-en">WireGuard/IPsec with BGP/BFD, ZFS RAIDZ, MySQL Galera, GitOps-managed Traefik, geographically distributed backups and recovery tests.</span></p>
+            <p><span class="lang lang-ru">Для HTTPS — переключение между публичным каналом, внутренней сетью и SSH-туннелем, возврат после 180 секунд устойчивой доступности и контроль выбранного пути в Zabbix.</span><span class="lang lang-en">HTTPS failover between the public path, the mesh network and an SSH tunnel, with return after 180 seconds of continuous availability and route monitoring in Zabbix.</span></p>
           </div>
         </article>
         <article class="timeline-item reveal">
@@ -611,6 +612,40 @@
               <a class="lang lang-ru" href="/articles/turn-transport/">TURN-транспорт <span aria-hidden="true">→</span></a>
               <a class="lang lang-en" href="/en/articles/turn-transport/">TURN transport <span aria-hidden="true">→</span></a>
             </div>
+          </div>
+        </article>
+        <article class="project-card reveal">
+          <div class="project-top"><span><span class="lang lang-ru">05 / GO / МОНИТОРИНГ</span><span class="lang lang-en">05 / GO / MONITORING</span></span></div>
+          <div class="project-code lang lang-ru" aria-hidden="true">
+            <span class="code-accent">Zabbix</span> → API / RabbitMQ / очереди<br>
+            <span class="code-accent">проверка</span> → конвертация / превью<br>
+            <span class="code-accent">хранилище</span> → запись / чтение / удаление
+          </div>
+          <div class="project-code lang lang-en" aria-hidden="true">
+            <span class="code-accent">Zabbix</span> → API / RabbitMQ / queues<br>
+            <span class="code-accent">probe</span> → conversion / previews<br>
+            <span class="code-accent">storage</span> → write / read / delete
+          </div>
+          <div>
+            <h3><span class="lang lang-ru">Мониторинг конвертации</span><span class="lang lang-en">Conversion monitoring</span></h3>
+            <p><span class="lang lang-ru">Мониторинг Go-сервиса в Zabbix: API, RabbitMQ, обработчики заданий, очереди и внешние зависимости. Контрольная задача проверяет конвертацию, создание превью и операции с файлами в хранилище. Она выявила отказы загрузки, хотя проверки контейнеров проходили. Доля HTTP-ошибок считается по одновременно снятым счётчикам; зависимости оповещений подавляют каскад сообщений.</span><span class="lang lang-en">Zabbix monitoring for a Go service: API, RabbitMQ, workers, queues and external dependencies. A control task checks conversion, preview generation and storage operations. It detected upload failures while containers passed health checks. HTTP error rates use consistent counter snapshots; trigger dependencies suppress cascading alerts.</span></p>
+          </div>
+        </article>
+        <article class="project-card reveal">
+          <div class="project-top"><span><span class="lang lang-ru">06 / GO / ХРАНИЛИЩЕ</span><span class="lang lang-en">06 / GO / STORAGE</span></span></div>
+          <div class="project-code lang lang-ru" aria-hidden="true">
+            <span class="code-accent">MySQL</span> → потоковое чтение / сортировка<br>
+            <span class="code-accent">файлы</span> → проверка / жёсткие ссылки<br>
+            <span class="code-accent">восстановление</span> → журнал операций
+          </div>
+          <div class="project-code lang lang-en" aria-hidden="true">
+            <span class="code-accent">MySQL</span> → streaming reads / sorting<br>
+            <span class="code-accent">files</span> → verification / hard links<br>
+            <span class="code-accent">recovery</span> → operation journal
+          </div>
+          <div>
+            <h3><span class="lang lang-ru">Обслуживание хранилища</span><span class="lang lang-en">Storage maintenance</span></h3>
+            <p><span class="lang lang-ru">Утилиты на Go для восстановления записей о файлах в MySQL и дедубликации через жёсткие ссылки без остановки приложения. Потоковое чтение и внешняя сортировка ограничивают расход памяти; перед атомарной заменой проверяются файлы, ведётся журнал восстановления. В рабочем контуре выгружены и отсортированы 96,26 млн строк БД, начата дедубликация файлов.</span><span class="lang lang-en">Go tools for restoring file records in MySQL and deduplicating through hard links while the application stays running. Streaming reads and external sorting bound memory use; files are checked before atomic replacement, with a recovery journal. In production, 96.26 million database rows were exported and sorted, then file deduplication began.</span></p>
           </div>
         </article>
       </div>
