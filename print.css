@@ -48,14 +48,13 @@ a { color: inherit; }
   padding: 7mm 0; background: #fff !important; color: #111 !important;
   content-visibility: visible; contain-intrinsic-size: none;
 }
-.section-heading { margin: 0 0 4mm; grid-template-columns: 8mm 1fr; }
+.section-heading { margin: 0 0 4mm; }
 .section-heading .kicker, .projects-heading .kicker {
   margin-bottom: 1.5mm; color: #666 !important; font-size: 7pt;
 }
 .section-heading h2, .projects-heading h2 {
   color: #111; font-size: 21pt; line-height: .95; letter-spacing: -.04em;
 }
-.section-number { font-size: 8pt; }
 
 .metrics-grid { grid-template-columns: repeat(4, 1fr); border-color: #bbb; }
 .metric-card { min-height: 0; padding: 3mm; gap: 3mm; border-color: #bbb; }
@@ -70,11 +69,11 @@ a { color: inherit; }
 
 .expertise-list { border-color: #bbb; }
 .expertise-row {
-  min-height: 0; grid-template-columns: 8mm .75fr 1.25fr; gap: 3mm;
+  min-height: 0; grid-template-columns: .75fr 1.25fr; gap: 3mm;
   padding: 2.5mm 0; border-color: #bbb; break-inside: avoid;
 }
 .expertise-row h3 { color: #111; font-size: 11pt; }
-.expertise-row p { color: #444; font-size: 7.5pt; }
+.expertise-row p { grid-column: auto; color: #444; font-size: 7.5pt; }
 .row-arrow { display: none; }
 
 .experience { padding-top: 7mm; }

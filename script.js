@@ -161,7 +161,7 @@ const loadPrintStyles = () => {
   printStylesPromise = new Promise((resolve) => {
     const stylesheet = document.createElement("link");
     stylesheet.rel = "stylesheet";
-    stylesheet.href = "/print.css?v=20260727f";
+    stylesheet.href = "/print.css?v=20261016a";
     stylesheet.media = "all";
     stylesheet.dataset.printStylesheet = "";
     stylesheet.addEventListener("load", resolve, { once: true });
